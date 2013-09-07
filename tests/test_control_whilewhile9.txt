@@ -1,0 +1,33 @@
+
+
+VAR
+j, i, minusfour, k ;
+
+{
+i = 4;
+j = 3;
+
+minusfour = 0-4;
+
+
+WHILE i > 0 {
+	j = 3;		
+	WHILE j > 0 {
+		k = i*j;
+		print k;
+		j = j-1;
+	}
+	i = i-1;
+}
+
+WHILE i > minusfour {
+	print i;
+	i = i - 1;
+}
+
+i = i+1;
+j = j+1;
+print i;
+print j;
+
+}

@@ -1,0 +1,16 @@
+
+
+VAR
+a , b  ;
+{
+a = 1  ;
+b = 2 ; 
+IF b > a {
+        a = a+b;
+	print a ; 
+	IF a > b { 
+		print a;
+	}
+}
+
+}

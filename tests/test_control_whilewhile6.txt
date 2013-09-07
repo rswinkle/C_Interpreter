@@ -1,0 +1,21 @@
+
+
+VAR
+j, i, k;
+{
+i = 4;
+j = 3;
+
+
+
+WHILE i > 0 {		
+	WHILE j > 0 {
+		k = i*j;
+		print k;
+		j = j-1;
+	}
+	i = i-1;
+	j = 3;
+}
+
+}

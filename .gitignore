@@ -15,3 +15,15 @@
 *.exe
 *.out
 *.app
+
+#ignore ~ files
+*~
+*.gif
+*.kate-swp
+CMakeFiles/*
+CMakeCache.txt
+Makefile
+cmake_install.cmake
+stats/*
+build/*
+*.swp

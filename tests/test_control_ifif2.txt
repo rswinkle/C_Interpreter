@@ -1,0 +1,31 @@
+
+
+VAR
+a , b ;
+{
+a = 1  ;
+b = 2 ; 
+IF  b > a
+{
+	print b;
+	print a;
+	a = a + b; 
+	print a;
+	b = a + b;
+	print b;
+}
+
+a = a + b;
+print a;
+
+IF  a > b
+{
+	print b;
+	print a;
+	a = a - b; 
+	print a;
+	b = a + b;
+	print b;
+}
+
+}

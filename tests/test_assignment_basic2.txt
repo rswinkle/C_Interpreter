@@ -1,0 +1,14 @@
+
+VAR
+a , b  ;
+
+{
+a = 457 ;
+b = 221 ; 
+print a ;
+print b ;
+a = 65537 ; 
+b = 12481632 ; 
+print a ;
+print b ;
+}

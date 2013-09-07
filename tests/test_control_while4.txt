@@ -1,0 +1,25 @@
+
+VAR
+a, b, c, i, r ;
+{
+a = 12345678;
+b = a;
+i = 0;
+
+WHILE b > 0 {		
+	b = b/10;
+	i = i+1;
+}
+print i;
+
+
+WHILE i > 0 {
+	b = a;
+	a = a/10;
+	c = a*10;
+	r = b - c;
+	print r;
+	i = i-1;
+}
+
+}
