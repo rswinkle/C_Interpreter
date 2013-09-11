@@ -1,6 +1,6 @@
 
 
-VAR
+int
 j, i, minusfour, k ;
 
 {
@@ -10,9 +10,9 @@ j = 3;
 minusfour = 0-4;
 
 
-WHILE i > 0 {
+while i > 0 {
 	j = 3;		
-	WHILE j > 0 {
+	while j > 0 {
 		k = i*j;
 		print k;
 		j = j-1;
@@ -20,7 +20,7 @@ WHILE i > 0 {
 	i = i-1;
 }
 
-WHILE i > minusfour {
+while i > minusfour {
 	print i;
 	i = i - 1;
 }

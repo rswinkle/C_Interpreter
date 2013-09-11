@@ -1,6 +1,6 @@
 
 
-VAR
+int
 a, b, c, i ;
 {
 a = 12345;
@@ -9,13 +9,13 @@ i = 0;
 
 
 c = b;
-WHILE c > 0 {		
+while c > 0 {		
 	c = c/10;
 	i = i+1;
 }
 
 
-WHILE i > 0 {
+while i > 0 {
 	a = a*10;
 	i = i-1;
 }

@@ -1,48 +1,47 @@
 #include "interpreter.h"
 
 
-extern vector_void stmt_list;
-extern vector_str variables;
-extern vector_i values;
 
 
-void run()
+void run(program_state* prog, char* start_func)
 {
-	int loc = 0;
-
-	while (loc < stmt_list.size) {
-		loc = execute(GET_STMT(&stmt_list, loc), loc);
+	while (prog->pc < prog->stmt_list.size) {
+		execute(prog);
 	}
 
-	free_vec_str(&variables);
-	free_vec_i(&values);
+	free_vec_void(&prog->stmt_list);
+	free_vec_str(&prog->variables);
+	free_vec_void(&prog->values);
 }
 
 
-int execute(statement* stmt, int loc)
+void execute(program_state* prog)
 {
+	statement* stmt = GET_STMT(&prog->stmt_list, prog->pc);
+
+	var_value* var;
 	switch (stmt->type) {
 
 	case PRINT_STMT:
-		printf("%d\n", look_up_value(stmt->lvalue));
+		printf("%d\n", look_up_value(prog, stmt->lvalue)->v.int_val);
 		break;
 
 	case ASSIGN_STMT:
-		values.a[look_up_loc(stmt->lvalue)] = execute_expr(stmt);
+		GET_VAR_VALUE(&prog->values, look_up_loc(prog, stmt->lvalue))->v.int_val = execute_expr(prog, stmt->exp);
 		break;
 
 	case IF_STMT:
-		if (!cond(stmt))
-			loc = stmt->jump_to - 1;
+		if (!execute_expr(prog, stmt->exp))
+			prog->pc = stmt->jump_to - 1;
 		break;
 
 	case WHILE_STMT:
-		if (!cond(stmt))
-			loc = stmt->jump_to - 1;
+		if (!execute_expr(prog, stmt->exp))
+			prog->pc = stmt->jump_to - 1;
 		break;
 
 	case GOTO_STMT:
-		loc = stmt->jump_to-1;
+		prog->pc = stmt->jump_to-1;
 		break;
 
 	default:
@@ -50,34 +49,40 @@ int execute(statement* stmt, int loc)
 		exit(0);
 	}
 
-	return ++loc;
+	prog->pc++;
 }
 
 
-int execute_expr(statement* stmt)
+int execute_expr(program_state* prog, expression* e)
 {
-	int l, r;
-	l = (stmt->left.type == ID) ? look_up_value(stmt->left.id) : stmt->left.num;
-	if (stmt->op == SEMICOLON)
-		return l;
+	switch (e->tok.type) {
+	case EXP:          return execute_expr(prog, e->left);
+	case ADD:          return execute_expr(prog, e->left) + execute_expr(prog, e->right);
+	case SUB:          return execute_expr(prog, e->left) - execute_expr(prog, e->right);
+	case MULT:         return execute_expr(prog, e->left) * execute_expr(prog, e->right);
+	case DIV:          return execute_expr(prog, e->left) / execute_expr(prog, e->right);
+	case MOD:          return execute_expr(prog, e->left) % execute_expr(prog, e->right);
 
-	r = (stmt->right.type == ID) ? look_up_value(stmt->right.id) : stmt->right.num;
+	case GREATER:      return execute_expr(prog, e->left) > execute_expr(prog, e->right);
+	case LESS:         return execute_expr(prog, e->left) < execute_expr(prog, e->right);
+	case GTEQ:         return execute_expr(prog, e->left) >= execute_expr(prog, e->right);
+	case LTEQ:         return execute_expr(prog, e->left) <= execute_expr(prog, e->right);
+	case NOTEQUAL:     return execute_expr(prog, e->left) != execute_expr(prog, e->right);
+	case EQUALEQUAL:   return execute_expr(prog, e->left) == execute_expr(prog, e->right);
 
-	switch (stmt->op) {
-	case PLUS:		return l + r;
-	case MINUS:		return l - r;
-	case MULT:		return l * r;
-	case DIV:		return l / r;
+
+	case ID:              return look_up_value(prog, e->tok.v.id)->v.int_val;
+	case INT_LITERAL:     return e->tok.v.integer;
 	default:
-		fprintf(stderr, "Interpreter error: Unrecognized op in expression.\n\n");
+		fprintf(stderr, "Interpreter error: Unrecognized op %d in expression.\n\n", e->tok.type);
 		exit(0);
 	}
 }
 
-unsigned int look_up_loc(const char* var)
+unsigned int look_up_loc(program_state* prog, const char* var)
 {
-	for (int i=0; i<variables.size; ++i) {
-		if (!strcmp(var, variables.a[i]))
+	for (int i=0; i<prog->variables.size; ++i) {
+		if (!strcmp(var, prog->variables.a[i]))
 			return i;
 	}
 
@@ -85,36 +90,17 @@ unsigned int look_up_loc(const char* var)
 	exit(0);
 }
 
-int look_up_value(const char* var)
+var_value* look_up_value(program_state* prog, const char* var)
 {
-	for (int i=0; i<variables.size; ++i) {
-		if (!strcmp(var, variables.a[i]))
-			return values.a[i];
+	for (int i=0; i<prog->variables.size; ++i) {
+		if (!strcmp(var, prog->variables.a[i]))
+			return GET_VAR_VALUE(&prog->values, i);
 	}
 
 	fprintf(stderr, "Interpreter error: undeclared variable '%s'\n", var);
+
 	exit(0);
 }
-
-int cond(statement* stmt)
-{
-	int l, r;
-
-	l = (stmt->left.type == ID) ? look_up_value(stmt->left.id) : stmt->left.num;
-	r = (stmt->right.type == ID) ? look_up_value(stmt->right.id) : stmt->right.num;
-
-	switch (stmt->op) {
-	case GREATER:	return l > r;
-	case LESS:		return l < r;
-	case GTEQ:		return l >= r;
-	case LTEQ:		return l <= r;
-	case NOTEQUAL:	return l != r;
-	default:
-		fprintf(stderr, "Interpreter error: Unrecognized relop in condition.\n\n");
-		exit(0);
-	}
-}
-
 
 
 

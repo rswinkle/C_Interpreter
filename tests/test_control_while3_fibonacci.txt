@@ -1,6 +1,6 @@
 
 
-VAR
+int
 a , b, c, i;
 {
 a = 1;
@@ -9,7 +9,7 @@ print a;
 print b;
 
 i = 3;
-WHILE i < 10 {
+while i < 10 {
         c = a + b;
 	print c;
         a = b;

@@ -1,11 +1,11 @@
 
 
-VAR
+int
 a , b ;
 {
 a = 1  ;
 b = 2 ; 
-IF  a > b
+if  a > b
 {
 	print b;
 	print a;
@@ -18,7 +18,7 @@ IF  a > b
 a = a + b;
 print a;
 
-IF b > a 
+if b > a 
 {
 	print b;
 	print a;

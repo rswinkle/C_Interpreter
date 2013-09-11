@@ -5,30 +5,24 @@
 
 
 
-
-extern vector_void stmt_list;
-extern FILE* file;
-
-
 int main(int argc, char** argv)
 {
 	if (argc != 2) {
 		printf("Usage: %s script\n", argv[0]);
 		return 0;
 	}
-	file = NULL;
+	FILE* file = NULL;
 	file = fopen(argv[1], "r");
 	if (!file) {
 		perror("Error opening file");
 		return 0;
 	}
 
-	vec_void(&stmt_list, 0, 40, sizeof(statement), free_statement, NULL);
-	parse_program();
-	run();
+	program_state program;
 
-	free_vec_void(&stmt_list);
-	fclose(file);
+	parse_program(&program, file);
+	run(&program, NULL);
+
 
 	return 0;
 }

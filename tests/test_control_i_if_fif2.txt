@@ -1,13 +1,13 @@
 
 
-VAR
+int
 a , b , c, d ;
 {
 c = 4;
 d = 5;
 c = c + d;
 d = c + d;
-IF d > c {
+if d > c {
 	print a;
 	print b;
 	print c;
@@ -15,7 +15,7 @@ IF d > c {
 }
 a = 1  ;
 b = 2 ;
-IF b > a {
+if b > a {
 	print a;
 	print b;
 	print c;
@@ -23,16 +23,16 @@ IF b > a {
 }
 	
  
-IF  b > a {
+if  b > a {
         a = a+b;
 	print a;
-	IF a > b { 
+	if a > b { 
 		print a;
 		b = a+b;
-		IF b > a {
+		if b > a {
 			print a;
 			print b;
-			IF a > b {
+			if a > b {
 				print a;
 				print b;
 			}
@@ -44,7 +44,7 @@ IF  b > a {
 a = a*b;
 print a;
 print b;
-IF a > b {
+if a > b {
 	print a;
 	b = 1;
 	a = a+b;

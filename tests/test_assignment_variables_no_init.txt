@@ -1,5 +1,5 @@
 
-VAR
+int
 a , b ;
 {
 a = a + b  ;

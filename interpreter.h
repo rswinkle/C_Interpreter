@@ -1,16 +1,22 @@
 #ifndef INTERPRETER_H
 #define INTERPRETER_H
 
+
 #include "parser.h"
 
+#include "cvector.h"
 
-void run();
-int execute(statement* stmt, int loc);
-int execute_expr(statement* stmt);
-int cond(statement* stmt);
 
-int look_up_value(const char* var);
-unsigned int look_up_loc(const char* var);
+
+
+
+
+void run(program_state* prog, char* start_func);
+void execute(program_state* prog);
+int execute_expr(program_state* prog, expression* exp);
+
+var_value* look_up_value(program_state* prog, const char* var);
+unsigned int look_up_loc(program_state* prog, const char* var);
 
 
 

@@ -1,11 +1,11 @@
 
 
-VAR
+int
 a , b ;
 {
 a = 1  ;
 b = 2 ; 
-IF  a <> b
+if  a <> b
 {
 	print b;
 	print a;

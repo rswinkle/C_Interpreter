@@ -1,13 +1,13 @@
 
 
-VAR
+int
 a , b ;
 {
 a = 1  ;
 b = 2 ; 
-IF  b > a 
+if  b > a 
 {
-	IF b > a 
+	if b > a 
 	{
 		print a ;
 	}

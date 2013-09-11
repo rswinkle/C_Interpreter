@@ -1,0 +1,15 @@
+
+int i, a, b, c;
+{
+	i = 42 + 20 + 25; 
+ 	print i;
+	i = i - 7 - 10;
+	print i;
+	i = 3 + 4 * 5;
+	print i;
+	a = 2;
+	b = 8;
+	c = 4;
+	i = a * (b - 8 / (c - a));
+	print i;
+}

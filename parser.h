@@ -7,27 +7,107 @@
 #include <stdarg.h>
 #include <ctype.h>
 
+
 #include "cvector.h"
 
 #define MAX_TOKEN_LEN 256
 
 #define GET_STMT(VEC, I) GET_VOID(VEC, statement, I)
+#define GET_TOKEN_VAL(VEC, I) GET_VOID((VEC), token_value, (I))
 
+
+//tokens pg 20
 typedef enum {
-	GREATER, GTEQ, LESS, LTEQ, NOTEQUAL, VAR, WHILE, PRINT, IF, NUM, ID, END, ERROR,
-	PLUS='+', MINUS='-', DIV='/', MULT='*', EQUAL='=', COLON=':', SEMICOLON=';',
-	COMMA=',', LBRACE='{', RBRACE='}'
+	ERROR, END,
+	
+	EQUALEQUAL, GREATER, GTEQ, LESS, LTEQ, NOTEQUAL,
+	LOGICAL_OR, LOGICAL_AND,
+
+	/* types and type qualifiers */
+	INT, SHORT, LONG, FLOAT, DOUBLE, CHAR, VOID, SIGNED, UNSIGNED,
+	
+	/* other keywords */
+	DO, WHILE, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO,
+	
+	ID,
+
+	MOD='%', LPAREN='(', RPAREN=')', MULT='*', ADD='+', SUB='-', DIV='/', COLON=':', SEMICOLON=';',
+	EQUAL='=', COMMA=',', LBRACKET='[', RBRACKET='[', LBRACE='{', RBRACE='}',
+
+	/* compound assignment operators */
+	ADDEQUAL, SUBEQUAL, MULTEQUAL, DIVEQUAL, MODEQUAL,
+
+	/* literals aka constants */
+	INT_LITERAL, FLOAT_LITERAL, CHAR_LITERAL, STR_LITERAL,
+
+
+	/* for internal use/hacks, not really tokens */
+	LABEL, EXP
 } Token;
 
 
 
+typedef enum
+{
+	UNDECLARED = 0,
 
-typedef struct operand
+	CHAR_TYPE, /* implementation defined whether plain char is signed or not ...*/
+	UCHAR_TYPE,
+
+	SHORT_TYPE,
+	USHORT_TYPE,
+
+	INT_TYPE,
+	SINT_TYPE,
+
+	FLOAT_TYPE,
+	DOUBLE_TYPE
+} var_type;
+
+
+
+typedef struct var_value
+{
+	var_type type;
+	union {
+		int int_val;
+		double double_val;
+	} v;
+} var_value;
+	
+#define GET_VAR_VALUE(VEC, I) GET_VOID(VEC, var_value, I)
+
+
+void free_var_value(void* var);
+
+
+
+typedef struct
 {
 	Token type;
-	char* id;
-	int num;
-} operand;
+	union {
+		char* id;
+		int integer;
+		double real;
+	} v;
+} token_value;
+
+typedef struct
+{
+	vector_void tokens;
+	unsigned int pos;
+	unsigned i;
+} parsing_state;
+
+
+typedef struct expression expression;
+
+struct expression
+{
+	token_value tok;
+	expression* left;
+	expression* right;
+};
 
 
 typedef enum {
@@ -35,36 +115,71 @@ typedef enum {
 } stmt_type;
 
 
-typedef struct statement
+typedef struct
 {
 	stmt_type type;
-	int jump_to;
+	size_t jump_to;
 	char* lvalue;
-	operand left;
-	operand right;
 	Token op;
+	expression* exp;
 } statement;
 
 #define INIT_STATEMENT(stmt) \
 	stmt.type =
 
 //void init_statement(statement* stmt, stmt_type 
+//
 
+
+/*********************************/
+typedef struct function
+{
+	vector_void stmt_list;	
+	
+} function;
+
+
+typedef struct
+{
+	vector_void stmt_list;
+	size_t pc;
+	vector_str variables;
+	vector_void values;
+} program_state;
+
+/***************************/
+
+
+
+
+expression* copy_expr(expression*);
 void free_statement(void* stmt);
 
 void parse_error(const char* str);
 
-void parse_program();
-void var_decl();
-void body();
-void id_list();
-void statement_list();
-void assign();
-void expr(statement* statement);
-void while_stmt();
-void if_stmt();
-void print_stmt();
-void p_condition(statement* statement);
+void parse_program(program_state* prog, FILE* file);
+void var_decl(parsing_state* p, program_state* prog);
+void body(parsing_state* p, program_state* prog);
+void id_list(parsing_state* p, program_state* prog, var_type v_type);
+void statement_list(parsing_state* p, program_state* prog);
+void assign(parsing_state* p, program_state* prog);
+
+
+void cond_expr(parsing_state* p, program_state* prog, expression* e);
+void logical_or_expr(parsing_state* p, program_state* prog, expression* e);
+void logical_and_expr(parsing_state* p, program_state* prog, expression* e);
+void equality_expr(parsing_state* p, program_state* prog, expression* e);
+void relational_expr(parsing_state* p, program_state* prog, expression* e);
+
+void add_expr(parsing_state* p, program_state* prog, expression* exp);
+void mult_expr(parsing_state* p, program_state* prog, expression* exp);
+void primary_expr(parsing_state* p, program_state* prog, expression* exp);
+
+
+void while_stmt(parsing_state* p, program_state* prog);
+void if_stmt(parsing_state* p, program_state* prog);
+void print_stmt(parsing_state* p, program_state* prog);
+void goto_stmt(parsing_state* p, program_state* prog);
 
 
 
