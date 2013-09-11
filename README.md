@@ -29,6 +29,7 @@ to have something to reference in the repository.
 
 Current Grammar (work in progress)
 ==================================
+```
 
 program               -> var_decl body
 var_decl              -> type_specifier id_list
@@ -77,3 +78,4 @@ mult_expr             -> primary_expr
 primary_expr          -> identifier
                          constant
                          '(' cond_expr ')'
+```
