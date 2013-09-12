@@ -17,7 +17,7 @@ regex=*.txt
 
 for f in ../tests/*.txt
 do
-	echo "$f"
+	echo "executing $f"
 	./cinterpreter $f > $f.out
 	#echo "filename = $f"
 done
@@ -27,7 +27,7 @@ do
 	short=${f/.expected}
 	#echo "$f     $short.out"
 	
-	echo "$f"
+	echo "comparing with $f"
 	diff $f $short.out
 	#echo "filename = $f"
 done

@@ -1,5 +1,5 @@
 
-int i, a, b, c;
+int i, a, b, c, d;
 {
 	i = 42 + 20 + 25; 
  	print i;
@@ -12,4 +12,35 @@ int i, a, b, c;
 	c = 4;
 	i = a * (b - 8 / (c - a));
 	print i;
+	c = 10 - 3 - 4 - 1;
+	print c;
+	a = b = c = 10 - 2 * 2;
+	print a;
+	print b;
+	print c;
+	i = a + b + 3, c *= 2, c -= 5;
+	print i;
+	print c;
+	a = 10, i+=5, i-3;
+	print a;
+	print i;
+	a = (10, i+=5, i-3);
+	print a;
+	print i;
+
+	a = b = d || (a += 15) && a == (1 + 6) % 5 * 10;
+	print a;
+	print b;
+
+	a = 1, b =2, c = 3, d = 4;
+	a += b += c += d;
+	print a;
+	print b;
+	print c;
+	print d;
+
+	a = a > (c += 2);
+	print a;
+	print c;
+
 }

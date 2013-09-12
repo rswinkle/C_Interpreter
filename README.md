@@ -24,58 +24,82 @@ It'll be interesting to see how it grows and which
 parts converge with full syntax first. 
 
 I've also added a BNF spec for C I found online just
-to have something to reference in the repository.
+to have something for reference in the repository.
 
 
 Current Grammar (work in progress)
 ==================================
 ```
 
-program               -> var_decl body
-var_decl              -> type_specifier id_list
-type_specifier        -> int
-id_list               -> identifier ',' id_list
-                         identifier
+program                   -> declaration_list body
 
-body                  -> '{' stmt_list '}'
-stmt_list             -> identifier '=' cond_expr ';'
-                         while_stmt
-                         if_stmt
-                         print_stmt
-                         goto_stmt
+declaration_list          -> declaration
+                          -> declaration_list declaration
 
-while_stmt            -> while expr body
-if_stmt               -> if expr body
-print_stmt            -> print identifier ';'
+declaration               -> declaration_specifier initialized_declarator_list ';'
 
-goto_stmt             -> goto identifier ';' //unfinished
+initialized_declarator_list     -> initialized_declarator
+                                   initialized_declarator_list ',' initialized_declarator
 
-cond_expr             -> logical_or_expr  //could add ternary here
+initialized_declarator    -> identifier
+                          -> identifier '=' assign_expr
 
-logical_or_expr       -> logical_and_expr
-                         logical_and_expr '||' logical_and_expr
+declaration_specifier     -> int
 
-logical_and_expr      -> equality_expr  //bitwise ops would go here
+body                      -> '{' stmt_list '}'
 
-equality_expr         -> relational_expr
-                         relational_expr '==' relational_expr
-                         relational_expr '!=' relational_expr
+stmt_list                 -> expr_stmt
+                             while_stmt
+                             if_stmt
+                             print_stmt
+                             goto_stmt
 
-relational_expr       -> add_expr
-                         add_expr '<' add_expr
-                         add_expr '>' add_expr
-                         add_expr '<=' add_expr
-                         add_expr '>=' add_expr
+while_stmt                -> while expr body
+if_stmt                   -> if expr body
+print_stmt                -> print identifier ';'
 
-add_expr              -> mult_expr
-                         mult_expr '+' mult_expr
-                         mult_expr '-' mult_expr
+goto_stmt                 -> goto identifier ';' //unfinished
 
-mult_expr             -> primary_expr
-                         primary_expr '*' primary_expr
-                         primary_expr '/' primary_expr
+expr_stmt                 -> expr ';'
 
-primary_expr          -> identifier
-                         constant
-                         '(' cond_expr ')'
+expr                      -> comma_expr
+
+comma_expr                -> assign_expr
+                             assign_expr ',' assign_expr
+
+assign_expr               -> cond_expr
+                          -> identifier assign_op assign_expr
+
+assign_op                 -> one of '=' '+=' '-=' '*=' '/=' '%='
+
+cond_expr                 -> logical_or_expr  //could add ternary here
+
+logical_or_expr           -> logical_and_expr
+                             logical_or_expr '||' logical_and_expr
+
+logical_and_expr          -> equality_expr
+                             logical_and_expr '&&' equality_expr
+
+equality_expr             -> relational_expr
+                             equality_expr '==' relational_expr
+                             equality_expr '!=' relational_expr
+
+relational_expr           -> add_expr
+                             relational_expr relational_op add_expr
+
+relational_op             -> one of '<' '>' '<=' '>='
+
+add_expr                  -> mult_expr
+                             add_expr add_op mult_expr
+
+add_op                    -> one of '+' '-'
+
+mult_expr                 -> primary_expr
+                             mult_expr mult_op primary_expr
+
+mult_op                   -> one of '*' '/' '%'
+
+primary_expr              -> identifier
+                             constant
+                             '(' expr ')'
 ```

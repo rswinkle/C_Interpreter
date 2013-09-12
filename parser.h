@@ -32,7 +32,7 @@ typedef enum {
 	ID,
 
 	MOD='%', LPAREN='(', RPAREN=')', MULT='*', ADD='+', SUB='-', DIV='/', COLON=':', SEMICOLON=';',
-	EQUAL='=', COMMA=',', LBRACKET='[', RBRACKET='[', LBRACE='{', RBRACE='}',
+	EQUAL='=', COMMA=',', LBRACKET='[', RBRACKET=']', LBRACE='{', RBRACE='}',
 
 	/* compound assignment operators */
 	ADDEQUAL, SUBEQUAL, MULTEQUAL, DIVEQUAL, MODEQUAL,
@@ -49,7 +49,7 @@ typedef enum {
 
 typedef enum
 {
-	UNDECLARED = 0,
+	UNKNOWN = 0,
 
 	CHAR_TYPE, /* implementation defined whether plain char is signed or not ...*/
 	UCHAR_TYPE,
@@ -111,7 +111,8 @@ struct expression
 
 
 typedef enum {
-	NULL_STMT = 0, WHILE_STMT, PRINT_STMT, ASSIGN_STMT, IF_STMT, GOTO_STMT
+	NULL_STMT = 0, WHILE_STMT, PRINT_STMT, EXPR_STMT, IF_STMT, GOTO_STMT,
+
 } stmt_type;
 
 
@@ -120,8 +121,8 @@ typedef struct
 	stmt_type type;
 	size_t jump_to;
 	char* lvalue;
-	Token op;
 	expression* exp;
+	var_type vtype;
 } statement;
 
 #define INIT_STATEMENT(stmt) \
@@ -136,15 +137,18 @@ typedef struct function
 {
 	vector_void stmt_list;	
 	
+	vector_str variables;
+	vector_void values;
 } function;
 
 
 typedef struct
 {
+	
 	vector_void stmt_list;
 	size_t pc;
-	vector_str variables;
-	vector_void values;
+	vector_str global_variables;
+	vector_void global_values;
 } program_state;
 
 /***************************/
@@ -152,17 +156,31 @@ typedef struct
 
 
 
+void print_token(token_value* tok);
+
 expression* copy_expr(expression*);
 void free_statement(void* stmt);
 
 void parse_error(const char* str);
 
 void parse_program(program_state* prog, FILE* file);
-void var_decl(parsing_state* p, program_state* prog);
+void declaration_list(parsing_state* p, program_state* prog);
+void declaration(parsing_state* p, program_state* prog);
+var_type declaration_specifier(parsing_state* p, program_state* prog);
+void initialized_declarator_list(parsing_state* p, program_state* prog, var_type v_type);
+void initialized_declarator(parsing_state* p, program_state* prog, var_type v_type);
+
+
+
+
+
 void body(parsing_state* p, program_state* prog);
-void id_list(parsing_state* p, program_state* prog, var_type v_type);
 void statement_list(parsing_state* p, program_state* prog);
-void assign(parsing_state* p, program_state* prog);
+
+void expression_stmt(parsing_state* p, program_state* prog);
+void expr(parsing_state* p, program_state* prog, expression* e);
+void comma_expr(parsing_state* p, program_state* prog, expression* e);
+void assign_expr(parsing_state* p, program_state* prog, expression* e);
 
 
 void cond_expr(parsing_state* p, program_state* prog, expression* e);

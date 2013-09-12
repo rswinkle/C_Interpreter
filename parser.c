@@ -55,11 +55,64 @@ token_value read_token(FILE* file)
 
 	//printf("getting token starting with '%c'\n", c);
 	switch (c) {
-	//TODO add compound assignments
-	case '+': tok.type = ADD;  break;
-	case '-': tok.type = SUB;  break;
-	case '/': tok.type = DIV;  break;
-	case '*': tok.type = MULT; break;
+	case ':': tok.type = COLON;     break;
+	case ',': tok.type = COMMA;     break;
+	case ';': tok.type = SEMICOLON; break;
+	case '{': tok.type = LBRACE;    break;
+	case '}': tok.type = RBRACE;    break;
+	case '(': tok.type = LPAREN;    break;
+	case ')': tok.type = RPAREN;    break;
+
+	case '+':
+		c = getc(file);
+		if (c == '=') {
+			tok.type = ADDEQUAL;
+		} else {
+			ungetc(c, file);
+			tok.type = ADD;
+		}
+		break;
+
+	case '-':
+		c = getc(file);
+		if (c == '=') {
+			tok.type = SUBEQUAL;
+		} else {
+			ungetc(c, file);
+			tok.type = SUB;
+		}
+		break;
+		
+	case '*':
+		c = getc(file);
+		if (c == '=') {
+			tok.type = MULTEQUAL;
+		} else {
+			ungetc(c, file);
+			tok.type = MULT;
+		}
+		break;
+
+	case '/':
+		c = getc(file);
+		if (c == '=') {
+			tok.type = DIVEQUAL;
+		} else {
+			ungetc(c, file);
+			tok.type = DIV;
+		}
+		break;
+
+	case '%':
+		c = getc(file);
+		if (c == '=') {
+			tok.type = MODEQUAL;
+		} else {
+			ungetc(c, file);
+			tok.type = MOD;
+		}
+		break;
+
 	case '=':
 		if ((c = getc(file)) == '=') {
 			tok.type = EQUALEQUAL;
@@ -69,13 +122,6 @@ token_value read_token(FILE* file)
 		}
 		break;
 
-	case ':': tok.type = COLON;     break;
-	case ',': tok.type = COMMA;     break;
-	case ';': tok.type = SEMICOLON; break;
-	case '{': tok.type = LBRACE;    break;
-	case '}': tok.type = RBRACE;    break;
-	case '(': tok.type = LPAREN;    break;
-	case ')': tok.type = RPAREN;    break;
 	case '|':
 		c = getc(file);
 		if (c == '|')
@@ -193,7 +239,7 @@ token_value read_token(FILE* file)
 	//		puts("EOF");
 			tok.type = END;
 		} else {
-			perror("Error");
+			perror("Scanning Error");
 			tok.type = ERROR;
 		}
 	}
@@ -215,9 +261,80 @@ void free_token_value(void* tok)
 }
 
 
+void print_token(token_value* tok)
+{
+	switch (tok->type) {
+		case ERROR:            puts("ERROR");     break;
+		case END:              puts("END");     break;
+		case EQUALEQUAL:       puts("EQUALEQUAL");     break;
+		case GREATER:          puts("GREATER");     break;
+		case GTEQ:             puts("GTEQ");     break;
+		case LESS:             puts("LESS");     break;
+		case LTEQ:             puts("LTEQ");     break;
+		case NOTEQUAL:         puts("NOTEQUAL");     break;
+		case LOGICAL_OR:       puts("LOGICAL_OR");     break;
+		case LOGICAL_AND:      puts("LOGICAL_AND");     break;
+		case INT:              puts("INT");     break;
+		case SHORT:            puts("SHORT");     break;
+		case LONG:             puts("LONG");     break;
+		case FLOAT:            puts("FLOAT");     break;
+		case DOUBLE:           puts("DOUBLE");     break;
+		case CHAR:             puts("CHAR");     break;
+		case VOID:             puts("VOID");     break;
+		case SIGNED:           puts("SIGNED");     break;
+		case UNSIGNED:         puts("UNSIGNED");     break;
+		case DO:               puts("DO");     break;
+		case WHILE:            puts("WHILE");     break;
+		case PRINT:            puts("PRINT");     break;
+		case IF:               puts("IF");     break;
+		case ELSE:             puts("ELSE");     break;
+		case SWITCH:           puts("SWITCH");     break;
+		case CASE:             puts("CASE");     break;
+		case DEFAULT:          puts("DEFAULT");     break;
+		case CONTINUE:         puts("CONTINUE");     break;
+		case BREAK:            puts("BREAK");     break;
+		case GOTO:             puts("GOTO");     break;
+		case ID:               printf("ID = %s\n", tok->v.id);     break;
+		case MOD:              puts("MOD");     break;
+		case LPAREN:           puts("LPAREN");     break;
+		case RPAREN:           puts("RPAREN");     break;
+		case MULT:             puts("MULT");     break;
+		case ADD:              puts("ADD");     break;
+		case SUB:              puts("SUB");     break;
+		case DIV:              puts("DIV");     break;
+		case COLON:            puts("COLON");     break;
+		case SEMICOLON:        puts("SEMICOLON");     break;
+		case EQUAL:            puts("EQUAL");     break;
+		case COMMA:            puts("COMMA");     break;
+		case LBRACKET:         puts("LBRACKET");     break;
+		case RBRACKET:         puts("RBRACKET");     break;
+		case LBRACE:           puts("LBRACE");     break;
+		case RBRACE:           puts("RBRACE");     break;
+		case ADDEQUAL:         puts("ADDEQUAL");     break;
+		case SUBEQUAL:         puts("SUBEQUAL");     break;
+		case MULTEQUAL:        puts("MULTEQUAL");     break;
+		case DIVEQUAL:         puts("DIVEQUAL");     break;
+		case MODEQUAL:         puts("MODEQUAL");     break;
+		case INT_LITERAL:      printf("INT_LITERAL = %d\n", tok->v.integer);     break;
+		case FLOAT_LITERAL:    puts("FLOAT_LITERAL");     break;
+		case CHAR_LITERAL:     puts("CHAR_LITERAL");     break;
+		case STR_LITERAL:      puts("STR_LITERAL");     break;
+		case LABEL:            puts("LABEL");     break;
+		case EXP:              puts("EXP");     break;
+
+		default:
+			puts("Error, unknown token\n");
+	}
+}
+
+
 token_value* get_token(parsing_state* p)
 {
-	return GET_TOKEN_VAL(&p->tokens, p->pos++);
+	token_value* tok = GET_TOKEN_VAL(&p->tokens, p->pos++);
+//	print_token(tok);
+	return tok;
+
+	//return GET_TOKEN_VAL(&p->tokens, p->pos++);
 }
 
 void parse_seek(int origin, long offset)
@@ -243,72 +360,122 @@ void parse_program(program_state* prog, FILE* file)
 
 	prog->pc = 0;
 	vec_void(&prog->stmt_list, 0, 100, sizeof(statement), free_statement, NULL);
-	vec_str(&prog->variables, 0, 20);
-	vec_void(&prog->values, 0, 20, sizeof(var_value), free_var_value, NULL);
+	vec_str(&prog->global_variables, 0, 20);
+	vec_void(&prog->global_values, 0, 20, sizeof(var_value), free_var_value, NULL);
 
-	//vec_i(&prog->values, 0, 20);
-
-	var_decl(&p, prog);
+	// put this in a loop?  when body changes to function
+	declaration_list(&p, prog);
 	body(&p, prog);
 
 	free_vec_void(&p.tokens);
 }
 
 
-
-void var_decl(parsing_state* p, program_state* prog)
+/* declaration_list -> declaration { declaration } */
+void declaration_list(parsing_state* p, program_state* prog)
 {
-	token_value* tok = get_token(p);
-	var_type vtype = UNDECLARED;
-	
-	switch (tok->type) {
-	case INT:
-		vtype = INT_TYPE;
-		break;
-	case DOUBLE:
-		vtype = DOUBLE_TYPE;
-		break;
-	default:	
-		parse_error("Error parsing var_decl, INT expected.");
-		exit(0);
+	declaration(p, prog);
+
+	var_type vtype = declaration_specifier(p, prog);
+	while (vtype != UNKNOWN) {
+		p->pos--;
+		declaration(p, prog);
+
+		vtype = declaration_specifier(p, prog);
 	}
 
-	id_list(p, prog, vtype);
+	p->pos--;
+}
 
-	tok = get_token(p);
+/* declaration -> declaration_specifier initialized_declarator_list ';' */
+void declaration(parsing_state* p, program_state* prog)
+{
+	var_type vtype = declaration_specifier(p, prog);
+	if (vtype == UNKNOWN) {
+		p->pos--;
+		return;
+	}
+
+	initialized_declarator_list(p, prog, vtype);
+
+	token_value* tok = get_token(p);
 	if (tok->type != SEMICOLON) {
 		parse_error("Error parsing var_decl, COMMA or SEMICOLON expected.");
 		exit(0);
 	}
-
 }
 
-void id_list(parsing_state* p, program_state* prog, var_type v_type)
+var_type declaration_specifier(parsing_state* p, program_state* prog)
 {
 	token_value* tok = get_token(p);
-	var_value val;
-
-	while (tok->type == ID) {
-		push_str(&prog->variables, tok->v.id);
-		
-		//TODO for now initialize to 0 for the tests
-		val.v.int_val = 0;
-		val.type = v_type;
-		push_void(&prog->values, &val);
-
-		tok = get_token(p);
-		if (tok->type != COMMA) {
-			p->pos--;
-			return;
-		}
-
-		tok = get_token(p);
+	
+	switch (tok->type) {
+	case INT:
+		return INT_TYPE;
+		break;
+	case DOUBLE:
+		return DOUBLE_TYPE;
+		break;
 	}
-
-	parse_error("Error parsing id_list, ID expected.");
-	exit(0);
+	
+	return UNKNOWN;
 }
 
+
+/* initialized_declarator_list -> initialized_declarator { , initialized_declarator } */
+void initialized_declarator_list(parsing_state* p, program_state* prog, var_type v_type)
+{
+	initialized_declarator(p, prog, v_type);
+
+	token_value* tok = get_token(p);
+	while (tok->type == COMMA) {
+
+		initialized_declarator(p, prog, v_type);
+		tok = get_token(p);
+	}
+	p->pos--;
+}
+
+
+
+/* initialized_declarator -> declarator [ = initializer ]
+ *                        -> ID [ = assign_expr ]
+ */
+void initialized_declarator(parsing_state* p, program_state* prog, var_type v_type)
+{
+	token_value* tok = get_token(p);
+	if (tok->type != ID) {
+		parse_error("Error parsing initialized_declarator, ID expected.\n");
+		exit(0);
+	}
+
+	//TODO finish working this in with above and make declaration_specifiers (aka type) function
+
+	push_str(&prog->global_variables, tok->v.id);
+	
+	//TODO for now initialize to 0 for the tests
+	var_value val;
+	val.v.int_val = 0;
+	val.type = v_type;
+	push_void(&prog->global_values, &val);
+
+	tok = get_token(p);
+	if (tok->type == EQUAL) {
+		p->pos -= 2;  //put ID = back for assign_expr
+
+		statement an_expr;
+		memset(&an_expr, 0, sizeof(statement));
+		an_expr.type = EXPR_STMT;
+
+		an_expr.exp = calloc(1, sizeof(expression));
+		assert(an_expr.exp);
+		assign_expr(p, prog, an_expr.exp);
+
+		push_void(&prog->stmt_list, &an_expr);
+	}
+
+	p->pos--;
+}
 
 
 void body(parsing_state* p, program_state* prog)
@@ -344,7 +511,8 @@ void statement_list(parsing_state* p, program_state* prog)
 
 		case ID:
 			//could be label
-			assign(p, prog);
+			p->pos--;
+			expression_stmt(p, prog);
 			break;
 
 		case WHILE:
@@ -380,32 +548,119 @@ void goto_stmt(parsing_state* p, program_state* prog)
 }
 
 
-void assign(parsing_state* p, program_state* prog)
+void expression_stmt(parsing_state* p, program_state* prog)
+{
+	statement an_expr;
+	memset(&an_expr, 0, sizeof(statement));
+
+	an_expr.exp = calloc(1, sizeof(expression));
+	assert(an_expr.exp);
+
+	an_expr.type = EXPR_STMT;
+
+	expr(p, prog, an_expr.exp);
+
+	push_void(&prog->stmt_list, &an_expr);
+
+
+	token_value* tok = get_token(p);
+	if (tok->type != SEMICOLON) {
+		parse_error("Error parsing expression_stmt, SEMICOLON expected\n");
+		exit(0);
+	}
+}
+
+void expr(parsing_state* p, program_state* prog, expression* e)
+{
+	comma_expr(p, prog, e);
+}
+
+void comma_expr(parsing_state* p, program_state* prog, expression* e)
+{
+	assign_expr(p, prog, e);
+
+	token_value* tok = get_token(p);
+	while (tok->type == COMMA) {
+		e->left = copy_expr(e);
+		e->tok.type = tok->type;
+
+		e->right = calloc(1, sizeof(expression));
+		assert(e->right);
+
+		assign_expr(p, prog, e->right);
+		tok = get_token(p);
+	}
+	p->pos--;
+}
+
+
+int assignment_operator(Token tok)
+{
+	return (tok == EQUAL || tok == ADDEQUAL || tok == SUBEQUAL ||
+	        tok == MULTEQUAL || tok == DIVEQUAL || tok == MODEQUAL);
+}
+
+/* assign_expr -> cond_expr | unary_expr assign_op assign_expr */
+void assign_expr(parsing_state* p, program_state* prog, expression* e)
 {
 	token_value* tok = get_token(p);
+	
+	if (tok->type != ID) {
+		p->pos--;
+		cond_expr(p, prog, e);
 
-	if (tok->type != EQUAL) {
-		parse_error("Error parsing assignment, EQUAL expected.");
-		exit(0);
+		tok = get_token(p);
+		if (assignment_operator(tok->type)) {
+			if (e->tok.type != ID) {  //TODO for now
+				parse_error("Error: lvalue required as left operand of assignment.\n");	
+				exit(0);
+			}
+		}
+		p->pos--;
+		return;
 	}
 
-	statement an_assign;
-	memset(&an_assign, 0, sizeof(statement));
-	an_assign.type = ASSIGN_STMT;
-	an_assign.lvalue = mystrdup(GET_TOKEN_VAL(&p->tokens, p->pos-2)->v.id);
-
-	an_assign.exp = calloc(1, sizeof(expression));
-	assert(an_assign.exp);
-
-	cond_expr(p, prog, an_assign.exp);
-	push_void(&prog->stmt_list, &an_assign);
-
+	char* id = tok->v.id;
+	
 	tok = get_token(p);
-	if (tok->type != SEMICOLON) {
-		parse_error("Error parsing assignment, SEMICOLON expected.\n");
-		printf("%d\n", tok->type);
-		exit(0);
+
+	if (!assignment_operator(tok->type)) {
+		p->pos -= 2;
+		cond_expr(p, prog, e);
+
+		tok = get_token(p);
+		if (assignment_operator(tok->type)) {
+			if (e->tok.type != ID) {  //TODO for now
+				parse_error("Error: lvalue required as left operand of assignment.\n");	
+				exit(0);
+			}
+		}
+		p->pos--;
+		return;
 	}
+
+	e->tok.type = ID;
+	e->tok.v.id = mystrdup(id);
+	
+	//assignment operators are right associative for obvious reasons
+	//they're the only right associative binary operators in C
+	//
+	//well technically the comma is fully associative semantically
+	//
+	//strangely this looks like the same left associative code for other
+	//operators.  The difference is the others aren't recursive
+	//just loop always modifying the same top level expression
+	//copying it into the left side (the recursion) as needed.
+	//
+	//Here the top level left side never changes and only the right
+	//side is expanded in the recursive call
+	e->left = copy_expr(e);
+	e->tok.type = tok->type;
+
+	e->right = calloc(1, sizeof(expression));
+	assert(e->right);
+
+	assign_expr(p, prog, e->right);
 }
 
 expression* copy_expr(expression* e)
@@ -422,6 +677,7 @@ void cond_expr(parsing_state* p, program_state* prog, expression* e)
 	//TODO add ternary operator here
 }
 
+/* logical_or_expr -> logical_and_expr { '||' logical_and_expr } */
 void logical_or_expr(parsing_state* p, program_state* prog, expression* e)
 {
 	logical_and_expr(p, prog, e);
@@ -434,17 +690,33 @@ void logical_or_expr(parsing_state* p, program_state* prog, expression* e)
 		e->right = calloc(1, sizeof(expression));
 		assert(e->right);
 
-		logical_and_expr(p, prog, e);
+		logical_and_expr(p, prog, e->right);
 		tok = get_token(p);
 	}
 	p->pos--;
 }
 
 
+/* logical_and_expr -> bitwise_or_expr
+ *                     logical_and_expr '&&' bitwise_or_expr
+ * logical_and_expr -> equality_expr { '&&' equality_expr }
+ */
 void logical_and_expr(parsing_state* p, program_state* prog, expression* e)
 {
 	equality_expr(p, prog, e);
-	//skipping bitwise operators
+
+	token_value* tok = get_token(p);
+	while (tok->type == LOGICAL_AND) {
+		e->left = copy_expr(e);
+		e->tok.type = tok->type;
+
+		e->right = calloc(1, sizeof(expression));
+		assert(e->right);
+
+		equality_expr(p, prog, e->right);
+		tok = get_token(p);
+	}
+	p->pos--;
 }
 
 void equality_expr(parsing_state* p, program_state* prog, expression* e)
@@ -537,7 +809,7 @@ void primary_expr(parsing_state* p, program_state* prog, expression* e)
 		e->tok.type = EXP;
 		e->left = calloc(1, sizeof(expression));
 		assert(e->left);
-		cond_expr(p, prog, e->left);
+		expr(p, prog, e->left);
 
 		tok = get_token(p);
 		if (tok->type != RPAREN) {
@@ -559,6 +831,8 @@ void primary_expr(parsing_state* p, program_state* prog, expression* e)
 		break;
 	default:
 		parse_error("Error parsing primary_expr, LPAREN or literal expected\n");
+		if (tok->type == ADDEQUAL)
+			puts("plusequal");
 		exit(0);
 	}
 }		
