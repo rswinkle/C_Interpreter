@@ -18,7 +18,7 @@ regex=*.txt
 for f in ../tests/*.txt
 do
 	echo "executing $f"
-	./cinterpreter $f > $f.out
+	./cinterpreter $f &> $f.out
 	#echo "filename = $f"
 done
 

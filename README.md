@@ -74,6 +74,8 @@ statement                 -> expr_stmt
 
 while_stmt                -> while '(' expr ')' statement
 if_stmt                   -> if '(' expr ')' statement
+						  -> if '(' expr ')' statement else statement
+
 print_stmt                -> print identifier ';'
 
 goto_stmt                 -> goto identifier ';' //unfinished
@@ -118,6 +120,9 @@ mult_expr                 -> unary_expr
 mult_op                   -> one of '*' '/' '%'
 
 unary_expr                -> postfix_expr
+                          -> logical_negation_expr
+
+logical_negation_expr     -> '!' unary_expr
 
 postfix_expr              -> function_call
                              primary_expr

@@ -1,0 +1,78 @@
+
+
+int a = 1;
+
+
+
+int main()
+{
+	int local = 54;
+	int test1 = 1, test2 = 2, test3 = 3;
+
+	if (local == 54)
+		print local;
+	else {
+		local += 1;
+	}
+	print local;
+
+	if (local < 60)
+		print test1;
+	if (local < 55)
+		print test2;
+	else
+		print test3;
+		
+	if (local > 60)
+		print test1;
+	if (local > 55)
+		print test2;
+	else
+		print test3;
+	
+	if (local -= local) {
+		int a = 123;
+		print a;
+		a + 2;
+	}
+
+	if (!local) {
+		if (test3 == 3)
+			print test3;
+		else
+			print test2;
+		if (test1 == test3 - test2) {
+			print test1;
+			print local;
+		} else {
+			int tmp = test1 - 2;
+			print tmp;
+		}
+	} else {
+		local += test1 * test2 * test3;
+		print local;
+	}
+	
+	local = !local;
+	if (!local) {
+		if (test3 == 3)
+			print test3;
+		else
+			print test2;
+		if (test1 == test3 - test2) {
+			print test1;
+			print local;
+		} else {
+			int tmp = test1 - 2;
+			print tmp;
+		}
+	} else {
+		local += test1 * test2 * test3;
+		print local;
+	}
+
+
+	return 0;
+}
+
+

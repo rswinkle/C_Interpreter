@@ -196,7 +196,7 @@ token_value read_token(FILE* file)
 			tok.type = NOTEQUAL;
 		else {
 			ungetc(c, file);
-			tok.type = NOT;
+			tok.type = LOGICAL_NEGATION;
 		}
 		break;
 		
@@ -340,6 +340,7 @@ void print_token(token_value* tok)
 		case NOTEQUAL:         puts("NOTEQUAL");     break;
 		case LOGICAL_OR:       puts("LOGICAL_OR");     break;
 		case LOGICAL_AND:      puts("LOGICAL_AND");     break;
+		case LOGICAL_NEGATION: puts("LOGICAL_NEGATION");     break;
 		case INT:              puts("INT");     break;
 		case SHORT:            puts("SHORT");     break;
 		case LONG:             puts("LONG");     break;
@@ -776,7 +777,6 @@ void declaration_or_statement(parsing_state* p, program_state* prog)
 
 void statement_rule(parsing_state* p, program_state* prog)
 {
-	token_value* tok;
 
 	switch (peek_token(p, 0)->type) {
 	case ID:
@@ -797,7 +797,7 @@ void statement_rule(parsing_state* p, program_state* prog)
 		break;
 
 	case LBRACE:
-		{
+	{
 		statement start, end;
 		memset(&start, 0, sizeof(statement));
 		memset(&end, 0, sizeof(statement));
@@ -807,7 +807,7 @@ void statement_rule(parsing_state* p, program_state* prog)
 		push_void(prog->stmt_list, &start);
 		compound_statement(p, prog);
 		push_void(prog->stmt_list, &end);
-		}
+	}
 		break;
 
 	case GOTO:
@@ -819,7 +819,7 @@ void statement_rule(parsing_state* p, program_state* prog)
 		break;
 
 	default:
-		parse_error(tok, "in statement unexpected token\n");
+		parse_error(peek_token(p, 0), "in statement unexpected token\n");
 		exit(0);
 	}
 }
@@ -842,13 +842,13 @@ void return_stmt(parsing_state* p, program_state* prog)
 	ret_stmt.type = RETURN_STMT;
 
 	if (peek_token(p, 0)->type != SEMICOLON) {
-		if (prog->func->ret_val.type == VOID) {
+		if (prog->func->ret_val.type == VOID_TYPE) {
 			parse_error(peek_token(p, 0), "return statement with an expression in a void returning function\n");
 			exit(0);
 		}
 		ret_stmt.exp = make_expression(prog);
 		expr(p, prog, ret_stmt.exp);
-	} else if (prog->func->ret_val.type != VOID) {
+	} else if (prog->func->ret_val.type != VOID_TYPE) {
 		parse_error(peek_token(p, 0), "return statement with no expression in a function with a return type\n");
 		exit(0);
 	}
@@ -909,7 +909,7 @@ int assignment_operator(Token tok)
 	        tok == MULTEQUAL || tok == DIVEQUAL || tok == MODEQUAL);
 }
 
-/* assign_expr -> cond_expr | unary_expr assign_op assign_expr */
+/* assign_expr -> cond_expr | identifer assign_op assign_expr */
 void assign_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
 {
 	token_value* tok;
@@ -1104,9 +1104,25 @@ void mult_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
 	}
 }
 
+/* unary_expr -> postfix_expr | logical_negation_expr */
 void unary_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
 {
-	postfix_expr(p, prog, expr_loc);
+	if (peek_token(p, 0)->type == LOGICAL_NEGATION) {
+		logical_negation_expr(p, prog, expr_loc);
+	} else {
+		postfix_expr(p, prog, expr_loc);
+	}
+}
+
+void logical_negation_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
+{
+	token_value* tok = get_token(p);
+	expression* e = GET_EXPRESSION(&prog->expressions, expr_loc);
+
+	e->tok.type = LOGICAL_NEGATION;
+	e->left = make_expression(prog);
+
+	unary_expr(p, prog, e->left);
 }
 
 
@@ -1240,7 +1256,7 @@ void if_stmt(parsing_state* p, program_state* prog)
 		exit(0);
 	}
 
-	cond_expr(p, prog, an_if.exp);
+	expr(p, prog, an_if.exp);
 
 
 	tok = get_token(p);
@@ -1255,6 +1271,24 @@ void if_stmt(parsing_state* p, program_state* prog)
 	statement_rule(p, prog);
 
 	GET_STMT(prog->stmt_list, if_loc)->jump_to = prog->stmt_list->size;
+
+	tok = peek_token(p, 0);
+	if (tok->type == ELSE) {
+		get_token(p);
+
+		statement a_goto;
+		memset(&a_goto, 0, sizeof(statement));
+		a_goto.type = GOTO_STMT;
+		size_t goto_loc = prog->stmt_list->size;
+		push_void(prog->stmt_list, &a_goto); //jump to after else statement
+	
+		//reset jump for failed if condition to after the goto
+		GET_STMT(prog->stmt_list, if_loc)->jump_to = prog->stmt_list->size;
+
+		statement_rule(p, prog);
+		
+		GET_STMT(prog->stmt_list, goto_loc)->jump_to = prog->stmt_list->size;
+	}
 }
 
 
@@ -1302,7 +1336,7 @@ void while_stmt(parsing_state* p, program_state* prog)
 		exit(0);
 	}
 
-	cond_expr(p, prog, a_while.exp);
+	expr(p, prog, a_while.exp);
 
 	tok = get_token(p);
 	if (tok->type != RPAREN) {

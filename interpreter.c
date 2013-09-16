@@ -49,6 +49,7 @@ void execute(program_state* prog)
 			break;
 
 		case PRINT_STMT:
+			//TODO print expression
 			printf("%d\n", look_up_value(prog, stmt->lvalue, BOTH)->v.int_val);
 			break;
 
@@ -165,6 +166,7 @@ int execute_expr(program_state* prog, unsigned int expr_loc)
 
 	case LOGICAL_OR:    return execute_expr(prog, e->left) || execute_expr(prog, e->right);
 	case LOGICAL_AND:   return execute_expr(prog, e->left) && execute_expr(prog, e->right);
+	case LOGICAL_NEGATION: return !execute_expr(prog, e->left);
 
 
 	case FUNC_CALL:

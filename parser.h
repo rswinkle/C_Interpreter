@@ -25,7 +25,7 @@ typedef enum {
 	ERROR, END,
 	
 	EQUALEQUAL, GREATER, GTEQ, LESS, LTEQ, NOTEQUAL,
-	LOGICAL_OR, LOGICAL_AND, NOT,
+	LOGICAL_OR, LOGICAL_AND, LOGICAL_NEGATION,
 
 	/* types and type qualifiers */
 	INT, SHORT, LONG, FLOAT, DOUBLE, CHAR, VOID, SIGNED, UNSIGNED,
@@ -239,6 +239,8 @@ void mult_expr(parsing_state* p, program_state* prog, unsigned int exp);
 
 void unary_expr(parsing_state* p, program_state* prog, unsigned int expr_loc);
 void postfix_expr(parsing_state* p, program_state* prog, unsigned int expr_loc);
+void logical_negation_expr(parsing_state* p, program_state* prog, unsigned int expr_loc);
+
 void function_call(parsing_state* p, program_state* prog, unsigned int expr_loc);
 void expression_list(parsing_state* p, program_state* prog, unsigned int expr_loc);
 
