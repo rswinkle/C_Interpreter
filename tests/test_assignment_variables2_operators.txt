@@ -2,6 +2,7 @@
 int
 a , b , c, d ;
 
+int main()
 {
 a = 4 ; 
 b = 2 ;

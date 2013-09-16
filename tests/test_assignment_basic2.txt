@@ -2,7 +2,7 @@
 int
 a , b  ;
 
-{
+int main(){
 a = 457 ;
 b = 221 ; 
 print a ;

@@ -2,6 +2,7 @@
 
 int
 a, b, c, i ;
+int main()
 {
 a = 12345;
 b = 6789;
@@ -9,13 +10,13 @@ i = 0;
 
 
 c = b;
-while c > 0 {		
+while (c > 0) {		
 	c = c/10;
 	i = i+1;
 }
 
 
-while i > 0 {
+while (i > 0) {
 	a = a*10;
 	i = i-1;
 }

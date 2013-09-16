@@ -2,19 +2,20 @@
 
 int
 a , b  ;
+int main()
 {
 a = 1  ;
 b = 2 ; 
-if b > a {
+if (b > a) {
         a = a+b;
 	print a;
-	if a > b { 
+	if (a > b) { 
 		print a;
 		b = a+b;
-		if b > a { 
+		if (b > a) { 
 			print a;
 			print b;
-			if a > b {
+			if (a > b) {
 				print a;
 				print b;
 			}
@@ -26,7 +27,7 @@ if b > a {
 a = a*b;
 print a;
 print b;
-if a > b {
+if (a > b) {
 	print a;
 	b = 1;
 	a = a+b;

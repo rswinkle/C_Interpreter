@@ -1,15 +1,15 @@
 
 
-int
-j, i, k;
+int j, i, k;
+int main()
 {
 i = 4;
 j = 3;
 
 
 
-while i > 0 {		
-	while j > 0 {
+while (i > 0) {		
+	while (j > 0) {
 		k = i*j;
 		print k;
 		j = j-1;
@@ -17,5 +17,5 @@ while i > 0 {
 	i = i-1;
 	j = 3;
 }
-
+return 0;
 }

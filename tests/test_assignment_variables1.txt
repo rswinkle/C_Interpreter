@@ -2,7 +2,7 @@
 int
 a , b , c, d ;
 
-{
+void main(){
 a = 4 ; 
 b = 2 ;
 a = a + b ; 

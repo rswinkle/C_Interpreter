@@ -1,6 +1,7 @@
 
 int
 a , b ;
+int main()
 {
 a = a + b  ;
 a = a + b  ;

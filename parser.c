@@ -190,13 +190,22 @@ token_value read_token(FILE* file)
 		}
 		break;
 
-	case '<':
+	case '!':
 		c = getc(file);
 		if (c == '=')
-			tok.type = LTEQ;
-		else if (c == '>')
 			tok.type = NOTEQUAL;
 		else {
+			ungetc(c, file);
+			tok.type = NOT;
+		}
+		break;
+		
+
+	case '<':
+		c = getc(file);
+		if (c == '=') {
+			tok.type = LTEQ;
+		} else {
 			ungetc(c, file);
 			tok.type = LESS;
 		}
@@ -432,10 +441,6 @@ void parse_program(program_state* prog, FILE* file)
 	vec_str(&prog->global_variables, 0, 20);
 	vec_void(&prog->global_values, 0, 20, sizeof(var_value), free_var_value, NULL);
 	vec_void(&prog->expressions, 0, 300, sizeof(expression), free_expression, NULL);
-
-	//
-	// put this in a loop?  when body changes to function
-//	tld - -> declration | function_definition
 
 	translation_unit(&p, prog);
 
@@ -837,9 +842,16 @@ void return_stmt(parsing_state* p, program_state* prog)
 	ret_stmt.type = RETURN_STMT;
 
 	if (peek_token(p, 0)->type != SEMICOLON) {
+		if (prog->func->ret_val.type == VOID) {
+			parse_error(peek_token(p, 0), "return statement with an expression in a void returning function\n");
+			exit(0);
+		}
 		ret_stmt.exp = make_expression(prog);
 		expr(p, prog, ret_stmt.exp);
-	} 
+	} else if (prog->func->ret_val.type != VOID) {
+		parse_error(peek_token(p, 0), "return statement with no expression in a function with a return type\n");
+		exit(0);
+	}
 
 	push_void(prog->stmt_list, &ret_stmt);
 
@@ -1222,7 +1234,20 @@ void if_stmt(parsing_state* p, program_state* prog)
 
 	an_if.exp = make_expression(prog);
 
+	token_value* tok = get_token(p);
+	if (tok->type != LPAREN) {
+		parse_error(tok, "in if_stmt, expected LPAREN\n");
+		exit(0);
+	}
+
 	cond_expr(p, prog, an_if.exp);
+
+
+	tok = get_token(p);
+	if (tok->type != RPAREN) {
+		parse_error(tok, "in if_stmt, expected RPAREN\n");
+		exit(0);
+	}
 
 	size_t if_loc = prog->stmt_list->size;
 	push_void(prog->stmt_list, &an_if);
@@ -1271,7 +1296,19 @@ void while_stmt(parsing_state* p, program_state* prog)
 
 	a_while.exp = make_expression(prog);
 
+	token_value* tok = get_token(p);
+	if (tok->type != LPAREN) {
+		parse_error(tok, "in while_stmt, expected LPAREN\n");
+		exit(0);
+	}
+
 	cond_expr(p, prog, a_while.exp);
+
+	tok = get_token(p);
+	if (tok->type != RPAREN) {
+		parse_error(tok, "in while_stmt, expected RPAREN\n");
+		exit(0);
+	}
 
 	size_t while_loc = prog->stmt_list->size;
 	push_void(prog->stmt_list, &a_while);

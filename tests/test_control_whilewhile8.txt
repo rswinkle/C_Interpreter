@@ -1,16 +1,16 @@
 
 
-int
-j, i, k ;
+int j, i, k ;
+void main()
 {
 i = 4;
 j = 3;
 
 
 
-while i > 0 {
+while (i > 0) {
 	j = 3;		
-	while j > 0 { 
+	while (j > 0) { 
 		k = i*j;
 		print k;
 		j = j-1;
@@ -23,4 +23,5 @@ j = j+1;
 print i;
 print j;
 
+return;
 }

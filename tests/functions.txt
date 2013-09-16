@@ -44,7 +44,7 @@ void func2(int a, int b, int c)
 
 int fibbonaci(int n)
 {
-	if n < 3 {
+	if (n < 3) {
 		return 1;
 	}
 	return fibbonaci(n-2) + fibbonaci(n-1);

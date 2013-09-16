@@ -2,15 +2,17 @@
 
 int
 a , b ;
+int main()
 {
 a = 1  ;
 b = 2 ; 
-if  b > a 
+if (b > a) 
 {
-	if b > a 
+	if (b > a)
 	{
 		print a ;
 	}
 }
 
+	return 0;
 }

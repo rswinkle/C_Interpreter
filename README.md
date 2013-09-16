@@ -72,8 +72,8 @@ statement                 -> expr_stmt
                              return_stmt
                              goto_stmt
 
-while_stmt                -> while expr body
-if_stmt                   -> if expr body
+while_stmt                -> while '(' expr ')' statement
+if_stmt                   -> if '(' expr ')' statement
 print_stmt                -> print identifier ';'
 
 goto_stmt                 -> goto identifier ';' //unfinished
