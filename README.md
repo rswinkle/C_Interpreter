@@ -31,10 +31,20 @@ Current Grammar (work in progress)
 ==================================
 ```
 
-program                   -> declaration_list body
+translation_unit          -> top_level_declaration
+                             translation_unit top_level_declaration
 
 declaration_list          -> declaration
-                          -> declaration_list declaration
+                          -> function_definition
+
+function_definition       -> declaration_specifier function_declarator compound_statement
+
+function_declarator       -> identifier '(' parameter_list ')'
+
+parameter_list            -> parameter_declaration
+                             parameter_list ',' paramater_declaration
+
+parameter_declaration     -> declaration_specifier identifier
 
 declaration               -> declaration_specifier initialized_declarator_list ';'
 
@@ -46,12 +56,20 @@ initialized_declarator    -> identifier
 
 declaration_specifier     -> int
 
-body                      -> '{' stmt_list '}'
+compound_statement        -> '{' decl_or_stmt_list '}'
 
-stmt_list                 -> expr_stmt
+decl_or_stmt_list         -> decl_or_stmt
+                             decl_or_stmt_list decl_or_stmt
+
+decl_or_stmt              -> declaration
+                             statement
+
+statement                 -> expr_stmt
                              while_stmt
                              if_stmt
                              print_stmt
+                             compound_statement
+                             return_stmt
                              goto_stmt
 
 while_stmt                -> while expr body
@@ -94,10 +112,20 @@ add_expr                  -> mult_expr
 
 add_op                    -> one of '+' '-'
 
-mult_expr                 -> primary_expr
-                             mult_expr mult_op primary_expr
+mult_expr                 -> unary_expr
+                             mult_expr mult_op unary_expr
 
 mult_op                   -> one of '*' '/' '%'
+
+unary_expr                -> postfix_expr
+
+postfix_expr              -> function_call
+                             primary_expr
+
+function_call             -> identifier '(' expression_list ')'
+
+expression_list           -> assign_expr
+                             expression_list ',' assign_expr
 
 primary_expr              -> identifier
                              constant

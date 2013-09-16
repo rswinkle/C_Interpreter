@@ -10,7 +10,9 @@ solution "CInterpreter"
       language "C"
       files { "main.c", "parser.c", "parser.h",
               "interpreter.c", "interpreter.h",
-              "c_utils.c", "c_utils.h", "cvector.h" }
+              "c_utils.c", "c_utils.h", "cvector.h",
+              "clist.h"
+            }
       --excludes { }
 --      libdirs { }
       --links { } 

@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 	program_state program;
 
 	parse_program(&program, file);
-	run(&program, NULL);
+	run(&program, "main");
 
 
 	return 0;

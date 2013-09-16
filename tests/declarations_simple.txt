@@ -1,0 +1,11 @@
+int a;
+int main()
+{
+	print a;
+	int a = 50;
+	print a;
+
+	return 0;
+}
+
+

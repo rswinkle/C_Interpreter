@@ -1,0 +1,68 @@
+
+int a = 1;
+
+void func1(void)
+{
+	print a;
+	int a = 2;
+	print a;
+	int local = 10 * a;
+	print local;
+}
+
+
+void func2(int a, int b, int c)
+{
+	print a;
+	print b;
+	print c;
+
+	int d = 12;
+	{
+		print d;
+		print a;
+		int a = 15;
+		print a;
+		{
+			print d;
+			print a;
+			print b;
+
+			int b = 100;
+			print b;
+			print c;
+			{
+				print c;
+			}
+
+		}
+		int c = 5;
+		print c;
+
+	}
+}
+
+int fibbonaci(int n)
+{
+	if n < 3 {
+		return 1;
+	}
+	return fibbonaci(n-2) + fibbonaci(n-1);
+}
+
+
+
+int main()
+{
+	int local = 54;
+	print local;
+	func1();
+	print a;
+	func2(10, local /= 3, local - a*20);
+	print local;
+
+	local = fibbonaci(10);
+	print local;
+
+	return 0;
+}

@@ -1,0 +1,24 @@
+
+int a=0, b=0, c=10;
+
+int main()
+{
+	print a;
+	print b;
+	print c;
+
+	int d = 9, e = 10 + (b += 1), f = d *= 2;
+	print d;
+	print e;
+	print f;
+
+	int a = 50;
+	print a;
+	print b;
+	int b = 100;
+	print b;
+
+	return 0;
+}
+
+

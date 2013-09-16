@@ -1,5 +1,6 @@
 
 int i, a, b, c, d;
+int main()
 {
 	i = 42 + 20 + 25; 
  	print i;
@@ -28,6 +29,7 @@ int i, a, b, c, d;
 	print a;
 	print i;
 
+	print d;
 	a = b = d || (a += 15) && a == (1 + 6) % 5 * 10;
 	print a;
 	print b;

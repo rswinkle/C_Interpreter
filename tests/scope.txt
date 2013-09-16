@@ -1,0 +1,36 @@
+int a = 10 % 3, b = 13 * 12 + 2, c = 10;
+
+int main()
+{
+	print a;
+	print b;
+	print c;
+
+	int d = 12;
+	{
+		print d;
+		print a;
+		int a = 15;
+		print a;
+		{
+			print d;
+			print a;
+			print b;
+
+			int b = 100;
+			print b;
+			print c;
+			{
+				print c;
+			}
+
+		}
+		int c = 5;
+		print c;
+	}
+
+
+	return 0;
+}
+
+

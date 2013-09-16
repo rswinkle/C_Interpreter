@@ -34,7 +34,8 @@ int main()
 	printf("%d\n", a);
 	printf("%d\n", i);
 
-	d = 0;
+	//d = 0;
+	printf("%d\n", d);
 	a = b = d || (a += 15) && a == (1 + 6) % 5 * 10;
 	printf("%d\n", a);
 	printf("%d\n", b);
