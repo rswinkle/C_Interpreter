@@ -1,0 +1,139 @@
+
+int main()
+{
+	int i, j = 3;
+
+start1:
+	i = j;
+
+	int a = 5;
+start2:
+	print i;
+	i -= 1;
+	a -= 1;
+	print a;
+	if (i)
+		goto start2;
+
+	print j;
+	j -= 1;
+	if (j)
+		goto start1;
+
+
+	print i;
+	print j;
+	print a;
+
+	int b = 0;
+	goto into;
+
+	{
+		int b = 4;
+
+into:
+		b += 1;
+		print b;
+		int a = b / 2;
+		print a;
+	}
+
+	{
+		int b = 3;
+		print b;
+
+		goto outof;
+
+		int a = b += 1;
+		print a;
+	}
+
+outof:
+	print b;
+
+
+
+//goto endblock;  <--- illegal/non-standard pointless
+
+	{
+		int i = 100;
+		print i;
+//endblock:
+	}
+
+
+goto beginblock;
+
+	j += 10;
+	print j;
+
+beginblock:
+	{
+		int j = 200;
+		print j;
+	}
+
+
+	{
+		int a = 10;
+		print a;
+		{
+			goto sib_inner;
+			{
+				print a;
+			}
+			int a = 5;
+			print a;
+		}
+
+		print a;
+	
+		{
+			int a = 15;
+			{
+sib_inner:
+				print a;
+
+			}
+		}
+	}
+
+	goto decl;
+
+	{
+		int a = 10;
+		{
+			int a = 5;
+			print a;
+decl:
+			;    // <-- label can only go with a statement not a declaration
+			int b = 6;
+			print b;
+
+		}
+	}
+
+	int check = 2;	
+	{
+		int test = 321;
+		{
+backinto:
+			print test;
+
+		}
+		print test;
+		test /= 2;
+		check -= 1;
+	}
+
+	int test = 123;
+	print test;
+	
+	if (check)
+		goto backinto;
+
+
+
+	return 0;
+}
+	

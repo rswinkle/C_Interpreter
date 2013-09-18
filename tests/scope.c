@@ -28,6 +28,13 @@ int main()
 			}
 
 		}
+
+		{
+			printf("%d\n", b);
+			int b = 50;
+			printf("%d\n", b);
+		}
+
 		int c = 5;
 		printf("%d\n", c);
 

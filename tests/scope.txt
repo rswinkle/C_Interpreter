@@ -25,6 +25,13 @@ int main()
 			}
 
 		}
+
+		{
+			print b;
+			int b = 50;
+			print b;
+		}
+
 		int c = 5;
 		print c;
 	}

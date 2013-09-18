@@ -38,22 +38,22 @@ void free_expression(void* expr)
 	//free(e);
 }
 
-void free_var_list(void* l)
+void free_active_binding_list(void* l)
 {
 	list_head* head = l;
-	var_value* p, *tmp;
+	active_binding* p, *tmp;
 
-	list_for_each_entry_safe(p, tmp, var_value, head, list) {
+	list_for_each_entry_safe(p, tmp, active_binding, head, list) {
 		list_del(&p->list);
 		free(p);
 	}
 }
 
-void free_variable(void* var)
+void free_symbol(void* var)
 {
-	variable* v = var;
-	free(v->name);
-	free_var_list(&v->head);
+	symbol* s = var;
+	free(s->name);
+	free_active_binding_list(&s->head);
 }
 
 
@@ -61,23 +61,30 @@ void init_function(void* to, void* from)
 {
 	function* to_func = to, *from_func = from;
 
-	//to_func->ret;
 	to_func->pc = 0;
 	vec_void(&to_func->stmt_list, 0, 100, sizeof(statement), free_statement, NULL);
-	vec_void(&to_func->variables, 0, 20, sizeof(variable), free_variable, NULL);
+	vec_void(&to_func->symbols, 0, 20, sizeof(symbol), free_symbol, NULL);
 }
 
 void free_function(void* func)
 {
 	function* f = func;
 	free_vec_void(&f->stmt_list);
-	free_vec_void(&f->variables);
+	free_vec_void(&f->symbols);
+}
+
+void free_binding(void* var)
+{
+	binding* b = var;
+	free(b->name);
 }
 
 void free_statement(void* stmt)
 {
 	statement* s = (statement*)stmt;
 	free(s->lvalue);
+
+	free_vec_void_heap(s->bindings);
 }
 
 
@@ -96,6 +103,8 @@ token_value read_token(FILE* file)
 
 	token_value tok;
 	memset(&tok, 0, sizeof(token_value));
+
+start:
 
 	do {
 		c = getc(file);
@@ -145,6 +154,18 @@ token_value read_token(FILE* file)
 		c = getc(file);
 		if (c == '=') {
 			tok.type = DIVEQUAL;
+		} else if (c == '/') { // it's a single line comment
+			//puts("single line comment");
+			do { c = getc(file); } while (c != '\n');
+			goto start;
+		} else if (c == '*') { /* start of block comment */
+			while (1) {
+				c = getc(file);
+				if (c == '*' && fpeek(file) == '/') {
+					getc(file);
+					goto start;
+				}
+			}
 		} else {
 			ungetc(c, file);
 			tok.type = DIV;
@@ -258,7 +279,7 @@ token_value read_token(FILE* file)
 			}
 
 		} else if (isalpha(c)) {
-			while (isalnum(c)) {
+			while (isalnum(c) || c == '_') {
 				token_buf[i++] = c;
 				c = getc(file);
 
@@ -326,6 +347,24 @@ void free_token_value(void* tok)
 		free(t->v.id);
 }
 
+void print_statement(statement* stmt)
+{
+	switch (stmt->type) {
+	case NULL_STMT:                  puts("NULL_STMT");  break;
+	case WHILE_STMT:              puts("WHILE_STMT");  break;
+	case PRINT_STMT:               puts("PRINT_STMT");  break;
+	case EXPR_STMT:                  puts("EXPR_STMT");  break;
+	case IF_STMT:                  puts("IF_STMT");  break;
+	case GOTO_STMT:                  puts("GOTO_STMT");  break;
+	case DECL_STMT:                  puts("DECL_STMT");  break;
+	case RETURN_STMT:              puts("RETURN_STMT");  break;
+	case START_COMPOUND_STMT:      puts("START_COMPOUND_STMT");  break;
+	case END_COMPOUND_STMT:                puts("END_COMPOUND_STMT");  break;
+					  
+	default:
+		puts("Unknown statement type");
+	}
+}
 
 void print_token(token_value* tok)
 {
@@ -413,7 +452,7 @@ void parse_seek(parsing_state* p, int origin, long offset)
 {
 	if (origin == SEEK_SET)
 		p->pos = offset;
-	else if (origin = SEEK_CUR)
+	else if (origin == SEEK_CUR)
 		p->pos += offset;
 	else
 		p->pos = p->tokens.size - 1 + offset;
@@ -423,7 +462,11 @@ void parse_seek(parsing_state* p, int origin, long offset)
 void parse_program(program_state* prog, FILE* file)
 {
 	parsing_state p;
-	vec_void(&p.tokens, 0, 200, sizeof(token_value), free_token_value, NULL);
+	vec_void(&p.tokens, 0, 1000, sizeof(token_value), free_token_value, NULL);
+
+
+	//TODO string database vector, no more allocating a dozen
+	//copies of the same strings
 	token_value tok = read_token(file);
 	while (tok.type != END && tok.type != ERROR) {
 		push_void(&p.tokens, &tok);
@@ -434,10 +477,11 @@ void parse_program(program_state* prog, FILE* file)
 
 	p.pos = 0;
 
-	prog->cur_scope = 0;
+	prog->cur_parent = -1;
 	prog->func = NULL;
 	prog->pc = NULL;
 	prog->stmt_list = NULL;
+	prog->bindings = NULL;
 	vec_void(&prog->functions, 0, 10, sizeof(function), free_function, init_function);  //I could actually use an init function here ..
 	vec_str(&prog->global_variables, 0, 20);
 	vec_void(&prog->global_values, 0, 20, sizeof(var_value), free_var_value, NULL);
@@ -485,17 +529,37 @@ void function_definition(parsing_state* p, program_state* prog)
 
 	function_declarator(p, prog, vtype);
 
+	vec_str(&prog->func->labels, 0, 10);
+	vec_i(&prog->func->label_locs, 0, 10);
+
 	compound_statement(p, prog);
 
+	//set goto locations
+	statement* stmt;
+	for (int j=0; j<prog->func->labels.size; ++j) {
+		for (int i=0; i<prog->stmt_list->size; ++i) {
+			stmt = GET_STMT(prog->stmt_list, i);
+			if (stmt->type == GOTO_STMT &&
+			    !strcmp(stmt->lvalue, prog->func->labels.a[j])) {
+
+				stmt->jump_to = prog->func->label_locs.a[j];
+			}
+		}
+	}
+
+	for (int i=0; i<prog->stmt_list->size; ++i) {
+		stmt = GET_STMT(prog->stmt_list, i);
+		assert(stmt->bindings == 0 || stmt->type == START_COMPOUND_STMT);
+	}
+
+
+
+	free_vec_str(&prog->func->labels);
+	free_vec_i(&prog->func->label_locs);
+		
 	//functions are only global scope (and default extern)
 	prog->func = NULL;
 	prog->stmt_list = NULL;
-
-	//since you can't have nested function defs, this will still be the current function
-	function* func_ptr = back_void(&prog->functions);
-	//erase all but parameters (first ones in the array)
-	if (func_ptr->variables.size)
-		erase_void(&func_ptr->variables, func_ptr->n_params, func_ptr->variables.size-1);
 }
 
 void function_declarator(parsing_state* p, program_state* prog, var_type vtype)
@@ -566,20 +630,28 @@ void parameter_declaration(parsing_state* p, program_state* prog)
 		parse_error(tok, "in parameter_declaration, ID expected\n");
 		exit(0);
 	}
+	
+	var_value* v = look_up_value(prog, tok->v.id, ONLY_LOCAL);
+	if (v) {
+		parse_error(tok, "in parameter_declaration, redeclaration of symbol\n");
+		exit(0);
+	}
 
 	prog->func->n_params++;
 
-	var_value* var = malloc(sizeof(var_value));;
-	var->type = vtype;
-	variable v;
-	v.cur_scope = 0;
-	v.name = mystrdup(tok->v.id);
+	//parameters aren't freed from the symbol table till exit
+	//they need storage to assign to from the caller's scope in
+	//execute_expr_list
+	active_binding* var = malloc(sizeof(active_binding));;
+	var->val.type = vtype;
+	symbol s;
+	s.cur_parent = 0;
+	s.name = mystrdup(tok->v.id);
 
-	push_void(&prog->func->variables, &v);
-	variable* tmp = back_void(&prog->func->variables);
+	push_void(&prog->func->symbols, &s);
+	symbol* tmp = back_void(&prog->func->symbols);
 	INIT_LIST_HEAD(&tmp->head);
 	list_add(&var->list, &tmp->head);
-	tmp->cur_scope++;
 }
 
 
@@ -612,7 +684,8 @@ var_type declaration_specifier(parsing_state* p, program_state* prog, int match)
 	case VOID:
 		type = VOID_TYPE;
 		break;
-	case UNKNOWN:
+
+	default:
 		if (match) {
 			parse_error(tok, "in declaration_specifier, INT_TYPE expected\n");
 			exit(0);
@@ -660,35 +733,42 @@ void initialized_declarator(parsing_state* p, program_state* prog, var_type v_ty
 	//no statements are made for global variables and they can only
 	//have constant expressions
 	if (prog->func) { 
-		variable* check = look_up_variable(prog, tok->v.id);
+		symbol* check = look_up_symbol(prog, tok->v.id);
 		//TODO this does not yet handle hiding except function_level from global
-		if (check && check->cur_scope == prog->cur_scope) {
+		if (check && check->cur_parent == prog->cur_parent) {
 			//TODO implement overload classes check here for whether it's actually ilegal see page 78
 			parse_error(NULL, "in initialized_declarator, redeclaration of %s\n", tok->v.id);
 			exit(0);
 		}
 
-		var_value* val = malloc(sizeof(var_value));
-		val->type = v_type;
+		active_binding* val = malloc(sizeof(active_binding));
+		val->val.type = v_type;
+		val->parent = prog->cur_parent;
 
 		if (!check) {
-			variable v;
-			v.name = mystrdup(tok->v.id);
-			v.cur_scope = 0;
-			push_void(&prog->func->variables, &v);
+			symbol s;
+			s.name = mystrdup(tok->v.id);
+			push_void(&prog->func->symbols, &s);
 		}
-		variable* tmp = (check) ? check : back_void(&prog->func->variables);
+		symbol* tmp = (check) ? check : back_void(&prog->func->symbols);
 		if (!check)
 			INIT_LIST_HEAD(&tmp->head);
 
 		list_add(&val->list, &tmp->head);
-		tmp->cur_scope++;
-
+		tmp->cur_parent = prog->cur_parent;
+		
 		statement decl_stmt;
 		memset(&decl_stmt, 0, sizeof(statement));
 		decl_stmt.type = DECL_STMT;
 		decl_stmt.vtype = v_type;
 		decl_stmt.lvalue = mystrdup(tok->v.id);
+		decl_stmt.parent = prog->cur_parent;
+		
+		binding b;
+		b.name = mystrdup(tmp->name);
+		b.vtype = v_type;
+		b.decl_stmt = prog->stmt_list->size;
+		push_void(prog->bindings, &b);
 
 		push_void(prog->stmt_list, &decl_stmt);
 		
@@ -727,24 +807,50 @@ void initialized_declarator(parsing_state* p, program_state* prog, var_type v_ty
 		}
 		
 	}
-	
 }
 
 void compound_statement(parsing_state* p, program_state* prog)
 {
 	token_value* tok = get_token(p); //should always be LBRACE
 
-	vector_str scope_vars;
-	vec_str(&scope_vars, 0, 20);
 
-	prog->cur_scope++;
+	statement start, end;
+	memset(&start, 0, sizeof(statement));
+	memset(&end, 0, sizeof(statement));
+	start.type = START_COMPOUND_STMT;
+	end.type = END_COMPOUND_STMT;
+
+	//set parent to current scope which will be -1 if it's the start of a function definition
+	//and it'll be the first statement (index 0).  if it's not then a containing compound statement
+	//will change it in the loop below
+	start.parent = prog->cur_parent;
+
+
+	vector_void* old_bindings = prog->bindings;
+	int old_parent = prog->cur_parent;
+
+	start.bindings = vec_void_heap(0, 20, sizeof(binding), free_binding, NULL);
+	prog->bindings = start.bindings;
+
+	end.parent = prog->stmt_list->size;
+	push_void(prog->stmt_list, &start);
+
+	prog->cur_parent = end.parent;
 
 	declaration_or_statement_list(p, prog);
 
-	pop_scope(prog, &scope_vars);
-	free_vec_str(&scope_vars);
+	push_void(prog->stmt_list, &end);
 
-	prog->cur_scope--;
+	prog->bindings = old_bindings;
+	prog->cur_parent = old_parent;
+
+
+	//TODO more efficient way to do this
+	binding* b;
+	for (int i=0; i<start.bindings->size; ++i) {
+		b = GET_BINDING(start.bindings, i);
+		remove_binding(prog, b->name);
+	}
 
 	tok = get_token(p);
 	if (tok->type != RBRACE) {
@@ -781,7 +887,10 @@ void statement_rule(parsing_state* p, program_state* prog)
 	switch (peek_token(p, 0)->type) {
 	case ID:
 		//could be label
-		expression_stmt(p, prog);
+		if (peek_token(p, 1)->type != COLON)
+			expression_stmt(p, prog);
+		else
+			labeled_stmt(p, prog);
 		break;
 
 	case WHILE:
@@ -797,17 +906,7 @@ void statement_rule(parsing_state* p, program_state* prog)
 		break;
 
 	case LBRACE:
-	{
-		statement start, end;
-		memset(&start, 0, sizeof(statement));
-		memset(&end, 0, sizeof(statement));
-		start.type = START_COMPOUND_STMT;
-		end.type = END_COMPOUND_STMT;
-
-		push_void(prog->stmt_list, &start);
 		compound_statement(p, prog);
-		push_void(prog->stmt_list, &end);
-	}
 		break;
 
 	case GOTO:
@@ -816,6 +915,17 @@ void statement_rule(parsing_state* p, program_state* prog)
 
 	case RETURN:
 		return_stmt(p, prog);
+		break;
+
+	case SEMICOLON:
+	{
+		get_token(p); //eat semicolon
+		statement null_stmt;
+		memset(&null_stmt, 0, sizeof(statement));
+		null_stmt.type = NULL_STMT;
+		null_stmt.parent = prog->cur_parent;
+		push_void(prog->stmt_list, &null_stmt);
+	}
 		break;
 
 	default:
@@ -827,10 +937,39 @@ void statement_rule(parsing_state* p, program_state* prog)
 void goto_stmt(parsing_state* p, program_state* prog)
 {
 	token_value* tok;
+	get_token(p); //get 'goto'
+
+	statement a_goto;
+	memset(&a_goto, 0, sizeof(statement));
+	a_goto.type = GOTO_STMT;
+	a_goto.parent = prog->cur_parent;
 
 	tok = get_token(p);
+	if (tok->type != ID) {
+		parse_error(tok, "in goto_stmt, expected ID (for label)\n");
+		exit(0);
+	}
+	
+	a_goto.lvalue = mystrdup(tok->v.id);
 
-	//label? number?
+	tok = get_token(p);
+	if (tok->type != SEMICOLON) {
+		parse_error(tok, "in goto_stmt, expected SEMICOLON\n");
+		exit(0);
+	}
+		
+	push_void(prog->stmt_list, &a_goto); //jump to after else statement
+}
+
+void labeled_stmt(parsing_state* p, program_state* prog)
+{
+	token_value* tok = get_token(p);
+	get_token(p); //get ':'
+
+	push_str(&prog->func->labels, tok->v.id);
+	push_i(&prog->func->label_locs, prog->stmt_list->size);
+
+	statement_rule(p, prog);
 }
 
 void return_stmt(parsing_state* p, program_state* prog)
@@ -839,6 +978,7 @@ void return_stmt(parsing_state* p, program_state* prog)
 	statement ret_stmt;
 	memset(&ret_stmt, 0, sizeof(statement));
 
+	ret_stmt.parent = prog->cur_parent;
 	ret_stmt.type = RETURN_STMT;
 
 	if (peek_token(p, 0)->type != SEMICOLON) {
@@ -863,6 +1003,7 @@ void expression_stmt(parsing_state* p, program_state* prog)
 	statement an_expr;
 	memset(&an_expr, 0, sizeof(statement));
 
+	an_expr.parent = prog->cur_parent;
 	an_expr.exp = make_expression(prog);
 	an_expr.type = EXPR_STMT;
 
@@ -1247,6 +1388,7 @@ void if_stmt(parsing_state* p, program_state* prog)
 	statement an_if;
 	memset(&an_if, 0, sizeof(statement));
 	an_if.type = IF_STMT;
+	an_if.parent = prog->cur_parent;
 
 	an_if.exp = make_expression(prog);
 
@@ -1279,6 +1421,7 @@ void if_stmt(parsing_state* p, program_state* prog)
 		statement a_goto;
 		memset(&a_goto, 0, sizeof(statement));
 		a_goto.type = GOTO_STMT;
+		a_goto.parent = prog->cur_parent;
 		size_t goto_loc = prog->stmt_list->size;
 		push_void(prog->stmt_list, &a_goto); //jump to after else statement
 	
@@ -1306,6 +1449,7 @@ void print_stmt(parsing_state* p, program_state* prog)
 	statement a_print;
 	memset(&a_print, 0, sizeof(statement));
 	a_print.type = PRINT_STMT;
+	a_print.parent = prog->cur_parent;
 
 	a_print.lvalue = mystrdup(tok->v.id);
 	
@@ -1327,6 +1471,7 @@ void while_stmt(parsing_state* p, program_state* prog)
 	statement a_while;
 	memset(&a_while, 0, sizeof(statement));
 	a_while.type = WHILE_STMT;
+	a_while.parent = prog->cur_parent;
 
 	a_while.exp = make_expression(prog);
 
@@ -1352,6 +1497,7 @@ void while_stmt(parsing_state* p, program_state* prog)
 	statement a_goto;
 	memset(&a_goto, 0, sizeof(statement));
 	a_goto.type = GOTO_STMT;
+	a_goto.parent = prog->cur_parent;
 	a_goto.jump_to = while_loc;
 	push_void(prog->stmt_list, &a_goto);
 

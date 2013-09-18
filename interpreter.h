@@ -17,11 +17,18 @@ int execute_expr(program_state* prog, unsigned int expr_loc);
 void execute_expr_list(program_state* prog, function* callee, unsigned int expr_loc);
 
 
-void add_variable(program_state* prog, char* var, var_type vtype);
-void pop_scope(program_state* prog, vector_str* scope_vars);
+void add_binding(program_state* prog, char* name, var_type vtype);
+void remove_binding(program_state* prog, char* name);
+void clear_bindings(program_state* prog);
+void pop_scope(program_state* prog);
+int is_ancestor(program_state* prog, int parent, int child);
+void apply_scope(program_state* prog, int jump_to, int child, int parent);
+void remove_scope(program_state* prog, int jump_to, int child, int parent);
+int find_lowest_common_ancestor(program_state* prog, int parent1, int parent2);
 
 
-variable* look_up_variable(program_state* prog, const char* var);
+
+symbol* look_up_symbol(program_state* prog, const char* var);
 var_value* look_up_value(program_state* prog, const char* var, int search);
 unsigned int look_up_loc(program_state* prog, const char* var);
 

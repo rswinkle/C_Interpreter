@@ -44,12 +44,13 @@ FLOAT_LITERAL	parser.h	/^	INT_LITERAL, FLOAT_LITERAL, CHAR_LITERAL, STR_LITERAL,
 FLOAT_TYPE	parser.h	/^	FLOAT_TYPE,$/;"	e	enum:__anon2
 FUNCTION_TYPE	parser.h	/^	FUNCTION_TYPE,$/;"	e	enum:__anon2
 FUNC_CALL	parser.h	/^	LABEL, DECLARATION, EXP, EXPR_LIST, FUNC_CALL$/;"	e	enum:__anon1
+GET_BINDING	parser.h	21;"	d
 GET_EXPRESSION	parser.h	19;"	d
 GET_FUNCTION	parser.h	18;"	d
 GET_STMT	parser.h	16;"	d
+GET_SYMBOL	parser.h	20;"	d
 GET_TOKEN_VAL	parser.h	17;"	d
-GET_VARIABLE	parser.h	20;"	d
-GET_VAR_VALUE	parser.h	87;"	d
+GET_VAR_VALUE	parser.h	88;"	d
 GET_VOID	cvector.h	135;"	d
 GOTO	parser.h	/^	DO, WHILE, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,$/;"	e	enum:__anon1
 GOTO_STMT	parser.h	/^	NULL_STMT = 0, WHILE_STMT, PRINT_STMT, EXPR_STMT, IF_STMT, GOTO_STMT,$/;"	e	enum:__anon5
@@ -59,7 +60,7 @@ ID	parser.h	/^	ID,$/;"	e	enum:__anon1
 IF	parser.h	/^	DO, WHILE, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,$/;"	e	enum:__anon1
 IF_STMT	parser.h	/^	NULL_STMT = 0, WHILE_STMT, PRINT_STMT, EXPR_STMT, IF_STMT, GOTO_STMT,$/;"	e	enum:__anon5
 INIT_LIST_HEAD	clist.h	/^static inline void INIT_LIST_HEAD(list_head *list)$/;"	f	signature:(list_head *list)
-INIT_STATEMENT	parser.h	137;"	d
+INIT_STATEMENT	parser.h	150;"	d
 INT	parser.h	/^	INT, SHORT, LONG, FLOAT, DOUBLE, CHAR, VOID, SIGNED, UNSIGNED,$/;"	e	enum:__anon1
 INTERPRETER_H	interpreter.h	2;"	d
 INT_LITERAL	parser.h	/^	INT_LITERAL, FLOAT_LITERAL, CHAR_LITERAL, STR_LITERAL,$/;"	e	enum:__anon1
@@ -70,8 +71,9 @@ LBRACKET	parser.h	/^	EQUAL='=', COMMA=',', LBRACKET='[', RBRACKET=']', LBRACE='{
 LESS	parser.h	/^	EQUALEQUAL, GREATER, GTEQ, LESS, LTEQ, NOTEQUAL,$/;"	e	enum:__anon1
 LIST_HEAD	clist.h	13;"	d
 LIST_HEAD_INIT	clist.h	11;"	d
-LOGICAL_AND	parser.h	/^	LOGICAL_OR, LOGICAL_AND,$/;"	e	enum:__anon1
-LOGICAL_OR	parser.h	/^	LOGICAL_OR, LOGICAL_AND,$/;"	e	enum:__anon1
+LOGICAL_AND	parser.h	/^	LOGICAL_OR, LOGICAL_AND, LOGICAL_NEGATION,$/;"	e	enum:__anon1
+LOGICAL_NEGATION	parser.h	/^	LOGICAL_OR, LOGICAL_AND, LOGICAL_NEGATION,$/;"	e	enum:__anon1
+LOGICAL_OR	parser.h	/^	LOGICAL_OR, LOGICAL_AND, LOGICAL_NEGATION,$/;"	e	enum:__anon1
 LONG	parser.h	/^	INT, SHORT, LONG, FLOAT, DOUBLE, CHAR, VOID, SIGNED, UNSIGNED,$/;"	e	enum:__anon1
 LPAREN	parser.h	/^	MOD='%', LPAREN='(', RPAREN=')', MULT='*', ADD='+', SUB='-', DIV='\/', COLON=':', SEMICOLON=';',$/;"	e	enum:__anon1
 LTEQ	parser.h	/^	EQUALEQUAL, GREATER, GTEQ, LESS, LTEQ, NOTEQUAL,$/;"	e	enum:__anon1
@@ -104,6 +106,8 @@ SORT_COLUMN_INDEX	stats/sortable.js	/^var SORT_COLUMN_INDEX;$/;"	v
 SPACE_SET	c_utils.h	75;"	d
 SPACE_SET_NO_NEWLINE	c_utils.h	76;"	d
 START_COMPOUND_STMT	parser.h	/^	DECL_STMT, RETURN_STMT, START_COMPOUND_STMT, END_COMPOUND_STMT$/;"	e	enum:__anon5
+STDERR	vector_binding.c	5;"	d	file:
+STDERR	vector_template.c	5;"	d	file:
 STR_LITERAL	parser.h	/^	INT_LITERAL, FLOAT_LITERAL, CHAR_LITERAL, STR_LITERAL,$/;"	e	enum:__anon1
 SUB	parser.h	/^	MOD='%', LPAREN='(', RPAREN=')', MULT='*', ADD='+', SUB='-', DIV='\/', COLON=':', SEMICOLON=';',$/;"	e	enum:__anon1
 SUBEQUAL	parser.h	/^	ADDEQUAL, SUBEQUAL, MULTEQUAL, DIVEQUAL, MODEQUAL,$/;"	e	enum:__anon1
@@ -113,6 +117,10 @@ UCHAR_TYPE	parser.h	/^	UCHAR_TYPE,$/;"	e	enum:__anon2
 UNKNOWN	parser.h	/^	UNKNOWN = 0,$/;"	e	enum:__anon2
 UNSIGNED	parser.h	/^	INT, SHORT, LONG, FLOAT, DOUBLE, CHAR, VOID, SIGNED, UNSIGNED,$/;"	e	enum:__anon1
 USHORT_TYPE	parser.h	/^	USHORT_TYPE,$/;"	e	enum:__anon2
+VECTOR_TYPE_H	vector_template.h	2;"	d
+VECTOR_TYPE_SZ	vector_template.c	/^size_t VECTOR_TYPE_SZ = 50;$/;"	v
+VECTOR_binding_H	vector_binding.h	2;"	d
+VECTOR_binding_SZ	vector_binding.c	/^size_t VECTOR_binding_SZ = 50;$/;"	v
 VEC_D_ALLOCATOR	cvector.h	422;"	d
 VEC_D_START_SZ	cvector.h	/^size_t VEC_D_START_SZ = 50;$/;"	v
 VEC_I_ALLOCATOR	cvector.h	172;"	d
@@ -120,7 +128,9 @@ VEC_I_START_SZ	cvector.h	/^size_t VEC_I_START_SZ = 50;$/;"	v
 VEC_START_SZ	cvector.h	/^size_t VEC_START_SZ = 20;$/;"	v
 VEC_STR_ALLOCATOR	cvector.h	671;"	d
 VEC_STR_START_SZ	cvector.h	/^size_t VEC_STR_START_SZ = 20;$/;"	v
+VEC_TYPE_ALLOCATOR	vector_template.c	7;"	d	file:
 VEC_VOID_ALLOCATOR	cvector.h	991;"	d
+VEC_binding_ALLOCATOR	vector_binding.c	7;"	d	file:
 VOID	parser.h	/^	INT, SHORT, LONG, FLOAT, DOUBLE, CHAR, VOID, SIGNED, UNSIGNED,$/;"	e	enum:__anon1
 VOID_TYPE	parser.h	/^	VOID_TYPE$/;"	e	enum:__anon2
 WHILE	parser.h	/^	DO, WHILE, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,$/;"	e	enum:__anon1
@@ -134,19 +144,25 @@ a	cvector.h	/^	int* a;            \/**< Array. *\/$/;"	m	struct:vector_i	access:
 a	cvector.h	/^	u8* a;                 \/**< Array. *\/$/;"	m	struct:vector_void	access:public
 a	tests/declarations.c	/^int a=0, b=0, c=10;$/;"	v
 a	tests/functions.c	/^int a = 1;$/;"	v
+a	tests/ifelse.c	/^int a = 1;$/;"	v
 a	tests/scope.c	/^int a = 10 % 3, b = 13 * 12 + 2, c = 10;$/;"	v
+a	vector_binding.h	/^	binding* a;           \/**< Array. *\/$/;"	m	struct:vector_binding	access:public
+a	vector_template.h	/^	TYPE* a;           \/**< Array. *\/$/;"	m	struct:vector_TYPE	access:public
 addEvent	stats/sortable.js	/^function addEvent(elm, evType, fn, useCapture)$/;"	f
+add_binding	interpreter.c	/^void add_binding(program_state* prog, char* name, var_type vtype)$/;"	f	signature:(program_state* prog, char* name, var_type vtype)
+add_binding	interpreter.h	/^void add_binding(program_state* prog, char* name, var_type vtype);$/;"	p	signature:(program_state* prog, char* name, var_type vtype)
+add_binding	parser.h	/^void add_binding(program_state* prog, char* name, var_type vtype);$/;"	p	signature:(program_state* prog, char* name, var_type vtype)
 add_expr	parser.c	/^void add_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)$/;"	f	signature:(parsing_state* p, program_state* prog, unsigned int expr_loc)
 add_expr	parser.h	/^void add_expr(parsing_state* p, program_state* prog, unsigned int exp);$/;"	p	signature:(parsing_state* p, program_state* prog, unsigned int exp)
-add_variable	interpreter.c	/^void add_variable(program_state* prog, char* name, var_type vtype)$/;"	f	signature:(program_state* prog, char* name, var_type vtype)
-add_variable	interpreter.h	/^void add_variable(program_state* prog, char* var, var_type vtype);$/;"	p	signature:(program_state* prog, char* var, var_type vtype)
-add_variable	parser.h	/^void add_variable(program_state* prog, char* var, var_type vtype);$/;"	p	signature:(program_state* prog, char* var, var_type vtype)
 all	c_utils.c	/^int all(c_array* array, int (*is_true)(const void*))$/;"	f	signature:(c_array* array, int (*is_true)(const void*))
 all	c_utils.h	/^int all(c_array* array, int (*is_true)(const void*));$/;"	p	signature:(c_array* array, int (*is_true)(const void*))
 alternate	stats/sortable.js	/^function alternate(table) {$/;"	f
 alternate_row_colors	stats/sortable.js	/^var alternate_row_colors = true;$/;"	v
 any	c_utils.c	/^int any(c_array* array, int (*is_true)(const void*))$/;"	f	signature:(c_array* array, int (*is_true)(const void*))
 any	c_utils.h	/^int any(c_array* array, int (*is_true)(const void*));$/;"	p	signature:(c_array* array, int (*is_true)(const void*))
+apply_scope	interpreter.c	/^void apply_scope(program_state* prog, int jump_to, int child, int parent)$/;"	f	signature:(program_state* prog, int jump_to, int child, int parent)
+apply_scope	interpreter.h	/^void apply_scope(program_state* prog, int jump_to, int child, int parent);$/;"	p	signature:(program_state* prog, int jump_to, int child, int parent)
+apply_scope	parser.h	/^void apply_scope(program_state* prog, int jump_to, int child, int parent);$/;"	p	signature:(program_state* prog, int jump_to, int child, int parent)
 are_equal_char	c_utils.c	/^int are_equal_char(const void* a, const void* b)$/;"	f	signature:(const void* a, const void* b)
 are_equal_char	c_utils.h	/^int are_equal_char(const void* a, const void* b);$/;"	p	signature:(const void* a, const void* b)
 are_equal_double	c_utils.c	/^int are_equal_double(const void* a, const void* b)$/;"	f	signature:(const void* a, const void* b)
@@ -174,6 +190,10 @@ author_of_month	stats/authors.html	/^<h2><a href="#author_of_month" name="author
 author_of_year	stats/authors.html	/^<h2><a href="#author_of_year" name="author_of_year">Author of Year<\/a><\/h2>$/;"	a
 b	tests/declarations.c	/^int a=0, b=0, c=10;$/;"	v
 b	tests/scope.c	/^int a = 10 % 3, b = 13 * 12 + 2, c = 10;$/;"	v
+back_TYPE	vector_template.c	/^TYPE* back_TYPE(vector_TYPE* vec)$/;"	f	signature:(vector_TYPE* vec)
+back_TYPE	vector_template.h	/^TYPE* back_TYPE(vector_TYPE* vec);$/;"	p	signature:(vector_TYPE* vec)
+back_binding	vector_binding.c	/^binding* back_binding(vector_binding* vec)$/;"	f	signature:(vector_binding* vec)
+back_binding	vector_binding.h	/^binding* back_binding(vector_binding* vec);$/;"	p	signature:(vector_binding* vec)
 back_d	cvector.h	/^double* back_d(vector_d* vec)$/;"	f	signature:(vector_d* vec)
 back_d	cvector.h	/^double* back_d(vector_d* vec);$/;"	p	signature:(vector_d* vec)
 back_i	cvector.h	/^int* back_i(vector_i* vec)$/;"	f	signature:(vector_i* vec)
@@ -184,6 +204,12 @@ back_void	cvector.h	/^void* back_void(vector_void* vec)$/;"	f	signature:(vector_
 back_void	cvector.h	/^void* back_void(vector_void* vec);$/;"	p	signature:(vector_void* vec)
 basic_search	c_utils.c	/^void basic_search(c_array haystack, c_array needle)$/;"	f	signature:(c_array haystack, c_array needle)
 basic_search	c_utils.h	/^void basic_search(c_array haystack, c_array needle);$/;"	p	signature:(c_array haystack, c_array needle)
+binding	parser.h	/^typedef struct binding$/;"	s
+binding	parser.h	/^} binding;$/;"	t	typeref:struct:binding
+binding::decl_stmt	parser.h	/^	int decl_stmt;$/;"	m	struct:binding	access:public
+binding::name	parser.h	/^	char* name;$/;"	m	struct:binding	access:public
+binding::vtype	parser.h	/^	var_type vtype;$/;"	m	struct:binding	access:public
+bindings	parser.h	/^	vector_void* bindings;$/;"	m	struct:statement	access:public
 blah	tests/experimenting.c	/^int blah = 25;$/;"	v
 blah2	tests/experimenting.c	/^int blah2 = 50;$/;"	v
 boyermoore_search	c_utils.c	/^void boyermoore_search(c_array haystack_array, c_array needle_array)$/;"	f	signature:(c_array haystack_array, c_array needle_array)
@@ -197,11 +223,22 @@ c_array	c_utils.h	/^} c_array;$/;"	t	typeref:struct:c_array
 c_array::data	c_utils.h	/^	byte* data;$/;"	m	struct:c_array	access:public
 c_array::elem_size	c_utils.h	/^	size_t elem_size;$/;"	m	struct:c_array	access:public
 c_array::len	c_utils.h	/^	size_t len;$/;"	m	struct:c_array	access:public
+c_out	generate_code.py	/^c_out = cfile_string.replace('TYPE', gen_type);$/;"	v
 capacity	cvector.h	/^	size_t capacity;         \/**< Allocated size of array; always >= size. *\/$/;"	m	struct:vector_void	access:public
 capacity	cvector.h	/^	size_t capacity;   \/**< Allocated size of array; always >= size. *\/$/;"	m	struct:vector_d	access:public
 capacity	cvector.h	/^	size_t capacity;   \/**< Allocated size of array; always >= size. *\/$/;"	m	struct:vector_i	access:public
 capacity	cvector.h	/^	size_t capacity;   \/**< Allocated size of array; always >= size. *\/$/;"	m	struct:vector_str	access:public
+capacity	vector_binding.h	/^	size_t capacity;   \/**< Allocated size of array; always >= size. *\/$/;"	m	struct:vector_binding	access:public
+capacity	vector_template.h	/^	size_t capacity;   \/**< Allocated size of array; always >= size. *\/$/;"	m	struct:vector_TYPE	access:public
+cfile_string	generate_code.py	/^cfile_string = open("vector_template.c").read();$/;"	v
 clean_num	stats/sortable.js	/^function clean_num(str) {$/;"	f
+clear_TYPE	vector_template.c	/^void clear_TYPE(vector_TYPE* vec) { vec->size = 0; }$/;"	f	signature:(vector_TYPE* vec)
+clear_TYPE	vector_template.h	/^void clear_TYPE(vector_TYPE* vec);$/;"	p	signature:(vector_TYPE* vec)
+clear_binding	vector_binding.c	/^void clear_binding(vector_binding* vec) { vec->size = 0; }$/;"	f	signature:(vector_binding* vec)
+clear_binding	vector_binding.h	/^void clear_binding(vector_binding* vec);$/;"	p	signature:(vector_binding* vec)
+clear_bindings	interpreter.c	/^void clear_bindings(program_state* prog, int outer_scope)$/;"	f	signature:(program_state* prog, int outer_scope)
+clear_bindings	interpreter.h	/^void clear_bindings(program_state* prog, int outer_scope);$/;"	p	signature:(program_state* prog, int outer_scope)
+clear_bindings	parser.h	/^void clear_bindings(program_state* prog, int outer_scope);$/;"	p	signature:(program_state* prog, int outer_scope)
 clear_d	cvector.h	/^void clear_d(vector_d* vec) { vec->size = 0; }$/;"	f	signature:(vector_d* vec)
 clear_d	cvector.h	/^void clear_d(vector_d* vec);$/;"	p	signature:(vector_d* vec)
 clear_i	cvector.h	/^void clear_i(vector_i* vec) { vec->size = 0; }$/;"	f	signature:(vector_i* vec)
@@ -251,10 +288,11 @@ copy_expr	parser.c	/^unsigned int copy_expr(program_state* prog, unsigned int ex
 copy_expr	parser.h	/^unsigned int copy_expr(program_state* prog, unsigned int expr_loc);$/;"	p	signature:(program_state* prog, unsigned int expr_loc)
 cumulated_added_lines_of_code_per_author	stats/authors.html	/^<h2><a href="#cumulated_added_lines_of_code_per_author" name="cumulated_added_lines_of_code_per_author">Cumulated Added Lines of Code per Author<\/a><\/h2>$/;"	a
 cur_scope	parser.h	/^	int cur_scope;$/;"	m	struct:program_state	access:public
-cur_scope	parser.h	/^	int cur_scope;$/;"	m	struct:variable	access:public
+cur_scope	parser.h	/^	int cur_scope;$/;"	m	struct:symbol	access:public
 data	c_utils.h	/^	byte* data;$/;"	m	struct:c_array	access:public
 data	clist.h	/^	int data;$/;"	m	struct:int_list	access:public
 day_of_week	stats/activity.html	/^<h2><a href="#day_of_week" name="day_of_week">Day of Week<\/a><\/h2>$/;"	a
+decl_stmt	parser.h	/^	int decl_stmt;$/;"	m	struct:binding	access:public
 declaration	parser.c	/^void declaration(parsing_state* p, program_state* prog)$/;"	f	signature:(parsing_state* p, program_state* prog)
 declaration	parser.h	/^void declaration(parsing_state* p, program_state* prog);$/;"	p	signature:(parsing_state* p, program_state* prog)
 declaration_or_statement	parser.c	/^void declaration_or_statement(parsing_state* p, program_state* prog)$/;"	f	signature:(parsing_state* p, program_state* prog)
@@ -270,6 +308,10 @@ elem_size	c_utils.h	/^	size_t elem_size;$/;"	m	struct:c_array	access:public
 elem_size	cvector.h	/^	size_t elem_size;        \/**< Size in u8s of type stored (sizeof(T) where T is type). *\/$/;"	m	struct:vector_void	access:public
 equality_expr	parser.c	/^void equality_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)$/;"	f	signature:(parsing_state* p, program_state* prog, unsigned int expr_loc)
 equality_expr	parser.h	/^void equality_expr(parsing_state* p, program_state* prog, unsigned int e);$/;"	p	signature:(parsing_state* p, program_state* prog, unsigned int e)
+erase_TYPE	vector_template.c	/^void erase_TYPE(vector_TYPE* vec, size_t start, size_t end)$/;"	f	signature:(vector_TYPE* vec, size_t start, size_t end)
+erase_TYPE	vector_template.h	/^void erase_TYPE(vector_TYPE* vec, size_t start, size_t end);$/;"	p	signature:(vector_TYPE* vec, size_t start, size_t end)
+erase_binding	vector_binding.c	/^void erase_binding(vector_binding* vec, size_t start, size_t end)$/;"	f	signature:(vector_binding* vec, size_t start, size_t end)
+erase_binding	vector_binding.h	/^void erase_binding(vector_binding* vec, size_t start, size_t end);$/;"	p	signature:(vector_binding* vec, size_t start, size_t end)
 erase_d	cvector.h	/^void erase_d(vector_d* vec, size_t start, size_t end)$/;"	f	signature:(vector_d* vec, size_t start, size_t end)
 erase_d	cvector.h	/^void erase_d(vector_d* vec, size_t start, size_t end);$/;"	p	signature:(vector_d* vec, size_t start, size_t end)
 erase_i	cvector.h	/^void erase_i(vector_i* vec, size_t start, size_t end)$/;"	f	signature:(vector_i* vec, size_t start, size_t end)
@@ -299,6 +341,10 @@ expression_list	parser.h	/^void expression_list(parsing_state* p, program_state*
 expression_stmt	parser.c	/^void expression_stmt(parsing_state* p, program_state* prog)$/;"	f	signature:(parsing_state* p, program_state* prog)
 expression_stmt	parser.h	/^void expression_stmt(parsing_state* p, program_state* prog);$/;"	p	signature:(parsing_state* p, program_state* prog)
 expressions	parser.h	/^	vector_void expressions;$/;"	m	struct:program_state	access:public
+extend_TYPE	vector_template.c	/^int extend_TYPE(vector_TYPE* vec, size_t num)$/;"	f	signature:(vector_TYPE* vec, size_t num)
+extend_TYPE	vector_template.h	/^int extend_TYPE(vector_TYPE* vec, size_t num);$/;"	p	signature:(vector_TYPE* vec, size_t num)
+extend_binding	vector_binding.c	/^int extend_binding(vector_binding* vec, size_t num)$/;"	f	signature:(vector_binding* vec, size_t num)
+extend_binding	vector_binding.h	/^int extend_binding(vector_binding* vec, size_t num);$/;"	p	signature:(vector_binding* vec, size_t num)
 extend_d	cvector.h	/^int extend_d(vector_d* vec, size_t num)$/;"	f	signature:(vector_d* vec, size_t num)
 extend_d	cvector.h	/^int extend_d(vector_d* vec, size_t num);$/;"	p	signature:(vector_d* vec, size_t num)
 extend_i	cvector.h	/^int extend_i(vector_i* vec, size_t num)$/;"	f	signature:(vector_i* vec, size_t num)
@@ -320,6 +366,9 @@ file_read	c_utils.c	/^int file_read(FILE* file, c_array* out)$/;"	f	signature:(F
 file_read	c_utils.h	/^int file_read(FILE* file, c_array* out);$/;"	p	signature:(FILE* file, c_array* out)
 file_write	c_utils.c	/^int file_write(FILE* file, c_array* out)$/;"	f	signature:(FILE* file, c_array* out)
 file_write	c_utils.h	/^int file_write(FILE* file, c_array* out);$/;"	p	signature:(FILE* file, c_array* out)
+find_lowest_common_ancestor	interpreter.c	/^int find_lowest_common_ancestor(program_state* prog, int parent1, int parent2)$/;"	f	signature:(program_state* prog, int parent1, int parent2)
+find_lowest_common_ancestor	interpreter.h	/^int find_lowest_common_ancestor(program_state* prog, int parent1, int parent2);$/;"	p	signature:(program_state* prog, int parent1, int parent2)
+find_lowest_common_ancestor	parser.h	/^int find_lowest_common_ancestor(program_state* prog, int parent1, int parent2);$/;"	p	signature:(program_state* prog, int parent1, int parent2)
 fpeek	c_utils.c	/^int fpeek(FILE* input)$/;"	f	signature:(FILE* input)
 fpeek	c_utils.h	/^int fpeek(FILE* input);$/;"	p	signature:(FILE* input)
 freadline	c_utils.c	/^char* freadline(FILE* input)$/;"	f	signature:(FILE* input)
@@ -330,15 +379,25 @@ freadstring	c_utils.c	/^char* freadstring(FILE* input, int delim, size_t max_len
 freadstring	c_utils.h	/^char* freadstring(FILE* input, int delim, size_t max_len);$/;"	p	signature:(FILE* input, int delim, size_t max_len)
 freadstring_into_str	c_utils.c	/^int freadstring_into_str(FILE* input, int delim, char* str, size_t len)$/;"	f	signature:(FILE* input, int delim, char* str, size_t len)
 freadstring_into_str	c_utils.h	/^int freadstring_into_str(FILE* input, int delim, char* str, size_t len);$/;"	p	signature:(FILE* input, int delim, char* str, size_t len)
+free_binding	parser.c	/^void free_binding(void* var)$/;"	f	signature:(void* var)
 free_expression	parser.c	/^void free_expression(void* expr)$/;"	f	signature:(void* expr)
 free_function	parser.c	/^void free_function(void* func)$/;"	f	signature:(void* func)
 free_statement	parser.c	/^void free_statement(void* stmt)$/;"	f	signature:(void* stmt)
 free_statement	parser.h	/^void free_statement(void* stmt);$/;"	p	signature:(void* stmt)
+free_symbol	parser.c	/^void free_symbol(void* var)$/;"	f	signature:(void* var)
 free_token_value	parser.c	/^void free_token_value(void* tok)$/;"	f	signature:(void* tok)
 free_var_list	parser.c	/^void free_var_list(void* l)$/;"	f	signature:(void* l)
+free_var_list	parser.h	/^void free_var_list(void* l);$/;"	p	signature:(void* l)
 free_var_value	parser.c	/^void free_var_value(void* var)$/;"	f	signature:(void* var)
 free_var_value	parser.h	/^void free_var_value(void* var);$/;"	p	signature:(void* var)
-free_variable	parser.c	/^void free_variable(void* var)$/;"	f	signature:(void* var)
+free_vec_TYPE	vector_template.c	/^void free_vec_TYPE(void* vec)$/;"	f	signature:(void* vec)
+free_vec_TYPE	vector_template.h	/^void free_vec_TYPE(void* vec);$/;"	p	signature:(void* vec)
+free_vec_TYPE_heap	vector_template.c	/^void free_vec_TYPE_heap(void* vec)$/;"	f	signature:(void* vec)
+free_vec_TYPE_heap	vector_template.h	/^void free_vec_TYPE_heap(void* vec);$/;"	p	signature:(void* vec)
+free_vec_binding	vector_binding.c	/^void free_vec_binding(void* vec)$/;"	f	signature:(void* vec)
+free_vec_binding	vector_binding.h	/^void free_vec_binding(void* vec);$/;"	p	signature:(void* vec)
+free_vec_binding_heap	vector_binding.c	/^void free_vec_binding_heap(void* vec)$/;"	f	signature:(void* vec)
+free_vec_binding_heap	vector_binding.h	/^void free_vec_binding_heap(void* vec);$/;"	p	signature:(void* vec)
 free_vec_d	cvector.h	/^void free_vec_d(void* vec)$/;"	f	signature:(void* vec)
 free_vec_d	cvector.h	/^void free_vec_d(void* vec);$/;"	p	signature:(void* vec)
 free_vec_d_heap	cvector.h	/^void free_vec_d_heap(void* vec)$/;"	f	signature:(void* vec)
@@ -356,16 +415,18 @@ free_vec_void	cvector.h	/^void free_vec_void(void* vec);$/;"	p	signature:(void* 
 free_vec_void_heap	cvector.h	/^void free_vec_void_heap(void* vec)$/;"	f	signature:(void* vec)
 free_vec_void_heap	cvector.h	/^void free_vec_void_heap(void* vec);$/;"	p	signature:(void* vec)
 func	parser.h	/^	function* func;$/;"	m	struct:program_state	access:public
-func1	tests/functions.c	/^void func1()$/;"	f
+func1	tests/functions.c	/^void func1(void)$/;"	f	signature:(void)
 func2	tests/functions.c	/^void func2(int a, int b, int c)$/;"	f	signature:(int a, int b, int c)
 func_loc	parser.h	/^		unsigned int func_loc; \/\/change to direct pointer?$/;"	m	union:var_value::__anon3	access:public
 function	parser.h	/^typedef struct function$/;"	s
 function	parser.h	/^} function;$/;"	t	typeref:struct:function
+function::label_locs	parser.h	/^	vector_i label_locs;$/;"	m	struct:function	access:public
+function::labels	parser.h	/^	vector_str labels;$/;"	m	struct:function	access:public
 function::n_params	parser.h	/^	int n_params;$/;"	m	struct:function	access:public
 function::pc	parser.h	/^	size_t pc;$/;"	m	struct:function	access:public
 function::ret_val	parser.h	/^	var_value ret_val;$/;"	m	struct:function	access:public
 function::stmt_list	parser.h	/^	vector_void stmt_list;$/;"	m	struct:function	access:public
-function::variables	parser.h	/^	vector_void variables;$/;"	m	struct:function	access:public
+function::symbols	parser.h	/^	vector_void symbols;$/;"	m	struct:function	access:public
 function_call	parser.c	/^void function_call(parsing_state* p, program_state* prog, unsigned int expr_loc)$/;"	f	signature:(parsing_state* p, program_state* prog, unsigned int expr_loc)
 function_call	parser.h	/^void function_call(parsing_state* p, program_state* prog, unsigned int expr_loc);$/;"	p	signature:(parsing_state* p, program_state* prog, unsigned int expr_loc)
 function_declarator	parser.c	/^void function_declarator(parsing_state* p, program_state* prog, var_type vtype)$/;"	f	signature:(parsing_state* p, program_state* prog, var_type vtype)
@@ -373,13 +434,16 @@ function_declarator	parser.h	/^void function_declarator(parsing_state* p, progra
 function_definition	parser.c	/^void function_definition(parsing_state* p, program_state* prog)$/;"	f	signature:(parsing_state* p, program_state* prog)
 function_definition	parser.h	/^void function_definition(parsing_state* p, program_state* prog);$/;"	p	signature:(parsing_state* p, program_state* prog)
 functions	parser.h	/^	vector_void functions;$/;"	m	struct:program_state	access:public
+gen_type	generate_code.py	/^gen_type = sys.argv[1];$/;"	v
 getParent	stats/sortable.js	/^function getParent(el, pTagName) {$/;"	f
 get_token	parser.c	/^token_value* get_token(parsing_state* p)$/;"	f	signature:(parsing_state* p)
 global_values	parser.h	/^	vector_void global_values;$/;"	m	struct:program_state	access:public
 global_variables	parser.h	/^	vector_str global_variables;$/;"	m	struct:program_state	access:public
 goto_stmt	parser.c	/^void goto_stmt(parsing_state* p, program_state* prog)$/;"	f	signature:(parsing_state* p, program_state* prog)
 goto_stmt	parser.h	/^void goto_stmt(parsing_state* p, program_state* prog);$/;"	p	signature:(parsing_state* p, program_state* prog)
-head	parser.h	/^	list_head head;$/;"	m	struct:variable	access:public
+h_out	generate_code.py	/^h_out = hfile_string.replace('TYPE', gen_type);$/;"	v
+head	parser.h	/^	list_head head;$/;"	m	struct:symbol	access:public
+hfile_string	generate_code.py	/^hfile_string = open("vector_template.h").read();$/;"	v
 hour_of_day	stats/activity.html	/^<h2><a href="#hour_of_day" name="hour_of_day">Hour of Day<\/a><\/h2>$/;"	a
 hour_of_week	stats/activity.html	/^<h2><a href="#hour_of_week" name="hour_of_week">Hour of Week<\/a><\/h2>$/;"	a
 i	parser.h	/^	unsigned i;$/;"	m	struct:parsing_state	access:public
@@ -394,6 +458,14 @@ image_up	stats/sortable.js	/^var image_up = "arrow-up.gif";$/;"	v
 init_c_array	c_utils.c	/^c_array init_c_array(byte* data, size_t elem_size, size_t len)$/;"	f	signature:(byte* data, size_t elem_size, size_t len)
 init_c_array	c_utils.h	/^c_array init_c_array(byte* data, size_t elem_size, size_t len);$/;"	p	signature:(byte* data, size_t elem_size, size_t len)
 init_function	parser.c	/^void init_function(void* to, void* from)$/;"	f	signature:(void* to, void* from)
+init_vec_TYPE	vector_template.c	/^int init_vec_TYPE(vector_TYPE* vec, TYPE* vals, size_t num)$/;"	f	signature:(vector_TYPE* vec, TYPE* vals, size_t num)
+init_vec_TYPE	vector_template.h	/^int init_vec_TYPE(vector_TYPE* vec, TYPE* vals, size_t num);$/;"	p	signature:(vector_TYPE* vec, TYPE* vals, size_t num)
+init_vec_TYPE_heap	vector_template.c	/^vector_TYPE* init_vec_TYPE_heap(TYPE* vals, size_t num)$/;"	f	signature:(TYPE* vals, size_t num)
+init_vec_TYPE_heap	vector_template.h	/^vector_TYPE* init_vec_TYPE_heap(TYPE* vals, size_t num);$/;"	p	signature:(TYPE* vals, size_t num)
+init_vec_binding	vector_binding.c	/^int init_vec_binding(vector_binding* vec, binding* vals, size_t num)$/;"	f	signature:(vector_binding* vec, binding* vals, size_t num)
+init_vec_binding	vector_binding.h	/^int init_vec_binding(vector_binding* vec, binding* vals, size_t num);$/;"	p	signature:(vector_binding* vec, binding* vals, size_t num)
+init_vec_binding_heap	vector_binding.c	/^vector_binding* init_vec_binding_heap(binding* vals, size_t num)$/;"	f	signature:(binding* vals, size_t num)
+init_vec_binding_heap	vector_binding.h	/^vector_binding* init_vec_binding_heap(binding* vals, size_t num);$/;"	p	signature:(binding* vals, size_t num)
 init_vec_d	cvector.h	/^int init_vec_d(vector_d* vec, double* vals, size_t num)$/;"	f	signature:(vector_d* vec, double* vals, size_t num)
 init_vec_d	cvector.h	/^int init_vec_d(vector_d* vec, double* vals, size_t num);$/;"	p	signature:(vector_d* vec, double* vals, size_t num)
 init_vec_d_heap	cvector.h	/^vector_d* init_vec_d_heap(double* vals, size_t num)$/;"	f	signature:(double* vals, size_t num)
@@ -414,6 +486,12 @@ initialized_declarator	parser.c	/^void initialized_declarator(parsing_state* p, 
 initialized_declarator	parser.h	/^void initialized_declarator(parsing_state* p, program_state* prog, var_type v_type);$/;"	p	signature:(parsing_state* p, program_state* prog, var_type v_type)
 initialized_declarator_list	parser.c	/^void initialized_declarator_list(parsing_state* p, program_state* prog, var_type v_type)$/;"	f	signature:(parsing_state* p, program_state* prog, var_type v_type)
 initialized_declarator_list	parser.h	/^void initialized_declarator_list(parsing_state* p, program_state* prog, var_type v_type);$/;"	p	signature:(parsing_state* p, program_state* prog, var_type v_type)
+insert_TYPE	vector_template.c	/^int insert_TYPE(vector_TYPE* vec, size_t i, TYPE a)$/;"	f	signature:(vector_TYPE* vec, size_t i, TYPE a)
+insert_TYPE	vector_template.h	/^int insert_TYPE(vector_TYPE* vec, size_t i, TYPE a);$/;"	p	signature:(vector_TYPE* vec, size_t i, TYPE a)
+insert_array_TYPE	vector_template.c	/^int insert_array_TYPE(vector_TYPE* vec, size_t i, TYPE* a, size_t num)$/;"	f	signature:(vector_TYPE* vec, size_t i, TYPE* a, size_t num)
+insert_array_TYPE	vector_template.h	/^int insert_array_TYPE(vector_TYPE* vec, size_t i, TYPE* a, size_t num);$/;"	p	signature:(vector_TYPE* vec, size_t i, TYPE* a, size_t num)
+insert_array_binding	vector_binding.c	/^int insert_array_binding(vector_binding* vec, size_t i, binding* a, size_t num)$/;"	f	signature:(vector_binding* vec, size_t i, binding* a, size_t num)
+insert_array_binding	vector_binding.h	/^int insert_array_binding(vector_binding* vec, size_t i, binding* a, size_t num);$/;"	p	signature:(vector_binding* vec, size_t i, binding* a, size_t num)
 insert_array_d	cvector.h	/^int insert_array_d(vector_d* vec, size_t i, double* a, size_t num)$/;"	f	signature:(vector_d* vec, size_t i, double* a, size_t num)
 insert_array_d	cvector.h	/^int insert_array_d(vector_d* vec, size_t i, double* a, size_t num);$/;"	p	signature:(vector_d* vec, size_t i, double* a, size_t num)
 insert_array_i	cvector.h	/^int insert_array_i(vector_i* vec, size_t i, int* a, size_t num)$/;"	f	signature:(vector_i* vec, size_t i, int* a, size_t num)
@@ -422,6 +500,8 @@ insert_array_str	cvector.h	/^int insert_array_str(vector_str* vec, size_t i, cha
 insert_array_str	cvector.h	/^int insert_array_str(vector_str* vec, size_t i, char** a, size_t num)$/;"	f	signature:(vector_str* vec, size_t i, char** a, size_t num)
 insert_array_void	cvector.h	/^int insert_array_void(vector_void* vec, size_t i, void* a, size_t num)$/;"	f	signature:(vector_void* vec, size_t i, void* a, size_t num)
 insert_array_void	cvector.h	/^int insert_array_void(vector_void* vec, size_t i, void* a, size_t num);$/;"	p	signature:(vector_void* vec, size_t i, void* a, size_t num)
+insert_binding	vector_binding.c	/^int insert_binding(vector_binding* vec, size_t i, binding a)$/;"	f	signature:(vector_binding* vec, size_t i, binding a)
+insert_binding	vector_binding.h	/^int insert_binding(vector_binding* vec, size_t i, binding a);$/;"	p	signature:(vector_binding* vec, size_t i, binding a)
 insert_d	cvector.h	/^int insert_d(vector_d* vec, size_t i, double a)$/;"	f	signature:(vector_d* vec, size_t i, double a)
 insert_d	cvector.h	/^int insert_d(vector_d* vec, size_t i, double a);$/;"	p	signature:(vector_d* vec, size_t i, double a)
 insert_i	cvector.h	/^int insert_i(vector_i* vec, size_t i, int a)$/;"	f	signature:(vector_i* vec, size_t i, int a)
@@ -436,9 +516,16 @@ int_list::data	clist.h	/^	int data;$/;"	m	struct:int_list	access:public
 int_list::list	clist.h	/^	list_head list;$/;"	m	struct:int_list	access:public
 int_val	parser.h	/^		int int_val;$/;"	m	union:var_value::__anon3	access:public
 integer	parser.h	/^		int integer;$/;"	m	union:token_value::__anon4	access:public
+is_ancestor	interpreter.c	/^int is_ancestor(program_state* prog, int parent, int child)$/;"	f	signature:(program_state* prog, int parent, int child)
+is_ancestor	interpreter.h	/^int is_ancestor(program_state* prog, int parent, int child);$/;"	p	signature:(program_state* prog, int parent, int child)
+is_ancestor	parser.h	/^int is_ancestor(program_state* prog, int parent, int child);$/;"	p	signature:(program_state* prog, int parent, int child)
 is_any	c_utils.c	/^int is_any(c_array* array, const void* the_one, int (*are_equal)(const void*, const void*))$/;"	f	signature:(c_array* array, const void* the_one, int (*are_equal)(const void*, const void*))
 is_any	c_utils.h	/^int is_any(c_array* array, const void* the_one, int (*are_equal)(const void*, const void*));$/;"	p	signature:(c_array* array, const void* the_one, int (*are_equal)(const void*, const void*))
 jump_to	parser.h	/^	size_t jump_to;$/;"	m	struct:statement	access:public
+label_locs	parser.h	/^	vector_i label_locs;$/;"	m	struct:function	access:public
+labeled_stmt	parser.c	/^void labeled_stmt(parsing_state* p, program_state* prog)$/;"	f	signature:(parsing_state* p, program_state* prog)
+labeled_stmt	parser.h	/^void labeled_stmt(parsing_state* p, program_state* prog);$/;"	p	signature:(parsing_state* p, program_state* prog)
+labels	parser.h	/^	vector_str labels;$/;"	m	struct:function	access:public
 left	parser.h	/^	unsigned int left;$/;"	m	struct:expression	access:public
 len	c_utils.h	/^	size_t len;$/;"	m	struct:c_array	access:public
 lines_of_code	stats/lines.html	/^<h2><a href="#lines_of_code" name="lines_of_code">Lines of Code<\/a><\/h2>$/;"	a
@@ -476,17 +563,19 @@ list_swap	clist.h	/^void list_swap(list_head* p, list_head* q)$/;"	f	signature:(
 list_swap	clist.h	/^void list_swap(list_head* p, list_head* q);$/;"	p	signature:(list_head* p, list_head* q)
 logical_and_expr	parser.c	/^void logical_and_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)$/;"	f	signature:(parsing_state* p, program_state* prog, unsigned int expr_loc)
 logical_and_expr	parser.h	/^void logical_and_expr(parsing_state* p, program_state* prog, unsigned int e);$/;"	p	signature:(parsing_state* p, program_state* prog, unsigned int e)
+logical_negation_expr	parser.c	/^void logical_negation_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)$/;"	f	signature:(parsing_state* p, program_state* prog, unsigned int expr_loc)
+logical_negation_expr	parser.h	/^void logical_negation_expr(parsing_state* p, program_state* prog, unsigned int expr_loc);$/;"	p	signature:(parsing_state* p, program_state* prog, unsigned int expr_loc)
 logical_or_expr	parser.c	/^void logical_or_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)$/;"	f	signature:(parsing_state* p, program_state* prog, unsigned int expr_loc)
 logical_or_expr	parser.h	/^void logical_or_expr(parsing_state* p, program_state* prog, unsigned int e);$/;"	p	signature:(parsing_state* p, program_state* prog, unsigned int e)
 look_up_loc	interpreter.c	/^unsigned int look_up_loc(program_state* prog, const char* var)$/;"	f	signature:(program_state* prog, const char* var)
 look_up_loc	interpreter.h	/^unsigned int look_up_loc(program_state* prog, const char* var);$/;"	p	signature:(program_state* prog, const char* var)
 look_up_loc	parser.h	/^unsigned int look_up_loc(program_state* prog, const char* var);$/;"	p	signature:(program_state* prog, const char* var)
+look_up_symbol	interpreter.c	/^symbol* look_up_symbol(program_state* prog, const char* var)$/;"	f	signature:(program_state* prog, const char* var)
+look_up_symbol	interpreter.h	/^symbol* look_up_symbol(program_state* prog, const char* var);$/;"	p	signature:(program_state* prog, const char* var)
+look_up_symbol	parser.h	/^symbol* look_up_symbol(program_state* prog, const char* var);$/;"	p	signature:(program_state* prog, const char* var)
 look_up_value	interpreter.c	/^var_value* look_up_value(program_state* prog, const char* var, int search)$/;"	f	signature:(program_state* prog, const char* var, int search)
 look_up_value	interpreter.h	/^var_value* look_up_value(program_state* prog, const char* var, int search);$/;"	p	signature:(program_state* prog, const char* var, int search)
 look_up_value	parser.h	/^var_value* look_up_value(program_state* prog, const char* var, int search);$/;"	p	signature:(program_state* prog, const char* var, int search)
-look_up_variable	interpreter.c	/^variable* look_up_variable(program_state* prog, const char* var)$/;"	f	signature:(program_state* prog, const char* var)
-look_up_variable	interpreter.h	/^variable* look_up_variable(program_state* prog, const char* var);$/;"	p	signature:(program_state* prog, const char* var)
-look_up_variable	parser.h	/^variable* look_up_variable(program_state* prog, const char* var);$/;"	p	signature:(program_state* prog, const char* var)
 ltrim	c_utils.c	/^char* ltrim(char* str)$/;"	f	signature:(char* str)
 ltrim	c_utils.h	/^char* ltrim(char* str);$/;"	p	signature:(char* str)
 lvalue	parser.h	/^	char* lvalue;$/;"	m	struct:statement	access:public
@@ -494,6 +583,8 @@ main	main.c	/^int main(int argc, char** argv)$/;"	f	signature:(int argc, char** 
 main	tests/declarations.c	/^int main()$/;"	f
 main	tests/experimenting.c	/^int main()$/;"	f
 main	tests/functions.c	/^int main()$/;"	f
+main	tests/goto_label.c	/^int main()$/;"	f
+main	tests/ifelse.c	/^int main()$/;"	f
 main	tests/newtest.c	/^int main()$/;"	f
 main	tests/scope.c	/^int main()$/;"	f
 make_expression	parser.c	/^unsigned int make_expression(program_state* prog)$/;"	f	signature:(program_state* prog)
@@ -506,13 +597,15 @@ mybsearch	c_utils.c	/^void* mybsearch(const void *key, const void *buf, size_t n
 mystrdup	c_utils.c	/^char* mystrdup(const char* str)$/;"	f	signature:(const char* str)
 mystrdup	c_utils.h	/^char* mystrdup(const char* str);$/;"	p	signature:(const char* str)
 n_params	parser.h	/^	int n_params;$/;"	m	struct:function	access:public
-name	parser.h	/^	char* name;$/;"	m	struct:variable	access:public
+name	parser.h	/^	char* name;$/;"	m	struct:binding	access:public
+name	parser.h	/^	char* name;$/;"	m	struct:symbol	access:public
 next	clist.h	/^	struct list_head* next;$/;"	m	struct:list_head	typeref:struct:list_head::list_head	access:public
 offsetof	clist.h	78;"	d
 parameter_declaration	parser.c	/^void parameter_declaration(parsing_state* p, program_state* prog)$/;"	f	signature:(parsing_state* p, program_state* prog)
 parameter_declaration	parser.h	/^void parameter_declaration(parsing_state* p, program_state* prog);$/;"	p	signature:(parsing_state* p, program_state* prog)
 parameter_list	parser.c	/^void parameter_list(parsing_state* p, program_state* prog)$/;"	f	signature:(parsing_state* p, program_state* prog)
 parameter_list	parser.h	/^void parameter_list(parsing_state* p, program_state* prog);$/;"	p	signature:(parsing_state* p, program_state* prog)
+parent	parser.h	/^	long parent;$/;"	m	struct:statement	access:public
 parse_error	parser.c	/^void parse_error(token_value* tok, char *str, ...)$/;"	f	signature:(token_value* tok, char *str, ...)
 parse_error	parser.h	/^void parse_error(token_value* tok, char *str, ...);$/;"	p	signature:(token_value* tok, char *str, ...)
 parse_program	parser.c	/^void parse_program(program_state* prog, FILE* file)$/;"	f	signature:(program_state* prog, FILE* file)
@@ -528,13 +621,17 @@ pc	parser.h	/^	size_t pc;$/;"	m	struct:function	access:public
 pc	parser.h	/^	size_t* pc;$/;"	m	struct:program_state	access:public
 peek_token	parser.c	/^token_value* peek_token(parsing_state* p, long offset)$/;"	f	signature:(parsing_state* p, long offset)
 peek_token	parser.h	/^token_value* peek_token(parsing_state* p, long offset);$/;"	p	signature:(parsing_state* p, long offset)
+pop_TYPE	vector_template.c	/^TYPE pop_TYPE(vector_TYPE* vec)$/;"	f	signature:(vector_TYPE* vec)
+pop_TYPE	vector_template.h	/^TYPE pop_TYPE(vector_TYPE* vec);$/;"	p	signature:(vector_TYPE* vec)
+pop_binding	vector_binding.c	/^binding pop_binding(vector_binding* vec)$/;"	f	signature:(vector_binding* vec)
+pop_binding	vector_binding.h	/^binding pop_binding(vector_binding* vec);$/;"	p	signature:(vector_binding* vec)
 pop_d	cvector.h	/^double pop_d(vector_d* vec)$/;"	f	signature:(vector_d* vec)
 pop_d	cvector.h	/^double pop_d(vector_d* vec);$/;"	p	signature:(vector_d* vec)
 pop_i	cvector.h	/^int pop_i(vector_i* vec)$/;"	f	signature:(vector_i* vec)
 pop_i	cvector.h	/^int pop_i(vector_i* vec);$/;"	p	signature:(vector_i* vec)
-pop_scope	interpreter.c	/^void pop_scope(program_state* prog, vector_str* scope_vars)$/;"	f	signature:(program_state* prog, vector_str* scope_vars)
-pop_scope	interpreter.h	/^void pop_scope(program_state* prog, vector_str* scope_vars);$/;"	p	signature:(program_state* prog, vector_str* scope_vars)
-pop_scope	parser.h	/^void pop_scope(program_state* prog, vector_str* scope_vars);$/;"	p	signature:(program_state* prog, vector_str* scope_vars)
+pop_scopes	interpreter.c	/^void pop_scopes(program_state* prog, int new_scope)$/;"	f	signature:(program_state* prog, int new_scope)
+pop_scopes	interpreter.h	/^void pop_scopes(program_state* prog, int new_scope);$/;"	p	signature:(program_state* prog, int new_scope)
+pop_scopes	parser.h	/^void pop_scopes(program_state* prog, int new_scope);$/;"	p	signature:(program_state* prog, int new_scope)
 pop_str	cvector.h	/^void pop_str(vector_str* vec, char* ret)$/;"	f	signature:(vector_str* vec, char* ret)
 pop_str	cvector.h	/^void pop_str(vector_str* vec, char* ret);$/;"	p	signature:(vector_str* vec, char* ret)
 pop_void	cvector.h	/^void pop_void(vector_void* vec, void* ret)$/;"	f	signature:(vector_void* vec, void* ret)
@@ -561,6 +658,10 @@ program_state::global_values	parser.h	/^	vector_void global_values;$/;"	m	struct
 program_state::global_variables	parser.h	/^	vector_str global_variables;$/;"	m	struct:program_state	access:public
 program_state::pc	parser.h	/^	size_t* pc;$/;"	m	struct:program_state	access:public
 program_state::stmt_list	parser.h	/^	vector_void* stmt_list;$/;"	m	struct:program_state	access:public
+push_TYPE	vector_template.c	/^int push_TYPE(vector_TYPE* vec, TYPE a)$/;"	f	signature:(vector_TYPE* vec, TYPE a)
+push_TYPE	vector_template.h	/^int push_TYPE(vector_TYPE* vec, TYPE a);$/;"	p	signature:(vector_TYPE* vec, TYPE a)
+push_binding	vector_binding.c	/^int push_binding(vector_binding* vec, binding a)$/;"	f	signature:(vector_binding* vec, binding a)
+push_binding	vector_binding.h	/^int push_binding(vector_binding* vec, binding a);$/;"	p	signature:(vector_binding* vec, binding a)
 push_d	cvector.h	/^int push_d(vector_d* vec, double a)$/;"	f	signature:(vector_d* vec, double a)
 push_d	cvector.h	/^int push_d(vector_d* vec, double a);$/;"	p	signature:(vector_d* vec, double a)
 push_i	cvector.h	/^int push_i(vector_i* vec, int a)$/;"	f	signature:(vector_i* vec, int a)
@@ -585,6 +686,16 @@ readstring_into_str	c_utils.h	/^int readstring_into_str(c_array* input, char del
 real	parser.h	/^		double real;$/;"	m	union:token_value::__anon4	access:public
 relational_expr	parser.c	/^void relational_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)$/;"	f	signature:(parsing_state* p, program_state* prog, unsigned int expr_loc)
 relational_expr	parser.h	/^void relational_expr(parsing_state* p, program_state* prog, unsigned int e);$/;"	p	signature:(parsing_state* p, program_state* prog, unsigned int e)
+remove_binding	interpreter.c	/^void remove_binding(program_state* prog, char* name)$/;"	f	signature:(program_state* prog, char* name)
+remove_binding	interpreter.h	/^void remove_binding(program_state* prog, char* name);$/;"	p	signature:(program_state* prog, char* name)
+remove_binding	parser.h	/^void remove_binding(program_state* prog, char* name);$/;"	p	signature:(program_state* prog, char* name)
+remove_scope	interpreter.c	/^void remove_scope(program_state* prog, int jump_to, int child, int parent)$/;"	f	signature:(program_state* prog, int jump_to, int child, int parent)
+remove_scope	interpreter.h	/^void remove_scope(program_state* prog, int jump_to, int child, int parent);$/;"	p	signature:(program_state* prog, int jump_to, int child, int parent)
+remove_scope	parser.h	/^void remove_scope(program_state* prog, int jump_to, int child, int parent);$/;"	p	signature:(program_state* prog, int jump_to, int child, int parent)
+reserve_TYPE	vector_template.c	/^int reserve_TYPE(vector_TYPE* vec, size_t size)$/;"	f	signature:(vector_TYPE* vec, size_t size)
+reserve_TYPE	vector_template.h	/^int reserve_TYPE(vector_TYPE* vec, size_t size);$/;"	p	signature:(vector_TYPE* vec, size_t size)
+reserve_binding	vector_binding.c	/^int reserve_binding(vector_binding* vec, size_t size)$/;"	f	signature:(vector_binding* vec, size_t size)
+reserve_binding	vector_binding.h	/^int reserve_binding(vector_binding* vec, size_t size);$/;"	p	signature:(vector_binding* vec, size_t size)
 reserve_d	cvector.h	/^int reserve_d(vector_d* vec, size_t size)$/;"	f	signature:(vector_d* vec, size_t size)
 reserve_d	cvector.h	/^int reserve_d(vector_d* vec, size_t size);$/;"	p	signature:(vector_d* vec, size_t size)
 reserve_i	cvector.h	/^int reserve_i(vector_i* vec, size_t size)$/;"	f	signature:(vector_i* vec, size_t size)
@@ -601,6 +712,10 @@ rtrim	c_utils.c	/^char* rtrim(char* str)$/;"	f	signature:(char* str)
 rtrim	c_utils.h	/^char* rtrim(char* str);$/;"	p	signature:(char* str)
 run	interpreter.c	/^void run(program_state* prog, char* start_func)$/;"	f	signature:(program_state* prog, char* start_func)
 run	interpreter.h	/^void run(program_state* prog, char* start_func);$/;"	p	signature:(program_state* prog, char* start_func)
+set_capacity_TYPE	vector_template.c	/^int set_capacity_TYPE(vector_TYPE* vec, size_t size)$/;"	f	signature:(vector_TYPE* vec, size_t size)
+set_capacity_TYPE	vector_template.h	/^int set_capacity_TYPE(vector_TYPE* vec, size_t size);$/;"	p	signature:(vector_TYPE* vec, size_t size)
+set_capacity_binding	vector_binding.c	/^int set_capacity_binding(vector_binding* vec, size_t size)$/;"	f	signature:(vector_binding* vec, size_t size)
+set_capacity_binding	vector_binding.h	/^int set_capacity_binding(vector_binding* vec, size_t size);$/;"	p	signature:(vector_binding* vec, size_t size)
 set_capacity_d	cvector.h	/^int set_capacity_d(vector_d* vec, size_t size)$/;"	f	signature:(vector_d* vec, size_t size)
 set_capacity_d	cvector.h	/^int set_capacity_d(vector_d* vec, size_t size);$/;"	p	signature:(vector_d* vec, size_t size)
 set_capacity_i	cvector.h	/^int set_capacity_i(vector_i* vec, size_t size)$/;"	f	signature:(vector_i* vec, size_t size)
@@ -609,6 +724,10 @@ set_capacity_str	cvector.h	/^int set_capacity_str(vector_str* vec, size_t size)$
 set_capacity_str	cvector.h	/^int set_capacity_str(vector_str* vec, size_t size);$/;"	p	signature:(vector_str* vec, size_t size)
 set_capacity_void	cvector.h	/^int set_capacity_void(vector_void* vec, size_t size)$/;"	f	signature:(vector_void* vec, size_t size)
 set_capacity_void	cvector.h	/^int set_capacity_void(vector_void* vec, size_t size);$/;"	p	signature:(vector_void* vec, size_t size)
+set_val_cap_TYPE	vector_template.c	/^void set_val_cap_TYPE(vector_TYPE* vec, TYPE val)$/;"	f	signature:(vector_TYPE* vec, TYPE val)
+set_val_cap_TYPE	vector_template.h	/^void set_val_cap_TYPE(vector_TYPE* vec, TYPE val);$/;"	p	signature:(vector_TYPE* vec, TYPE val)
+set_val_cap_binding	vector_binding.c	/^void set_val_cap_binding(vector_binding* vec, binding val)$/;"	f	signature:(vector_binding* vec, binding val)
+set_val_cap_binding	vector_binding.h	/^void set_val_cap_binding(vector_binding* vec, binding val);$/;"	p	signature:(vector_binding* vec, binding val)
 set_val_cap_d	cvector.h	/^void set_val_cap_d(vector_d* vec, double val)$/;"	f	signature:(vector_d* vec, double val)
 set_val_cap_d	cvector.h	/^void set_val_cap_d(vector_d* vec, double val);$/;"	p	signature:(vector_d* vec, double val)
 set_val_cap_i	cvector.h	/^void set_val_cap_i(vector_i* vec, int val)$/;"	f	signature:(vector_i* vec, int val)
@@ -617,6 +736,10 @@ set_val_cap_str	cvector.h	/^void set_val_cap_str(vector_str* vec, char* val)$/;"
 set_val_cap_str	cvector.h	/^void set_val_cap_str(vector_str* vec, char* val);$/;"	p	signature:(vector_str* vec, char* val)
 set_val_cap_void	cvector.h	/^void set_val_cap_void(vector_void* vec, void* val)$/;"	f	signature:(vector_void* vec, void* val)
 set_val_cap_void	cvector.h	/^void set_val_cap_void(vector_void* vec, void* val);$/;"	p	signature:(vector_void* vec, void* val)
+set_val_sz_TYPE	vector_template.c	/^void set_val_sz_TYPE(vector_TYPE* vec, TYPE val)$/;"	f	signature:(vector_TYPE* vec, TYPE val)
+set_val_sz_TYPE	vector_template.h	/^void set_val_sz_TYPE(vector_TYPE* vec, TYPE val);$/;"	p	signature:(vector_TYPE* vec, TYPE val)
+set_val_sz_binding	vector_binding.c	/^void set_val_sz_binding(vector_binding* vec, binding val)$/;"	f	signature:(vector_binding* vec, binding val)
+set_val_sz_binding	vector_binding.h	/^void set_val_sz_binding(vector_binding* vec, binding val);$/;"	p	signature:(vector_binding* vec, binding val)
 set_val_sz_d	cvector.h	/^void set_val_sz_d(vector_d* vec, double val)$/;"	f	signature:(vector_d* vec, double val)
 set_val_sz_d	cvector.h	/^void set_val_sz_d(vector_d* vec, double val);$/;"	p	signature:(vector_d* vec, double val)
 set_val_sz_i	cvector.h	/^void set_val_sz_i(vector_i* vec, int val)$/;"	f	signature:(vector_i* vec, int val)
@@ -629,6 +752,8 @@ size	cvector.h	/^	size_t size;             \/**< Current size (amount you should
 size	cvector.h	/^	size_t size;       \/**< Current size (amount you use when manipulating array directly). *\/$/;"	m	struct:vector_d	access:public
 size	cvector.h	/^	size_t size;       \/**< Current size (amount you use when manipulating array directly). *\/$/;"	m	struct:vector_i	access:public
 size	cvector.h	/^	size_t size;       \/**< Current size (amount you use when manipulating array directly). *\/$/;"	m	struct:vector_str	access:public
+size	vector_binding.h	/^	size_t size;       \/**< Current size (amount you use when manipulating array directly). *\/$/;"	m	struct:vector_binding	access:public
+size	vector_template.h	/^	size_t size;       \/**< Current size (amount you use when manipulating array directly). *\/$/;"	m	struct:vector_TYPE	access:public
 slice_c_array	c_utils.c	/^c_array slice_c_array(c_array array, int start, int end)$/;"	f	signature:(c_array array, int start, int end)
 slice_c_array	c_utils.h	/^c_array slice_c_array(c_array array, int start, int end);$/;"	p	signature:(c_array array, int start, int end)
 sort_date	stats/sortable.js	/^function sort_date(date) {	$/;"	f
@@ -639,9 +764,11 @@ split	c_utils.c	/^int split(c_array* array, byte* delim, size_t delim_len, c_arr
 split	c_utils.h	/^int split(c_array* in, byte* delim, size_t delim_len, c_array* out);$/;"	p	signature:(c_array* in, byte* delim, size_t delim_len, c_array* out)
 statement	parser.h	/^typedef struct statement$/;"	s
 statement	parser.h	/^} statement;$/;"	t	typeref:struct:statement
+statement::bindings	parser.h	/^	vector_void* bindings;$/;"	m	struct:statement	access:public
 statement::exp	parser.h	/^	unsigned int exp;$/;"	m	struct:statement	access:public
 statement::jump_to	parser.h	/^	size_t jump_to;$/;"	m	struct:statement	access:public
 statement::lvalue	parser.h	/^	char* lvalue;$/;"	m	struct:statement	access:public
+statement::parent	parser.h	/^	long parent;$/;"	m	struct:statement	access:public
 statement::type	parser.h	/^	stmt_type type;$/;"	m	struct:statement	access:public
 statement::vtype	parser.h	/^	var_type vtype;$/;"	m	struct:statement	access:public
 statement_rule	parser.c	/^void statement_rule(parsing_state* p, program_state* prog)$/;"	f	signature:(parsing_state* p, program_state* prog)
@@ -649,6 +776,12 @@ statement_rule	parser.h	/^void statement_rule(parsing_state* p, program_state* p
 stmt_list	parser.h	/^	vector_void stmt_list;$/;"	m	struct:function	access:public
 stmt_list	parser.h	/^	vector_void* stmt_list;$/;"	m	struct:program_state	access:public
 stmt_type	parser.h	/^} stmt_type;$/;"	t	typeref:enum:__anon5
+symbol	parser.h	/^typedef struct symbol$/;"	s
+symbol	parser.h	/^} symbol;$/;"	t	typeref:struct:symbol
+symbol::cur_scope	parser.h	/^	int cur_scope;$/;"	m	struct:symbol	access:public
+symbol::head	parser.h	/^	list_head head;$/;"	m	struct:symbol	access:public
+symbol::name	parser.h	/^	char* name;$/;"	m	struct:symbol	access:public
+symbols	parser.h	/^	vector_void symbols;$/;"	m	struct:function	access:public
 test_func_in_block	tests/experimenting.c	/^	void test_func_in_block()$/;"	f
 test_function	tests/experimenting.c	/^int* test_function()$/;"	f
 test_ret	tests/experimenting.c	/^int test_ret()$/;"	f
@@ -693,12 +826,18 @@ var_value::__anon3::int_val	parser.h	/^		int int_val;$/;"	m	union:var_value::__a
 var_value::list	parser.h	/^	list_head list;$/;"	m	struct:var_value	access:public
 var_value::type	parser.h	/^	var_type type;$/;"	m	struct:var_value	access:public
 var_value::v	parser.h	/^	} v;$/;"	m	struct:var_value	typeref:union:var_value::__anon3	access:public
-variable	parser.h	/^typedef struct variable$/;"	s
-variable	parser.h	/^} variable;$/;"	t	typeref:struct:variable
-variable::cur_scope	parser.h	/^	int cur_scope;$/;"	m	struct:variable	access:public
-variable::head	parser.h	/^	list_head head;$/;"	m	struct:variable	access:public
-variable::name	parser.h	/^	char* name;$/;"	m	struct:variable	access:public
-variables	parser.h	/^	vector_void variables;$/;"	m	struct:function	access:public
+vec_TYPE	vector_template.c	/^int vec_TYPE(vector_TYPE* vec, size_t size, size_t capacity)$/;"	f	signature:(vector_TYPE* vec, size_t size, size_t capacity)
+vec_TYPE	vector_template.h	/^int vec_TYPE(vector_TYPE* vec, size_t size, size_t capacity);$/;"	p	signature:(vector_TYPE* vec, size_t size, size_t capacity)
+vec_TYPE_copy	vector_template.c	/^void vec_TYPE_copy(void* dest, void* src)$/;"	f	signature:(void* dest, void* src)
+vec_TYPE_copy	vector_template.h	/^void vec_TYPE_copy(void* dest, void* src);$/;"	p	signature:(void* dest, void* src)
+vec_TYPE_heap	vector_template.c	/^vector_TYPE* vec_TYPE_heap(size_t size, size_t capacity)$/;"	f	signature:(size_t size, size_t capacity)
+vec_TYPE_heap	vector_template.h	/^vector_TYPE* vec_TYPE_heap(size_t size, size_t capacity);$/;"	p	signature:(size_t size, size_t capacity)
+vec_binding	vector_binding.c	/^int vec_binding(vector_binding* vec, size_t size, size_t capacity)$/;"	f	signature:(vector_binding* vec, size_t size, size_t capacity)
+vec_binding	vector_binding.h	/^int vec_binding(vector_binding* vec, size_t size, size_t capacity);$/;"	p	signature:(vector_binding* vec, size_t size, size_t capacity)
+vec_binding_copy	vector_binding.c	/^void vec_binding_copy(void* dest, void* src)$/;"	f	signature:(void* dest, void* src)
+vec_binding_copy	vector_binding.h	/^void vec_binding_copy(void* dest, void* src);$/;"	p	signature:(void* dest, void* src)
+vec_binding_heap	vector_binding.c	/^vector_binding* vec_binding_heap(size_t size, size_t capacity)$/;"	f	signature:(size_t size, size_t capacity)
+vec_binding_heap	vector_binding.h	/^vector_binding* vec_binding_heap(size_t size, size_t capacity);$/;"	p	signature:(size_t size, size_t capacity)
 vec_d	cvector.h	/^int vec_d(vector_d* vec, size_t size, size_t capacity)$/;"	f	signature:(vector_d* vec, size_t size, size_t capacity)
 vec_d	cvector.h	/^int vec_d(vector_d* vec, size_t size, size_t capacity);$/;"	p	signature:(vector_d* vec, size_t size, size_t capacity)
 vec_d_copy	cvector.h	/^void vec_d_copy(void* dest, void* src)$/;"	f	signature:(void* dest, void* src)
@@ -725,6 +864,16 @@ vec_void_get	cvector.h	/^void* vec_void_get(vector_void* vec, size_t i)$/;"	f	si
 vec_void_get	cvector.h	/^void* vec_void_get(vector_void* vec, size_t i);$/;"	p	signature:(vector_void* vec, size_t i)
 vec_void_heap	cvector.h	/^vector_void* vec_void_heap(size_t size, size_t capacity, size_t elem_sz, void (*elem_free)(void*), void(*elem_init)(void*, void*));$/;"	p	signature:(size_t size, size_t capacity, size_t elem_sz, void (*elem_free)(void*), void(*elem_init)(void*, void*))
 vec_void_heap	cvector.h	/^vector_void* vec_void_heap(size_t size, size_t capacity, size_t elem_sz, void(*elem_free)(void*), void(*elem_init)(void*, void*))$/;"	f	signature:(size_t size, size_t capacity, size_t elem_sz, void(*elem_free)(void*), void(*elem_init)(void*, void*))
+vector_TYPE	vector_template.h	/^typedef struct vector_TYPE$/;"	s
+vector_TYPE	vector_template.h	/^} vector_TYPE;$/;"	t	typeref:struct:vector_TYPE
+vector_TYPE::a	vector_template.h	/^	TYPE* a;           \/**< Array. *\/$/;"	m	struct:vector_TYPE	access:public
+vector_TYPE::capacity	vector_template.h	/^	size_t capacity;   \/**< Allocated size of array; always >= size. *\/$/;"	m	struct:vector_TYPE	access:public
+vector_TYPE::size	vector_template.h	/^	size_t size;       \/**< Current size (amount you use when manipulating array directly). *\/$/;"	m	struct:vector_TYPE	access:public
+vector_binding	vector_binding.h	/^typedef struct vector_binding$/;"	s
+vector_binding	vector_binding.h	/^} vector_binding;$/;"	t	typeref:struct:vector_binding
+vector_binding::a	vector_binding.h	/^	binding* a;           \/**< Array. *\/$/;"	m	struct:vector_binding	access:public
+vector_binding::capacity	vector_binding.h	/^	size_t capacity;   \/**< Allocated size of array; always >= size. *\/$/;"	m	struct:vector_binding	access:public
+vector_binding::size	vector_binding.h	/^	size_t size;       \/**< Current size (amount you use when manipulating array directly). *\/$/;"	m	struct:vector_binding	access:public
 vector_d	cvector.h	/^typedef struct vector_d$/;"	s
 vector_d	cvector.h	/^} vector_d;$/;"	t	typeref:struct:vector_d
 vector_d::a	cvector.h	/^	double* a;         \/**< Array. *\/$/;"	m	struct:vector_d	access:public
@@ -748,6 +897,7 @@ vector_void::elem_free	cvector.h	/^	void (*elem_free)(void*);$/;"	m	struct:vecto
 vector_void::elem_init	cvector.h	/^	void (*elem_init)(void*, void*);$/;"	m	struct:vector_void	access:public
 vector_void::elem_size	cvector.h	/^	size_t elem_size;        \/**< Size in u8s of type stored (sizeof(T) where T is type). *\/$/;"	m	struct:vector_void	access:public
 vector_void::size	cvector.h	/^	size_t size;             \/**< Current size (amount you should use when manipulating array directly). *\/$/;"	m	struct:vector_void	access:public
+vtype	parser.h	/^	var_type vtype;$/;"	m	struct:binding	access:public
 vtype	parser.h	/^	var_type vtype;$/;"	m	struct:statement	access:public
 weekly_activity	stats/activity.html	/^<h2><a href="#weekly_activity" name="weekly_activity">Weekly activity<\/a><\/h2>$/;"	a
 while_stmt	parser.c	/^void while_stmt(parsing_state* p, program_state* prog)$/;"	f	signature:(parsing_state* p, program_state* prog)

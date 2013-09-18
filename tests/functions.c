@@ -45,9 +45,12 @@ void func2(int a, int b, int c)
 
 int fibbonaci(int n)
 {
+	printf("%d\n", n);
 	if (n < 3) {
 		return 1;
 	}
+	int a = n + 2;
+	printf("%d\n", a);
 	return fibbonaci(n-2) + fibbonaci(n-1);
 }
 
@@ -61,7 +64,7 @@ int main()
 	func2(10, local /= 3, local - a*20);
 	printf("%d\n", local);
 
-	local = fibbonaci(10);
+	local = fibbonaci(4);
 	printf("%d\n", local);
 
 	return 0;

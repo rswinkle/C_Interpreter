@@ -17,7 +17,8 @@
 #define GET_TOKEN_VAL(VEC, I) GET_VOID((VEC), token_value, (I))
 #define GET_FUNCTION(VEC, I) GET_VOID(VEC, function, I)
 #define GET_EXPRESSION(VEC, I) GET_VOID(VEC, expression, I)
-#define GET_VARIABLE(VEC, I) GET_VOID(VEC, variable, I)
+#define GET_SYMBOL(VEC, I) GET_VOID(VEC, symbol, I)
+#define GET_BINDING(VEC, I) GET_VOID(VEC, binding, I)
 
 
 //tokens pg 20
@@ -81,13 +82,14 @@ typedef struct var_value
 		double double_val;
 		unsigned int func_loc; //change to direct pointer?
 	} v;
-	list_head list;
+//	list_head list;
 } var_value;
 	
 #define GET_VAR_VALUE(VEC, I) GET_VOID(VEC, var_value, I)
 
 
 void free_var_value(void* var);
+void free_active_binding_list(void* l);
 
 
 
@@ -125,6 +127,21 @@ typedef enum {
 } stmt_type;
 
 
+typedef struct binding
+{
+	char* name;
+	var_type vtype;
+	int decl_stmt;
+} binding;
+
+typedef struct active_binding
+{
+	var_value val;
+	int parent;
+	list_head list;
+} active_binding;
+
+
 typedef struct statement
 {
 	stmt_type type;
@@ -132,28 +149,32 @@ typedef struct statement
 	char* lvalue;
 	unsigned int exp;
 	var_type vtype;
+	
+	long parent;
+
+	vector_void* bindings;
 } statement;
 
 #define INIT_STATEMENT(stmt) \
 	stmt.type =
 
-//void init_statement(statement* stmt, stmt_type 
+//void init_statement(statement
+//* stmt, stmt_type 
 //
+
 
 
 /*********************************/
 
-//TODO replace func->variables and values with this
-//think of alternative type name, member names etc.
-typedef struct variable
+typedef struct symbol
 {
 	char* name;
 	//vector_void of var_values
 	// or
 	
-	int cur_scope;
+	int cur_parent;
 	list_head head;
-} variable;
+} symbol;
 
 typedef struct function
 {
@@ -161,8 +182,10 @@ typedef struct function
 	size_t pc;
 	var_value ret_val;
 	int n_params;
-	vector_void variables;
-	
+	vector_void symbols;
+
+	vector_str labels;
+	vector_i label_locs;
 } function;
 
 
@@ -174,12 +197,13 @@ typedef struct program_state
 	vector_void* stmt_list;
 	size_t* pc;
 	function* func;
-	int cur_scope;
+	int cur_parent; //<-- location of open block statement
 
 	vector_str global_variables;
 	vector_void global_values;
 
 	vector_void expressions;
+	vector_void* bindings;
 } program_state;
 
 /***************************/
@@ -191,6 +215,7 @@ void free_statement(void* stmt);
 
 //should probably make these static in parser.c
 void print_token(token_value* tok);
+void print_statement(statement* stmt);
 unsigned int copy_expr(program_state* prog, unsigned int expr_loc);
 void parse_error(token_value* tok, char *str, ...);
 token_value* peek_token(parsing_state* p, long offset);
@@ -252,13 +277,20 @@ void if_stmt(parsing_state* p, program_state* prog);
 void print_stmt(parsing_state* p, program_state* prog);
 void goto_stmt(parsing_state* p, program_state* prog);
 void return_stmt(parsing_state* p, program_state* prog);
+void labeled_stmt(parsing_state* p, program_state* prog);
 
 
 //can I put these prototypes here too?
 int execute_expr(program_state* prog, unsigned int expr_loc);
 
-void add_variable(program_state* prog, char* var, var_type vtype);
-void pop_scope(program_state* prog, vector_str* scope_vars);
+void add_binding(program_state* prog, char* name, var_type vtype);
+void remove_binding(program_state* prog, char* name);
+void clear_bindings(program_state* prog);
+void pop_scope(program_state* prog);
+int is_ancestor(program_state* prog, int parent, int child);
+void apply_scope(program_state* prog, int jump_to, int child, int parent);
+void remove_scope(program_state* prog, int jump_to, int child, int parent);
+int find_lowest_common_ancestor(program_state* prog, int parent1, int parent2);
 
 
 enum
@@ -270,7 +302,7 @@ enum
 
 
 
-variable* look_up_variable(program_state* prog, const char* var);
+symbol* look_up_symbol(program_state* prog, const char* var);
 var_value* look_up_value(program_state* prog, const char* var, int search);
 unsigned int look_up_loc(program_state* prog, const char* var);
 

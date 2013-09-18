@@ -16,6 +16,7 @@ void run(program_state* prog, char* start_func)
 	prog->stmt_list = &func->stmt_list;
 	func->pc = 0;
 	prog->pc = &func->pc;
+	prog->cur_parent = -1;
 
 	//set parameters here, ie argc, argv
 		
@@ -31,21 +32,19 @@ void run(program_state* prog, char* start_func)
 
 
 
-
-//TODO change int to var_value
 void execute(program_state* prog)
 {
-	vector_str scope_variables;
-	vec_str(&scope_variables, 0, 20);
+	*prog->pc = 0;
+	int i, outer_parent = prog->cur_parent;
+	statement* stmt, *target;
 
 	while ( *prog->pc < prog->stmt_list->size ) {
-		statement* stmt = GET_STMT(prog->stmt_list, *prog->pc);
+		stmt = GET_STMT(prog->stmt_list, *prog->pc);
 
 		switch (stmt->type) {
 
 		case DECL_STMT:
-			add_variable(prog, stmt->lvalue, stmt->vtype);
-			push_str(&scope_variables, stmt->lvalue);
+			add_binding(prog, stmt->lvalue, stmt->vtype);
 			break;
 
 		case PRINT_STMT:
@@ -68,25 +67,55 @@ void execute(program_state* prog)
 			break;
 
 		case GOTO_STMT:
+			target = GET_STMT(prog->stmt_list, stmt->jump_to);
+			if (stmt->parent != target->parent) {
+				if (is_ancestor(prog, stmt->parent, target->parent)) {
+					//puts("jumping to child");
+					apply_scope(prog, stmt->jump_to, target->parent, stmt->parent);
+				} else if (is_ancestor(prog, target->parent, stmt->parent)) {
+					remove_scope(prog, stmt->jump_to, stmt->parent, target->parent);
+
+				} else {
+					//puts("siblings\n");
+					int ancestor = find_lowest_common_ancestor(prog, stmt->parent, target->parent);
+					remove_scope(prog, stmt->jump_to, stmt->parent, ancestor);
+					apply_scope(prog, stmt->jump_to, target->parent, ancestor);
+				}
+			} else {
+				if (stmt->jump_to > *prog->pc) {
+					binding* b;
+					target = GET_STMT(prog->stmt_list, stmt->parent);
+					for (i=0; i<target->bindings->size; ++i) {
+						b = GET_BINDING(target->bindings, i);
+						if (b->decl_stmt > *prog->pc) {
+							if (b->decl_stmt < stmt->jump_to) {
+								add_binding(prog, b->name, b->vtype);
+							} else {
+								break;
+							}
+						}
+					}
+				}
+			}
+
 			*prog->pc = stmt->jump_to-1;
 			break;
 
 		case RETURN_STMT:
-			if (prog->func->ret_val.type != VOID)
+			if (prog->func->ret_val.type != VOID_TYPE)
 				prog->func->ret_val.v.int_val = execute_expr(prog, stmt->exp);
 
-			goto exit_clean;
+			clear_bindings(prog);
+			prog->cur_parent = outer_parent;
+			return;
 
 		case START_COMPOUND_STMT:
-			(*prog->pc)++;
-			execute(prog);
-			stmt = GET_STMT(prog->stmt_list, *prog->pc);
-			if (stmt->type != END_COMPOUND_STMT)
-				goto exit_clean;
+			prog->cur_parent = *prog->pc;
 			break;
 			
 		case END_COMPOUND_STMT:
-			goto exit_clean;
+			pop_scope(prog);	//freeing all bindings with cur_parent
+			prog->cur_parent = GET_STMT(prog->stmt_list, stmt->parent)->parent;
 			break;
 
 		case NULL_STMT:
@@ -104,13 +133,8 @@ void execute(program_state* prog)
 		fprintf(stderr, "Warning, falling off the end of non-void function.\n");
 
 	}
-
-exit_clean:
-	pop_scope(prog, &scope_variables);
-	free_vec_str(&scope_variables);
-	
-
 }
+
 
 
 int execute_expr(program_state* prog, unsigned int expr_loc)
@@ -182,18 +206,9 @@ int execute_expr(program_state* prog, unsigned int expr_loc)
 
 		prog->func = func;
 		prog->stmt_list = &func->stmt_list;
-		func->pc = 0;
 		prog->pc = &func->pc;
 
 		execute(prog); //run program
-
-		variable* param;
-		for (int i=0; i<func->n_params; ++i) {
-			param = GET_VARIABLE(&func->variables, i);
-			var = list_entry(param->head.next, var_value, list);
-			list_del(&var->list);
-			free(var);
-		}
 
 		prog->stmt_list = old_stmt_list;
 		prog->pc = old_pc;
@@ -222,72 +237,180 @@ void execute_expr_list(program_state* prog, function* callee, unsigned int expr_
 {
 	function* func = callee;
 	expression* e = GET_EXPRESSION(&prog->expressions, expr_loc);
-	variable* var;
-	var_value* v = malloc(sizeof(var_value));;
+	symbol* s;
+	active_binding* v = malloc(sizeof(active_binding));;
 
-	int i = 0, tmp = -1;
+	int i = 0, tmp = expr_loc;
 	while (e->tok.type == EXPR_LIST) {
-		var = GET_VARIABLE(&func->variables, i);
-		//v = list_entry(var->head.next, var_value, list);
-		v->v.int_val = execute_expr(prog, e->left);
-		list_add(&v->list, &var->head);
+		s = GET_SYMBOL(&func->symbols, i);
+		v->val.v.int_val = execute_expr(prog, e->left);
+		list_add(&v->list, &s->head);
+		s->cur_parent = v->parent = 0; //reset for recursive call
 
 		tmp = e->right;
 		e = GET_EXPRESSION(&prog->expressions, e->right);
 		++i;
-		v = malloc(sizeof(var_value));
+		v = malloc(sizeof(active_binding));
 	}
 
-	var = GET_VARIABLE(&func->variables, i);
-	//v = list_entry(var->head.next, var_value, list);
-	v->v.int_val = execute_expr(prog, (tmp < 0) ? expr_loc : tmp);
-	list_add(&v->list, &var->head);
+	s = GET_SYMBOL(&func->symbols, i);
+	v->val.v.int_val = execute_expr(prog, tmp);
+	list_add(&v->list, &s->head);
+	s->cur_parent = v->parent = 0;
 }	
 
-void add_variable(program_state* prog, char* name, var_type vtype)
+void add_binding(program_state* prog, char* name, var_type vtype)
 {
-	var_value* value = malloc(sizeof(var_value)); assert(value);
-	value->type = vtype;
+	//make this calloc to get rid of valgrind warnings about condition
+	//depends on uninitialized values (inside printf)
+	//it's unspecified behavior anyway
+	active_binding* value = calloc(1, sizeof(active_binding)); assert(value);
+	value->val.type = vtype;
+	value->parent = prog->cur_parent;
 
-	variable new_var;
-	variable* exists = look_up_variable(prog, name);
-	if (!exists) {
-		new_var.name = mystrdup(name);
-		push_void(&prog->func->variables, &new_var);
+	symbol* s = look_up_symbol(prog, name);
 
-		variable* tmp = back_void(&prog->func->variables);
-		tmp->cur_scope = 0;
-		INIT_LIST_HEAD(&tmp->head);
-		list_add(&value->list, &tmp->head);
-		
-		//order of op, maybe separate
+	list_add(&value->list, &s->head);
+	s->cur_parent = value->parent;
+}
+
+void remove_binding_symbol(symbol* s)
+{
+	active_binding* v = list_entry(s->head.next, active_binding, list);
+	list_del(&v->list);
+	free(v);
+
+	if (!list_empty(&s->head)) { 
+		v = list_entry(s->head.next, active_binding, list);
+		s->cur_parent = v->parent;
 	} else {
-		//since lookup always returns first item in list (top of binding stack)
-		//head is ->prev
-		list_add(&value->list, &exists->head);
-		exists->cur_scope++;
-		
+		s->cur_parent = -1;
 	}
 }
 
-void pop_scope(program_state* prog, vector_str* scope_vars)
+void remove_binding(program_state* prog, char* name)
 {
-	var_value* val;
-	variable* var;
-	for (int i=0; i<scope_vars->size; ++i) {
-		var = look_up_variable(prog, scope_vars->a[i]);
-		val = list_entry(var->head.next, var_value, list);
-		list_del(&val->list);
-		free(val);
+	symbol* s = look_up_symbol(prog, name);
+	remove_binding_symbol(s);
+}
 
-		var->cur_scope--;
+//clear all bindings of current function call
+void clear_bindings(program_state* prog)
+{
+	statement* stmt;
+	binding* b;
 
-		//TODO erase variable if empty maybe
-		//if (list_empty( ))
-		//	erase_void(&prog->func->variables, )
+	while (prog->cur_parent >= 0) {
+		stmt = GET_STMT(prog->stmt_list, prog->cur_parent);
+		for (int i=0; i<stmt->bindings->size; ++i) {
+			b = GET_BINDING(stmt->bindings, i);
+			if (b->decl_stmt > *prog->pc)
+				break;
+			remove_binding(prog, b->name);
+		}
+
+		prog->cur_parent = stmt->parent;
+	}
+
+	for (int i=0; i<prog->func->n_params; ++i) {
+		remove_binding_symbol(GET_SYMBOL(&prog->func->symbols, i));
+	}
+}
+	
+
+void pop_scope(program_state* prog)
+{
+	symbol* s;
+
+	for (int i=0; i<prog->func->symbols.size; ++i) {
+		s = GET_SYMBOL(&prog->func->symbols, i);
+		if (s->cur_parent == prog->cur_parent) {
+			remove_binding_symbol(s);
+		}
 	}
 }
 
+//returns non-zero if parent is ancestor of child
+int is_ancestor(program_state* prog, int parent, int child)
+{
+	statement* stmt;
+	int tmp = child;
+	do {
+		stmt = GET_STMT(prog->stmt_list, tmp);
+		tmp = stmt->parent;
+	} while (tmp >= 0 && tmp != parent);
+	
+	return tmp == parent;
+}
+
+//apply scopes recursively from current scope (parent) to child scope up
+//to jump_to statement
+void apply_scope(program_state* prog, int jump_to, int child, int parent)
+{
+	statement* stmt = GET_STMT(prog->stmt_list, child);
+	binding* b;
+
+	if (child != parent)
+		apply_scope(prog, jump_to, stmt->parent, parent);
+
+	prog->cur_parent = child;
+	//even once we get back to parent we have to check for jumping over decls	
+	for (int i=0; i<stmt->bindings->size; ++i) {
+		b = GET_BINDING(stmt->bindings, i);
+		if (b->decl_stmt < jump_to) {
+			if (child != parent)
+				add_binding(prog, b->name, b->vtype);
+			else if (b->decl_stmt > *prog->pc)
+				add_binding(prog, b->name, b->vtype);
+		} else if (b->decl_stmt < *prog->pc && b->decl_stmt > jump_to) {
+			remove_binding(prog, b->name);
+		}
+	}
+}
+
+//remove scope from child up to parent as of jump_to
+void remove_scope(program_state* prog, int jump_to, int child, int parent)
+{
+	statement* stmt;
+	binding *b;
+
+	while (child != parent) {
+		stmt = GET_STMT(prog->stmt_list, child);
+		child = stmt->parent;
+		pop_scope(prog);
+	}
+
+	prog->cur_parent = parent;
+
+	stmt = GET_STMT(prog->stmt_list, parent);	
+
+	for (int i=0; i<stmt->bindings->size; ++i) {
+		b = GET_BINDING(stmt->bindings, i);
+		if (b->decl_stmt < jump_to && b->decl_stmt > *prog->pc) //jumping over a decl
+			add_binding(prog, b->name, b->vtype);
+		else if (b->decl_stmt > jump_to && b->decl_stmt < *prog->pc) //jumping back before a decl
+			remove_binding(prog, b->name);
+	}
+}
+
+int find_lowest_common_ancestor(program_state* prog, int parent1, int parent2)
+{
+	statement* stmt1, *stmt2;
+
+	//I can't think of a better way right now so just brute forcing it
+	//parent stmt/block with highest index is lowest common ancestor
+	int max = 0;	
+	stmt1 = GET_STMT(prog->stmt_list, parent1);
+	stmt2 = GET_STMT(prog->stmt_list, parent2);
+	for (statement* s1 = stmt1; s1 != (statement*)prog->stmt_list->a; s1 = GET_STMT(prog->stmt_list, s1->parent)) {
+		for (statement* s2 = stmt1; s2 != (statement*)prog->stmt_list->a ; s2 = GET_STMT(prog->stmt_list, s2->parent)) {
+			if (s1->parent == s2->parent) {
+				max = (s1->parent > max) ? s1->parent : max;
+			}
+		}
+	}
+	return max;
+}
 
 unsigned int look_up_loc(program_state* prog, const char* var)
 {
@@ -300,11 +423,12 @@ unsigned int look_up_loc(program_state* prog, const char* var)
 	exit(0);
 }
 
-variable* look_up_variable(program_state* prog, const char* var)
+
+symbol* look_up_symbol(program_state* prog, const char* var)
 {
-	variable* v;
-	for (int i=0; i<prog->func->variables.size; ++i) {
-		v = GET_VARIABLE(&prog->func->variables, i);
+	symbol* v;
+	for (int i=0; i<prog->func->symbols.size; ++i) {
+		v = GET_SYMBOL(&prog->func->symbols, i);
 		if (!strcmp(var, v->name))
 			return v;
 	}
@@ -312,18 +436,18 @@ variable* look_up_variable(program_state* prog, const char* var)
 }
 
 
+
 var_value* look_up_value(program_state* prog, const char* var, int search)
 {
 	//puts("look_up_val");
-	variable* v;
+	symbol* s;
 	if (prog->func && search != ONLY_GLOBAL) {
-		for (int i=0; i<prog->func->variables.size; ++i) {
-			v = GET_VARIABLE(&prog->func->variables, i);
-	//		printf("checking '%s'\n", v->name);
-			if (!strcmp(var, v->name)) {
-				if (!list_empty(&v->head))
+		for (int i=0; i<prog->func->symbols.size; ++i) {
+			s = GET_SYMBOL(&prog->func->symbols, i);
+			if (!strcmp(var, s->name)) {
+				if (!list_empty(&s->head))
 					//->next is first item, top of binding stack
-					return list_entry(v->head.next, var_value, list);
+					return &(list_entry(s->head.next, active_binding, list))->val;
  				else
 					break;
 			}

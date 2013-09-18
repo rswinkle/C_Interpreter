@@ -18,8 +18,11 @@ regex=*.txt
 for f in ../tests/*.txt
 do
 	echo "executing $f"
-	./cinterpreter $f &> $f.out
-	#echo "filename = $f"
+	./cinterpreter $f > $f.out
+
+	# for if I ever update expected output
+	#with stderr
+	#./cinterpreter $f &> $f.out
 done
 
 for f in ../tests/*.txt.expected

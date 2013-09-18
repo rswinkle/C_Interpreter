@@ -71,6 +71,9 @@ statement                 -> expr_stmt
                              compound_statement
                              return_stmt
                              goto_stmt
+                             labeled_stmt
+
+labeled_stmt              -> identifier ':' statement
 
 while_stmt                -> while '(' expr ')' statement
 if_stmt                   -> if '(' expr ')' statement
@@ -78,7 +81,7 @@ if_stmt                   -> if '(' expr ')' statement
 
 print_stmt                -> print identifier ';'
 
-goto_stmt                 -> goto identifier ';' //unfinished
+goto_stmt                 -> goto identifier ';'
 
 expr_stmt                 -> expr ';'
 
