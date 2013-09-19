@@ -973,6 +973,12 @@ void break_or_continue_stmt(parsing_state* p, program_state* prog)
 	cont_or_break.type = (tok->type == BREAK) ? BREAK_STMT : CONTINUE_STMT;
 	cont_or_break.parent = prog->cur_parent;
 	push_void(prog->stmt_list, &cont_or_break);
+
+	tok = get_token(p);
+	if (tok->type != SEMICOLON) {
+		parse_error(tok, "in break_or_continue statement, expected SEMICOLON\n");
+		exit(0);
+	}
 }
 
 

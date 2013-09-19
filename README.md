@@ -72,6 +72,10 @@ statement                 -> expr_stmt
                              return_stmt
                              goto_stmt
                              labeled_stmt
+                             break_or_continue_stmt
+
+break_or_continue_stmt    -> break ';'
+                             continue ';'
 
 labeled_stmt              -> identifier ':' statement
 
