@@ -32,6 +32,7 @@ int make_expression_block(size_t n, expr_block* block)
 	}
 	block->n = n;
 	block->used = 0;
+	return 1;
 }
 
 void free_expr_block(void* block)
@@ -285,6 +286,7 @@ start:
 
 			if (!strcmp(token_buf, "do")) {         tok.type = DO;         break; }
 			if (!strcmp(token_buf, "while")) {      tok.type = WHILE;      break; }
+			if (!strcmp(token_buf, "for")) {        tok.type = FOR;      break; }
 			if (!strcmp(token_buf, "if")) {         tok.type = IF;         break; }
 			if (!strcmp(token_buf, "else")) {       tok.type = ELSE;       break; }
 			if (!strcmp(token_buf, "int")) {        tok.type = INT;        break; }
@@ -378,6 +380,7 @@ void print_token(token_value* tok)
 		case SIGNED:           puts("SIGNED");     break;
 		case UNSIGNED:         puts("UNSIGNED");     break;
 		case DO:               puts("DO");     break;
+		case FOR:              puts("FOR");    break;
 		case WHILE:            puts("WHILE");     break;
 		case PRINT:            puts("PRINT");     break;
 		case IF:               puts("IF");     break;
@@ -481,6 +484,8 @@ void parse_program(program_state* prog, FILE* file)
 	p.pos = 0;
 
 	prog->cur_parent = -1;
+	prog->cur_iter = 0;
+	prog->cur_iter_switch = 0;
 	prog->func = NULL;
 	prog->pc = NULL;
 	prog->stmt_list = NULL;
@@ -898,6 +903,10 @@ void statement_rule(parsing_state* p, program_state* prog)
 			labeled_stmt(p, prog);
 		break;
 
+	case FOR:
+		//for_stmt(p, prog);
+		break;
+
 	case WHILE:
 		while_stmt(p, prog);
 		break;
@@ -916,6 +925,11 @@ void statement_rule(parsing_state* p, program_state* prog)
 
 	case GOTO:
 		goto_stmt(p, prog);
+		break;
+
+	case BREAK:
+	case CONTINUE:
+		break_or_continue_stmt(p, prog);
 		break;
 
 	case RETURN:
@@ -938,6 +952,29 @@ void statement_rule(parsing_state* p, program_state* prog)
 		exit(0);
 	}
 }
+
+void break_or_continue_stmt(parsing_state* p, program_state* prog)
+{
+	token_value* tok = get_token(p);
+
+	if (tok->type == BREAK) {
+		if (!prog->cur_iter_switch) {
+			parse_error(tok, "break statement with no enclosing iterative or switch block\n");
+			exit(0);
+		}
+	} else if (!prog->cur_iter) {
+		parse_error(tok, "continue statement with no enclosing iterative block\n");
+		exit(0);
+	}
+
+
+	statement cont_or_break;
+	memset(&cont_or_break, 0, sizeof(statement));
+	cont_or_break.type = (tok->type == BREAK) ? BREAK_STMT : CONTINUE_STMT;
+	cont_or_break.parent = prog->cur_parent;
+	push_void(prog->stmt_list, &cont_or_break);
+}
+
 
 void goto_stmt(parsing_state* p, program_state* prog)
 {
@@ -1478,9 +1515,16 @@ void while_stmt(parsing_state* p, program_state* prog)
 	}
 
 	size_t while_loc = prog->stmt_list->size;
+	int old_cur_iter = prog->cur_iter;
+	int old_cur_i_switch = prog->cur_iter_switch;
+
+	prog->cur_iter = prog->cur_iter_switch = while_loc;
 	push_void(prog->stmt_list, &a_while);
 
 	statement_rule(p, prog);
+
+	prog->cur_iter = old_cur_iter;
+	prog->cur_iter_switch = old_cur_i_switch;
 
 	statement a_goto;
 	memset(&a_goto, 0, sizeof(statement));
@@ -1490,11 +1534,19 @@ void while_stmt(parsing_state* p, program_state* prog)
 	push_void(prog->stmt_list, &a_goto);
 
 	GET_STMT(prog->stmt_list, while_loc)->jump_to = prog->stmt_list->size;
+
+	statement* stmt;
+	for (int i=while_loc+1; i<prog->stmt_list->size-1; ++i) {
+		stmt = GET_STMT(prog->stmt_list, i);
+		if (stmt->type == BREAK_STMT && stmt->jump_to == 0) {
+			stmt->type = GOTO_STMT;
+			stmt->jump_to =  prog->stmt_list->size;
+		} else if (stmt->type == CONTINUE_STMT && stmt->jump_to == 0) {
+			stmt->type = GOTO_STMT;
+			stmt->jump_to = while_loc;
+		}
+	}
 }
-
-
-
-
 
 
 

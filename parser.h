@@ -31,7 +31,7 @@ typedef enum {
 	INT, SHORT, LONG, FLOAT, DOUBLE, CHAR, VOID, SIGNED, UNSIGNED,
 	
 	/* other keywords */
-	DO, WHILE, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,
+	DO, WHILE, FOR, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,
 	
 	ID,
 
@@ -129,6 +129,7 @@ typedef struct expr_block
 
 typedef enum {
 	NULL_STMT = 0, WHILE_STMT, PRINT_STMT, EXPR_STMT, IF_STMT, GOTO_STMT,
+	CONTINUE_STMT, BREAK_STMT,
 	DECL_STMT, RETURN_STMT, START_COMPOUND_STMT, END_COMPOUND_STMT
 } stmt_type;
 
@@ -203,7 +204,11 @@ typedef struct program_state
 	vector_void* stmt_list;
 	size_t* pc;
 	function* func;
+
+
 	int cur_parent; //<-- location of open block statement
+	int cur_iter;
+	int cur_iter_switch;
 
 	vector_str global_variables;
 	vector_void global_values;
@@ -283,6 +288,7 @@ void primary_expr(parsing_state* p, program_state* prog, expression* exp);
 
 
 void while_stmt(parsing_state* p, program_state* prog);
+void break_or_continue_stmt(parsing_state* p, program_state* prog);
 void if_stmt(parsing_state* p, program_state* prog);
 void print_stmt(parsing_state* p, program_state* prog);
 void goto_stmt(parsing_state* p, program_state* prog);
