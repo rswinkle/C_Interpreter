@@ -13,8 +13,8 @@
 
 void run(program_state* prog, char* start_func);
 void execute(program_state* prog);
-int execute_expr(program_state* prog, unsigned int expr_loc);
-void execute_expr_list(program_state* prog, function* callee, unsigned int expr_loc);
+int execute_expr(program_state* prog, expression* e);
+void execute_expr_list(program_state* prog, function* callee, expression* e);
 
 
 void add_binding(program_state* prog, char* name, var_type vtype);

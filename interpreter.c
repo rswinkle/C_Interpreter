@@ -138,7 +138,7 @@ void execute(program_state* prog)
 
 
 
-int execute_expr(program_state* prog, unsigned int expr_loc)
+int execute_expr(program_state* prog, expression* e)
 {
 	var_value* var;
 
@@ -146,9 +146,6 @@ int execute_expr(program_state* prog, unsigned int expr_loc)
 	vector_void* old_stmt_list;
 	size_t* old_pc;
 
-	expression* e = GET_EXPRESSION(&prog->expressions, expr_loc);
-	expression* left = GET_EXPRESSION(&prog->expressions, e->left);
-	expression* right = GET_EXPRESSION(&prog->expressions, e->right);
 
 	switch (e->tok.type) {
 	case EXP:          return execute_expr(prog, e->left);
@@ -169,22 +166,22 @@ int execute_expr(program_state* prog, unsigned int expr_loc)
 	case COMMA:        return execute_expr(prog, e->left) , execute_expr(prog, e->right);
 
 	case EQUAL:
-		var = look_up_value(prog, left->tok.v.id, BOTH);
+		var = look_up_value(prog, e->left->tok.v.id, BOTH);
 		return var->v.int_val = execute_expr(prog, e->right);
 	case ADDEQUAL:
-		var = look_up_value(prog, left->tok.v.id, BOTH);
+		var = look_up_value(prog, e->left->tok.v.id, BOTH);
 		return var->v.int_val += execute_expr(prog, e->right);
 	case SUBEQUAL:
-		var = look_up_value(prog, left->tok.v.id, BOTH);
+		var = look_up_value(prog, e->left->tok.v.id, BOTH);
 		return var->v.int_val -= execute_expr(prog, e->right);
 	case MULTEQUAL:
-		var = look_up_value(prog, left->tok.v.id, BOTH);
+		var = look_up_value(prog, e->left->tok.v.id, BOTH);
 		return var->v.int_val *= execute_expr(prog, e->right);
 	case DIVEQUAL:
-		var = look_up_value(prog, left->tok.v.id, BOTH);
+		var = look_up_value(prog, e->left->tok.v.id, BOTH);
 		return var->v.int_val /= execute_expr(prog, e->right);
 	case MODEQUAL:
-		var = look_up_value(prog, left->tok.v.id, BOTH);
+		var = look_up_value(prog, e->left->tok.v.id, BOTH);
 		return var->v.int_val %= execute_expr(prog, e->right);
 	
 		break;
@@ -200,7 +197,7 @@ int execute_expr(program_state* prog, unsigned int expr_loc)
 		old_func = prog->func;
 
 		//look_up_value should never return NULL, parsing should catch all errors like that
-		func = GET_FUNCTION(&prog->functions, look_up_value(prog, left->tok.v.id, ONLY_GLOBAL)->v.func_loc);
+		func = GET_FUNCTION(&prog->functions, look_up_value(prog, e->left->tok.v.id, ONLY_GLOBAL)->v.func_loc);
 
 		if (func->n_params) //could also check e->right->tok.type = VOID
 			execute_expr_list(prog, func, e->right);
@@ -234,22 +231,21 @@ int execute_expr(program_state* prog, unsigned int expr_loc)
  * gcc seems to do it in reverse order but tcc matches my output
  *
  */
-void execute_expr_list(program_state* prog, function* callee, unsigned int expr_loc)
+void execute_expr_list(program_state* prog, function* callee, expression* e)
 {
 	function* func = callee;
-	expression* e = GET_EXPRESSION(&prog->expressions, expr_loc);
 	symbol* s;
 	active_binding* v = malloc(sizeof(active_binding));;
 
-	int i = 0, tmp = expr_loc;
+	int i = 0;
+	expression* tmp = e;
 	while (e->tok.type == EXPR_LIST) {
 		s = GET_SYMBOL(&func->symbols, i);
 		v->val.v.int_val = execute_expr(prog, e->left);
 		list_add(&v->list, &s->head);
 		s->cur_parent = v->parent = 0; //reset for recursive call
 
-		tmp = e->right;
-		e = GET_EXPRESSION(&prog->expressions, e->right);
+		e = tmp = e->right;
 		++i;
 		v = malloc(sizeof(active_binding));
 	}

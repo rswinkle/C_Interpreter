@@ -10,29 +10,34 @@
 
 
 
-unsigned int make_expression(program_state* prog)
+expression* make_expression(program_state* prog)
 {
-	expression e = { 0 };
-	push_void(&prog->expressions, &e);
-	return prog->expressions.size - 1;
-}
-	
-
-void free_expression(void* expr)
-{
-	//if (!e)
-	//	return;
-
-	expression* e = expr;
-	/*
-	} else if (e->tok.type == EXP) {
-		free_expression(GET_EXPRESSION(&prog->expressions, e->left));
-	} else if (e->tok.type != INT_LITERAL && e->tok.type != FLOAT_LITERAL) {
-		free_expression(GET_EXPRESSION(&prog->expressions, e->left));
-		free_expression(GET_EXPRESSION(&prog->expressions, e->right));
+	expr_block* b = (expr_block*)back_void(&prog->expressions);
+	if (b->n == b->used) {
+		expr_block b_new;
+		make_expression_block(32, &b_new);
+		push_void(&prog->expressions, &b_new);
+		b = (expr_block*)back_void(&prog->expressions);
 	}
-	*/
-	//free(e);
+	return &b->data[b->used++];
+}
+
+
+
+int make_expression_block(size_t n, expr_block* block)
+{
+	block->data = malloc(n * sizeof(expression)); assert(block->data);
+	if (!block->data) {
+		return 0;
+	}
+	block->n = n;
+	block->used = 0;
+}
+
+void free_expr_block(void* block)
+{
+	expr_block* b = block;
+	free(b->data);
 }
 
 void free_active_binding_list(void* l)
@@ -58,7 +63,7 @@ void init_function(void* to, void* from)
 	function* to_func = to, *from_func = from;
 
 	to_func->pc = 0;
-	vec_void(&to_func->stmt_list, 0, 100, sizeof(statement), free_statement, NULL);
+	vec_void(&to_func->stmt_list, 0, 50, sizeof(statement), free_statement, NULL);
 	vec_void(&to_func->symbols, 0, 20, sizeof(symbol), free_symbol, NULL);
 }
 
@@ -480,10 +485,12 @@ void parse_program(program_state* prog, FILE* file)
 	prog->pc = NULL;
 	prog->stmt_list = NULL;
 	prog->bindings = NULL;
-	vec_void(&prog->functions, 0, 10, sizeof(function), free_function, init_function);  //I could actually use an init function here ..
+	vec_void(&prog->functions, 0, 10, sizeof(function), free_function, init_function);
 	vec_str(&prog->global_variables, 0, 20);
 	vec_void(&prog->global_values, 0, 20, sizeof(var_value), free_var_value, NULL);
-	vec_void(&prog->expressions, 0, 300, sizeof(expression), free_expression, NULL);
+
+	vec_void(&prog->expressions, 1, 1, sizeof(expr_block), free_expr_block, NULL);
+	make_expression_block(50, (expr_block*)back_void(&prog->expressions));
 
 	translation_unit(&p, prog);
 
@@ -797,7 +804,7 @@ void initialized_declarator(parsing_state* p, program_state* prog, var_type v_ty
 		push_void(&prog->global_values, &val);
 
 		if (peek_token(p, 1)->type == EQUAL) {
-			unsigned int e = make_expression(prog);
+			expression* e = make_expression(prog);
 			assign_expr(p, prog, e);
 			execute_expr(prog, e); //does the assignment inside
 		} else {
@@ -1017,21 +1024,20 @@ void expression_stmt(parsing_state* p, program_state* prog)
 	}
 }
 
-void expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
+void expr(parsing_state* p, program_state* prog, expression* e)
 {
-	comma_expr(p, prog, expr_loc);
+	comma_expr(p, prog, e);
 }
 
-void comma_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
+void comma_expr(parsing_state* p, program_state* prog, expression* e)
 {
-	assign_expr(p, prog, expr_loc);
+	assign_expr(p, prog, e);
 	
-	expression* e = GET_EXPRESSION(&prog->expressions, expr_loc);
 	token_value* tok = peek_token(p, 0);
 	while (tok->type == COMMA) {
 		get_token(p);
 
-		e->left = copy_expr(prog, expr_loc);
+		e->left = copy_expr(prog, e);
 		e->tok.type = tok->type;
 
 		e->right = make_expression(prog);
@@ -1049,15 +1055,13 @@ int assignment_operator(Token tok)
 }
 
 /* assign_expr -> cond_expr | identifer assign_op assign_expr */
-void assign_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
+void assign_expr(parsing_state* p, program_state* prog, expression* e)
 {
 	token_value* tok;
-	expression* e;	
 
 	if (peek_token(p, 0)->type != ID) {
-		cond_expr(p, prog, expr_loc);
+		cond_expr(p, prog, e);
 
-		e = GET_EXPRESSION(&prog->expressions, expr_loc);
 		if (assignment_operator(peek_token(p, 0)->type)) {
 			if (e->tok.type != ID) {  //TODO for now
 				parse_error(&e->tok, "in assign_expr, lvalue required as left operand of assignment.\n");	
@@ -1068,9 +1072,8 @@ void assign_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
 	}
 
 	if (!assignment_operator(peek_token(p, 1)->type)) {
-		cond_expr(p, prog, expr_loc);
+		cond_expr(p, prog, e);
 
-		e = GET_EXPRESSION(&prog->expressions, expr_loc);
 		if (assignment_operator(peek_token(p, 0)->type)) {
 			if (e->tok.type != ID) {  //TODO for now
 				parse_error(&e->tok, "in assign_expr, lvalue required as left operand of assignment.\n");	
@@ -1080,7 +1083,6 @@ void assign_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
 		return;
 	}
 
-	e = GET_EXPRESSION(&prog->expressions, expr_loc);
 	e->tok.type = ID;
 	e->tok.v.id = get_token(p)->v.id;
 	
@@ -1098,7 +1100,7 @@ void assign_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
 	//
 	//Here the top level left side never changes and only the right
 	//side is expanded in the recursive call
-	e->left = copy_expr(prog, expr_loc);
+	e->left = copy_expr(prog, e);
 	e->tok.type = tok->type;
 
 	e->right = make_expression(prog);
@@ -1106,30 +1108,29 @@ void assign_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
 	assign_expr(p, prog, e->right);
 }
 
-unsigned int copy_expr(program_state* prog, unsigned int expr_loc)
+expression* copy_expr(program_state* prog, expression* e)
 {
-	unsigned int copy = make_expression(prog);
-	memcpy(GET_EXPRESSION(&prog->expressions, copy), GET_EXPRESSION(&prog->expressions, expr_loc), sizeof(expression));
+	expression* copy = make_expression(prog);
+	memcpy(copy, e, sizeof(expression));
 	return copy;
 }
 	
-void cond_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
+void cond_expr(parsing_state* p, program_state* prog, expression* e)
 {
-	logical_or_expr(p, prog, expr_loc);
+	logical_or_expr(p, prog, e);
 
 	//TODO add ternary operator here
 }
 
 /* logical_or_expr -> logical_and_expr { '||' logical_and_expr } */
-void logical_or_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
+void logical_or_expr(parsing_state* p, program_state* prog, expression* e)
 {
-	logical_and_expr(p, prog, expr_loc);
+	logical_and_expr(p, prog, e);
 
-	expression* e = GET_EXPRESSION(&prog->expressions, expr_loc);
 	while (peek_token(p, 0)->type == LOGICAL_OR) {
 		get_token(p);
 
-		e->left = copy_expr(prog, expr_loc);
+		e->left = copy_expr(prog, e);
 		e->tok.type = LOGICAL_OR;
 
 		e->right = make_expression(prog);
@@ -1143,15 +1144,14 @@ void logical_or_expr(parsing_state* p, program_state* prog, unsigned int expr_lo
  *                     logical_and_expr '&&' bitwise_or_expr
  * logical_and_expr -> equality_expr { '&&' equality_expr }
  */
-void logical_and_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
+void logical_and_expr(parsing_state* p, program_state* prog, expression* e)
 {
-	equality_expr(p, prog, expr_loc);
-	expression* e = GET_EXPRESSION(&prog->expressions, expr_loc);
+	equality_expr(p, prog, e);
 
 	while (peek_token(p, 0)->type == LOGICAL_AND) {
 		get_token(p);
 
-		e->left = copy_expr(prog, expr_loc);
+		e->left = copy_expr(prog, e);
 		e->tok.type = LOGICAL_AND;
 
 		e->right = make_expression(prog);
@@ -1160,16 +1160,15 @@ void logical_and_expr(parsing_state* p, program_state* prog, unsigned int expr_l
 	}
 }
 
-void equality_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
+void equality_expr(parsing_state* p, program_state* prog, expression* e)
 {
-	relational_expr(p, prog, expr_loc);
+	relational_expr(p, prog, e);
 
-	expression* e = GET_EXPRESSION(&prog->expressions, expr_loc);
 	token_value* tok = peek_token(p, 0);
 	while (tok->type == EQUALEQUAL || tok->type == NOTEQUAL) {
 		get_token(p);
 
-		e->left = copy_expr(prog, expr_loc);
+		e->left = copy_expr(prog, e);
 		e->tok.type = tok->type;
 
 		e->right = make_expression(prog);
@@ -1180,17 +1179,16 @@ void equality_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
 }
 
 
-void relational_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
+void relational_expr(parsing_state* p, program_state* prog, expression* e)
 {
 	//skiping shift operators would be shift_expr() here
 	//
-	add_expr(p, prog, expr_loc);
-	expression* e = GET_EXPRESSION(&prog->expressions, expr_loc);
+	add_expr(p, prog, e);
 
 	token_value* tok = peek_token(p, 0);
 	while (tok->type == GREATER || tok->type == GTEQ || tok->type == LESS || tok->type == LTEQ) {
 		get_token(p);
-		e->left = copy_expr(prog, expr_loc);
+		e->left = copy_expr(prog, e);
 		e->tok.type = tok->type;
 
 		e->right = make_expression(prog);
@@ -1202,16 +1200,15 @@ void relational_expr(parsing_state* p, program_state* prog, unsigned int expr_lo
 
 
 /* add_expr -> mult_expr { '+'|'-' mult_expr } */
-void add_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
+void add_expr(parsing_state* p, program_state* prog, expression* e)
 {
-	mult_expr(p, prog, expr_loc);
-	expression* e = GET_EXPRESSION(&prog->expressions, expr_loc);
+	mult_expr(p, prog, e);
 
 	token_value* tok = peek_token(p, 0);
 	while (tok->type == ADD || tok->type == SUB) {
 		get_token(p);
 		
-		e->left = copy_expr(prog, expr_loc);
+		e->left = copy_expr(prog, e);
 		e->tok.type = tok->type;
 
 		e->right = make_expression(prog);
@@ -1222,18 +1219,17 @@ void add_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
 }
 
 /* mult_expr ->  unary_expr { '*'|'/' unary_expr } */
-void mult_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
+void mult_expr(parsing_state* p, program_state* prog, expression* e)
 {
 	token_value* tok;
 
-	unary_expr(p, prog, expr_loc);
-	expression* e = GET_EXPRESSION(&prog->expressions, expr_loc);
+	unary_expr(p, prog, e);
 
 	tok = peek_token(p, 0);
 	while (tok->type == MULT || tok->type == DIV || tok->type == MOD) {
 		get_token(p);
 
-		e->left = copy_expr(prog, expr_loc);
+		e->left = copy_expr(prog, e);
 		e->tok.type = tok->type;
 
 		e->right = make_expression(prog);
@@ -1244,19 +1240,18 @@ void mult_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
 }
 
 /* unary_expr -> postfix_expr | logical_negation_expr */
-void unary_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
+void unary_expr(parsing_state* p, program_state* prog, expression* e)
 {
 	if (peek_token(p, 0)->type == LOGICAL_NEGATION) {
-		logical_negation_expr(p, prog, expr_loc);
+		logical_negation_expr(p, prog, e);
 	} else {
-		postfix_expr(p, prog, expr_loc);
+		postfix_expr(p, prog, e);
 	}
 }
 
-void logical_negation_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
+void logical_negation_expr(parsing_state* p, program_state* prog, expression* e)
 {
 	token_value* tok = get_token(p);
-	expression* e = GET_EXPRESSION(&prog->expressions, expr_loc);
 
 	e->tok.type = LOGICAL_NEGATION;
 	e->left = make_expression(prog);
@@ -1265,29 +1260,27 @@ void logical_negation_expr(parsing_state* p, program_state* prog, unsigned int e
 }
 
 
-void postfix_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
+void postfix_expr(parsing_state* p, program_state* prog, expression* e)
 {
 	if (peek_token(p, 0)->type == ID && peek_token(p, 1)->type == LPAREN) {
-		function_call(p, prog, expr_loc);
+		function_call(p, prog, e);
 	} else {
-		primary_expr(p, prog, expr_loc);
+		primary_expr(p, prog, e);
 	}
 }
 
 
-void function_call(parsing_state* p, program_state* prog, unsigned int expr_loc)
+void function_call(parsing_state* p, program_state* prog, expression* e)
 {
 	token_value* tok = get_token(p);
 	get_token(p);  //get '('
 	
-	expression* e = GET_EXPRESSION(&prog->expressions, expr_loc);
 	e->tok.type = FUNC_CALL;
 
 	e->left = make_expression(prog);
 
-	expression* left = GET_EXPRESSION(&prog->expressions, e->left);
-	left->tok.type = ID;
-	left->tok.v.id = tok->v.id;
+	e->left->tok.type = ID;
+	e->left->tok.v.id = tok->v.id;
 
 	//this check will have to change when I allow function pointers
 	var_value* check = look_up_value(prog, tok->v.id, ONLY_GLOBAL);
@@ -1303,8 +1296,7 @@ void function_call(parsing_state* p, program_state* prog, unsigned int expr_loc)
 	e->right = make_expression(prog);
 	
 	if (peek_token(p, 0)->type == RPAREN) {
-		expression* right = GET_EXPRESSION(&prog->expressions, e->right);
-		right->tok.type = VOID;
+		e->right->tok.type = VOID;
 		get_token(p);
 		return;
 	}
@@ -1317,15 +1309,14 @@ void function_call(parsing_state* p, program_state* prog, unsigned int expr_loc)
 	}
 }
 
-void expression_list(parsing_state* p, program_state* prog, unsigned int expr_loc)
+void expression_list(parsing_state* p, program_state* prog, expression* e)
 {
-	assign_expr(p, prog, expr_loc);
-	expression* e = GET_EXPRESSION(&prog->expressions, expr_loc);
+	assign_expr(p, prog, e);
 
 	if (peek_token(p, 0)->type == COMMA) {
 		get_token(p);
 
-		e->left = copy_expr(prog, expr_loc);
+		e->left = copy_expr(prog, e);
 		e->tok.type = EXPR_LIST;
 
 		e->right = make_expression(prog);
@@ -1335,10 +1326,9 @@ void expression_list(parsing_state* p, program_state* prog, unsigned int expr_lo
 }
 
 /* primary -> '(' expr ')' | ID | *_LITERAL */
-void primary_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
+void primary_expr(parsing_state* p, program_state* prog, expression* e)
 {
 	token_value* tok = get_token(p);
-	expression* e = GET_EXPRESSION(&prog->expressions, expr_loc);
 
 	switch (tok->type) {
 	case LPAREN:

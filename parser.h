@@ -16,7 +16,6 @@
 #define GET_STMT(VEC, I) GET_VOID(VEC, statement, I)
 #define GET_TOKEN_VAL(VEC, I) GET_VOID((VEC), token_value, (I))
 #define GET_FUNCTION(VEC, I) GET_VOID(VEC, function, I)
-#define GET_EXPRESSION(VEC, I) GET_VOID(VEC, expression, I)
 #define GET_SYMBOL(VEC, I) GET_VOID(VEC, symbol, I)
 #define GET_BINDING(VEC, I) GET_VOID(VEC, binding, I)
 
@@ -116,9 +115,16 @@ typedef struct expression expression;
 struct expression
 {
 	token_value tok;
-	unsigned int left;
-	unsigned int right;
+	expression* left;
+	expression* right;
 };
+
+typedef struct expr_block
+{
+	expression* data;
+	size_t n;
+	size_t used;
+} expr_block;
 
 
 typedef enum {
@@ -147,7 +153,7 @@ typedef struct statement
 	stmt_type type;
 	size_t jump_to;
 	char* lvalue;
-	unsigned int exp;
+	expression* exp;
 	var_type vtype;
 	
 	long parent;
@@ -211,13 +217,16 @@ typedef struct program_state
 
 
 
+int make_expression_block(size_t n, expr_block* block);
 
 void free_statement(void* stmt);
 
 //should probably make these static in parser.c
 void print_token(token_value* tok);
 void print_statement(statement* stmt);
-unsigned int copy_expr(program_state* prog, unsigned int expr_loc);
+expression* copy_expr(program_state* prog, expression* e);
+expression* make_expression(program_state* prog);
+
 void parse_error(token_value* tok, char *str, ...);
 token_value* peek_token(parsing_state* p, long offset);
 void parse_seek(parsing_state* p, int origin, long offset);
@@ -249,28 +258,28 @@ void declaration_or_statement(parsing_state* p, program_state* prog);
 void statement_rule(parsing_state* p, program_state* prog);
 
 void expression_stmt(parsing_state* p, program_state* prog);
-void expr(parsing_state* p, program_state* prog, unsigned int e);
-void comma_expr(parsing_state* p, program_state* prog, unsigned int e);
-void assign_expr(parsing_state* p, program_state* prog, unsigned int e);
+void expr(parsing_state* p, program_state* prog, expression* e);
+void comma_expr(parsing_state* p, program_state* prog, expression* e);
+void assign_expr(parsing_state* p, program_state* prog, expression* e);
 
 
-void cond_expr(parsing_state* p, program_state* prog, unsigned int e);
-void logical_or_expr(parsing_state* p, program_state* prog, unsigned int e);
-void logical_and_expr(parsing_state* p, program_state* prog, unsigned int e);
-void equality_expr(parsing_state* p, program_state* prog, unsigned int e);
-void relational_expr(parsing_state* p, program_state* prog, unsigned int e);
+void cond_expr(parsing_state* p, program_state* prog, expression* e);
+void logical_or_expr(parsing_state* p, program_state* prog, expression* e);
+void logical_and_expr(parsing_state* p, program_state* prog, expression* e);
+void equality_expr(parsing_state* p, program_state* prog, expression* e);
+void relational_expr(parsing_state* p, program_state* prog, expression* e);
 
-void add_expr(parsing_state* p, program_state* prog, unsigned int exp);
-void mult_expr(parsing_state* p, program_state* prog, unsigned int exp);
+void add_expr(parsing_state* p, program_state* prog, expression* exp);
+void mult_expr(parsing_state* p, program_state* prog, expression* exp);
 
-void unary_expr(parsing_state* p, program_state* prog, unsigned int expr_loc);
-void postfix_expr(parsing_state* p, program_state* prog, unsigned int expr_loc);
-void logical_negation_expr(parsing_state* p, program_state* prog, unsigned int expr_loc);
+void unary_expr(parsing_state* p, program_state* prog, expression* e);
+void postfix_expr(parsing_state* p, program_state* prog, expression* e);
+void logical_negation_expr(parsing_state* p, program_state* prog, expression* e);
 
-void function_call(parsing_state* p, program_state* prog, unsigned int expr_loc);
-void expression_list(parsing_state* p, program_state* prog, unsigned int expr_loc);
+void function_call(parsing_state* p, program_state* prog, expression* e);
+void expression_list(parsing_state* p, program_state* prog, expression* e);
 
-void primary_expr(parsing_state* p, program_state* prog, unsigned int exp);
+void primary_expr(parsing_state* p, program_state* prog, expression* exp);
 
 
 void while_stmt(parsing_state* p, program_state* prog);
@@ -282,7 +291,7 @@ void labeled_stmt(parsing_state* p, program_state* prog);
 
 
 //can I put these prototypes here too?
-int execute_expr(program_state* prog, unsigned int expr_loc);
+int execute_expr(program_state* prog, expression* e);
 
 void add_binding(program_state* prog, char* name, var_type vtype);
 void remove_binding(program_state* prog, char* name);
