@@ -203,6 +203,7 @@ typedef struct program_state
 	vector_void global_values;
 
 	vector_void expressions;
+	vector_str string_db;
 	vector_void* bindings;
 } program_state;
 

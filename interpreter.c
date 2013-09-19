@@ -28,6 +28,7 @@ void run(program_state* prog, char* start_func)
 	free_vec_str(&prog->global_variables);
 	free_vec_void(&prog->global_values);
 	free_vec_void(&prog->expressions);
+	free_vec_str(&prog->string_db);
 }
 
 

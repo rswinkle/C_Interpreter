@@ -24,9 +24,6 @@ void free_expression(void* expr)
 	//	return;
 
 	expression* e = expr;
-	if (e->tok.type == ID) {
-		free(e->tok.v.id);
-	}
 	/*
 	} else if (e->tok.type == EXP) {
 		free_expression(GET_EXPRESSION(&prog->expressions, e->left));
@@ -52,7 +49,6 @@ void free_active_binding_list(void* l)
 void free_symbol(void* var)
 {
 	symbol* s = var;
-	free(s->name);
 	free_active_binding_list(&s->head);
 }
 
@@ -73,17 +69,10 @@ void free_function(void* func)
 	free_vec_void(&f->symbols);
 }
 
-void free_binding(void* var)
-{
-	binding* b = var;
-	free(b->name);
-}
 
 void free_statement(void* stmt)
 {
 	statement* s = (statement*)stmt;
-	free(s->lvalue);
-
 	free_vec_void_heap(s->bindings);
 }
 
@@ -340,12 +329,6 @@ exit_error:
 
 
 
-void free_token_value(void* tok)
-{
-	token_value* t = tok;
-	if (t->type == ID)
-		free(t->v.id);
-}
 
 void print_statement(statement* stmt)
 {
@@ -462,13 +445,28 @@ void parse_seek(parsing_state* p, int origin, long offset)
 void parse_program(program_state* prog, FILE* file)
 {
 	parsing_state p;
-	vec_void(&p.tokens, 0, 1000, sizeof(token_value), free_token_value, NULL);
+	vec_void(&p.tokens, 0, 1000, sizeof(token_value), NULL, NULL);
 
+	vec_str(&prog->string_db, 0, 100);
+	int i;
 
 	//TODO string database vector, no more allocating a dozen
 	//copies of the same strings
 	token_value tok = read_token(file);
 	while (tok.type != END && tok.type != ERROR) {
+		if (tok.type == ID) {
+			for (i=0; i<prog->string_db.size; ++i) {
+				if (!strcmp(tok.v.id, prog->string_db.a[i])) {
+					free(tok.v.id);
+					tok.v.id = prog->string_db.a[i];
+					break;
+				}
+			}
+			if (i == prog->string_db.size) {
+				extend_str(&prog->string_db, 1);
+				prog->string_db.a[prog->string_db.size-1] = tok.v.id;
+			}
+		}
 		push_void(&p.tokens, &tok);
 		tok = read_token(file);
 	}
@@ -646,7 +644,7 @@ void parameter_declaration(parsing_state* p, program_state* prog)
 	var->val.type = vtype;
 	symbol s;
 	s.cur_parent = 0;
-	s.name = mystrdup(tok->v.id);
+	s.name = tok->v.id;
 
 	push_void(&prog->func->symbols, &s);
 	symbol* tmp = back_void(&prog->func->symbols);
@@ -747,7 +745,7 @@ void initialized_declarator(parsing_state* p, program_state* prog, var_type v_ty
 
 		if (!check) {
 			symbol s;
-			s.name = mystrdup(tok->v.id);
+			s.name = tok->v.id;
 			push_void(&prog->func->symbols, &s);
 		}
 		symbol* tmp = (check) ? check : back_void(&prog->func->symbols);
@@ -761,11 +759,11 @@ void initialized_declarator(parsing_state* p, program_state* prog, var_type v_ty
 		memset(&decl_stmt, 0, sizeof(statement));
 		decl_stmt.type = DECL_STMT;
 		decl_stmt.vtype = v_type;
-		decl_stmt.lvalue = mystrdup(tok->v.id);
+		decl_stmt.lvalue = tok->v.id;
 		decl_stmt.parent = prog->cur_parent;
 		
 		binding b;
-		b.name = mystrdup(tmp->name);
+		b.name = tmp->name;
 		b.vtype = v_type;
 		b.decl_stmt = prog->stmt_list->size;
 		push_void(prog->bindings, &b);
@@ -829,7 +827,7 @@ void compound_statement(parsing_state* p, program_state* prog)
 	vector_void* old_bindings = prog->bindings;
 	int old_parent = prog->cur_parent;
 
-	start.bindings = vec_void_heap(0, 20, sizeof(binding), free_binding, NULL);
+	start.bindings = vec_void_heap(0, 20, sizeof(binding), NULL, NULL);
 	prog->bindings = start.bindings;
 
 	end.parent = prog->stmt_list->size;
@@ -950,7 +948,7 @@ void goto_stmt(parsing_state* p, program_state* prog)
 		exit(0);
 	}
 	
-	a_goto.lvalue = mystrdup(tok->v.id);
+	a_goto.lvalue = tok->v.id;
 
 	tok = get_token(p);
 	if (tok->type != SEMICOLON) {
@@ -1084,7 +1082,7 @@ void assign_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
 
 	e = GET_EXPRESSION(&prog->expressions, expr_loc);
 	e->tok.type = ID;
-	e->tok.v.id = mystrdup(get_token(p)->v.id);
+	e->tok.v.id = get_token(p)->v.id;
 	
 	tok = get_token(p); //get assignment op
 	
@@ -1289,7 +1287,7 @@ void function_call(parsing_state* p, program_state* prog, unsigned int expr_loc)
 
 	expression* left = GET_EXPRESSION(&prog->expressions, e->left);
 	left->tok.type = ID;
-	left->tok.v.id = mystrdup(tok->v.id);
+	left->tok.v.id = tok->v.id;
 
 	//this check will have to change when I allow function pointers
 	var_value* check = look_up_value(prog, tok->v.id, ONLY_GLOBAL);
@@ -1361,7 +1359,7 @@ void primary_expr(parsing_state* p, program_state* prog, unsigned int expr_loc)
 			exit(0);
 		}
 		e->tok.type = ID;
-		e->tok.v.id = mystrdup(tok->v.id);
+		e->tok.v.id = tok->v.id;
 		break;
 	case INT_LITERAL:
 		e->tok.type = INT_LITERAL;
@@ -1451,7 +1449,7 @@ void print_stmt(parsing_state* p, program_state* prog)
 	a_print.type = PRINT_STMT;
 	a_print.parent = prog->cur_parent;
 
-	a_print.lvalue = mystrdup(tok->v.id);
+	a_print.lvalue = tok->v.id;
 	
 	tok = get_token(p);
 	if (tok->type != SEMICOLON) {
