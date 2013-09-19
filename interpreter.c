@@ -170,6 +170,8 @@ int execute_expr(program_state* prog, expression* e)
 
 	case COMMA:        return execute_expr(prog, e->left) , execute_expr(prog, e->right);
 
+	case TERNARY:      return execute_expr(prog, e->left) ? execute_expr(prog, e->right->left) : execute_expr(prog, e->right->right);
+
 	case EQUAL:
 		var = look_up_value(prog, e->left->tok.v.id, BOTH);
 		return var->v.int_val = execute_expr(prog, e->right);

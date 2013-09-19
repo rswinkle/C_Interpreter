@@ -114,6 +114,7 @@ start:
 	case '}': tok.type = RBRACE;    break;
 	case '(': tok.type = LPAREN;    break;
 	case ')': tok.type = RPAREN;    break;
+	case '?': tok.type = TERNARY;   break;
 
 	case '+':
 		c = getc(file);
@@ -1279,7 +1280,23 @@ void cond_expr(parsing_state* p, program_state* prog, expression* e)
 {
 	logical_or_expr(p, prog, e);
 
-	//TODO add ternary operator here
+	if (peek_token(p, 0)->type == TERNARY) {
+		get_token(p);
+		e->left = copy_expr(prog, e);
+		e->tok.type = TERNARY; 
+		e->right = make_expression(prog);
+
+		e->right->left = make_expression(prog);
+		expr(p, prog, e->right->left);
+		if (peek_token(p, 0)->type != COLON) {
+			parse_error(peek_token(p, 0), "in ternary expression expected COLON\n");
+			exit(0);
+		}
+		get_token(p);
+		e->right->tok.type = COLON;
+		e->right->right = make_expression(prog);
+		cond_expr(p, prog, e->right->right);
+	}
 }
 
 /* logical_or_expr -> logical_and_expr { '||' logical_and_expr } */

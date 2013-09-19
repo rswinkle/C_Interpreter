@@ -1,0 +1,19 @@
+
+
+int main()
+{
+	int i = 10 > 5 ? 10 : 5;
+	int j = i == 11 ? 1 : 0;
+
+	print i;
+	print j;
+
+	int k = i != 10 ? 20 : 0-20;
+
+	print k;
+	k = i != 10 ? 20 : !(j+=1) ? 123 : 321;
+
+	print k;
+	
+	return 0;
+}
