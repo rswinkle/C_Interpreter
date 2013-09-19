@@ -67,6 +67,11 @@ void execute(program_state* prog)
 				*prog->pc = stmt->jump_to - 1;
 			break;
 
+		case FOR_STMT:
+			if (stmt->exp && !execute_expr(prog, stmt->exp))
+				*prog->pc = stmt->jump_to - 1;
+			break;
+
 		case GOTO_STMT:
 			target = GET_STMT(prog->stmt_list, stmt->jump_to);
 			if (stmt->parent != target->parent) {

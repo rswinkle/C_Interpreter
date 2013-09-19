@@ -33,6 +33,16 @@ int main()
 		}
 	}
 
+	for (int i=0, j=10; ; i+=1) {
+		if (i % 2)
+			continue;
+		printf("%d\n", i);
+		if (i == j)
+			break;
+	}
+	
+	printf("%d\n", i);
+
 
 	return 0;
 }

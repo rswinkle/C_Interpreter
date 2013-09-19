@@ -835,7 +835,6 @@ void compound_statement(parsing_state* p, program_state* prog)
 	//will change it in the loop below
 	start.parent = prog->cur_parent;
 
-
 	vector_void* old_bindings = prog->bindings;
 	int old_parent = prog->cur_parent;
 
@@ -904,7 +903,7 @@ void statement_rule(parsing_state* p, program_state* prog)
 		break;
 
 	case FOR:
-		//for_stmt(p, prog);
+		for_stmt(p, prog);
 		break;
 
 	case WHILE:
@@ -981,6 +980,124 @@ void break_or_continue_stmt(parsing_state* p, program_state* prog)
 	}
 }
 
+void for_stmt(parsing_state* p, program_state* prog)
+{
+	get_token(p); //  (
+
+	token_value* tok = get_token(p);
+	if (tok->type != LPAREN) {
+		parse_error(tok, "in for_stmt, LPAREN expected\n");
+		exit(0);
+	}
+
+	statement a_stmt;
+	memset(&a_stmt, 0, sizeof(statement));
+
+	//open enclosing block scope
+	a_stmt.parent = prog->cur_parent;
+	a_stmt.type = START_COMPOUND_STMT;
+	a_stmt.bindings = vec_void_heap(0, 3, sizeof(binding), NULL, NULL);
+
+	int old_parent = prog->cur_parent;
+	vector_void* old_bindings = prog->bindings;
+
+	prog->cur_parent = prog->stmt_list->size;
+	prog->bindings = a_stmt.bindings;
+	push_void(prog->stmt_list, &a_stmt);
+
+	//initial clause
+	if (peek_token(p, 0)->type != SEMICOLON) {
+		var_type vtype = declaration_specifier(p, prog, 0);
+		if (vtype != UNKNOWN) {
+			declaration(p, prog);
+			parse_seek(p, SEEK_CUR, -1); //declaration ate ';' so back up one
+		} else {
+			memset(&a_stmt, 0, sizeof(statement));
+
+			a_stmt.parent = prog->cur_parent;
+			a_stmt.exp = make_expression(prog);
+			a_stmt.type = EXPR_STMT;
+
+			expr(p, prog, a_stmt.exp);
+			push_void(prog->stmt_list, &a_stmt);
+		}
+	}
+
+	get_token(p); //first ;
+
+	//for statement and middle clause
+	memset(&a_stmt, 0, sizeof(statement));
+	a_stmt.parent = prog->cur_parent;
+	a_stmt.type = FOR_STMT;
+	if (peek_token(p, 0)->type != SEMICOLON) {
+		a_stmt.exp = make_expression(prog);
+		expr(p, prog, a_stmt.exp);
+	}
+	size_t for_loc = prog->stmt_list->size;
+	push_void(prog->stmt_list, &a_stmt);
+
+	get_token(p); //second ;
+
+	//3rd clause
+	memset(&a_stmt, 0, sizeof(statement));
+	a_stmt.parent = prog->cur_parent;
+	if (peek_token(p, 0)->type != RPAREN) {
+		a_stmt.exp = make_expression(prog);
+		a_stmt.type = EXPR_STMT;
+		expr(p, prog, a_stmt.exp);
+	}
+
+	get_token(p);  // )
+
+	int old_cur_iter = prog->cur_iter;
+	int old_cur_i_switch = prog->cur_iter_switch;
+
+	prog->cur_iter = prog->cur_iter_switch = for_loc;
+
+	statement_rule(p, prog);
+	
+	//TODO more efficient way to do this
+	binding* b;
+	for (int i=0; i<prog->bindings->size; ++i) {
+		b = GET_BINDING(prog->bindings, i);
+		remove_binding(prog, b->name);
+	}
+
+	prog->cur_iter = old_cur_iter;
+	prog->cur_iter_switch = old_cur_i_switch;
+	prog->bindings = old_bindings;
+	
+	//put 3rd expression "increment clause" at end
+	size_t third_expr = prog->stmt_list->size;
+	if (a_stmt.exp)
+		push_void(prog->stmt_list, &a_stmt);
+
+	statement a_goto;
+	memset(&a_goto, 0, sizeof(statement));
+	a_goto.type = GOTO_STMT;
+	a_goto.parent = prog->cur_parent;
+	a_goto.jump_to = for_loc;
+	push_void(prog->stmt_list, &a_goto);
+
+	GET_STMT(prog->stmt_list, for_loc)->jump_to = prog->stmt_list->size;
+
+	//close enclosing block scope
+	memset(&a_stmt, 0, sizeof(statement));
+	a_stmt.type = END_COMPOUND_STMT;
+	push_void(prog->stmt_list, &a_stmt);
+
+	statement* stmt;
+	for (int i=for_loc+1; i<prog->stmt_list->size-3; ++i) {
+		stmt = GET_STMT(prog->stmt_list, i);
+		if (stmt->type == BREAK_STMT && stmt->jump_to == 0) {
+			stmt->type = GOTO_STMT;
+			stmt->jump_to =  prog->stmt_list->size;
+		} else if (stmt->type == CONTINUE_STMT && stmt->jump_to == 0) {
+			stmt->type = GOTO_STMT;
+			stmt->jump_to = third_expr;
+		}
+	}
+}
 
 void goto_stmt(parsing_state* p, program_state* prog)
 {

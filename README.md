@@ -80,6 +80,12 @@ break_or_continue_stmt    -> break ';'
 labeled_stmt              -> identifier ':' statement
 
 while_stmt                -> while '(' expr ')' statement
+
+for_stmt                  -> for for_expressions statement
+for_expressions           -> '(' initial_clause<opt> ';' expr<opt> ';' expr<opt> ')'
+initial_clause            -> expr
+                          -> declaration
+
 if_stmt                   -> if '(' expr ')' statement
 						  -> if '(' expr ')' statement else statement
 
