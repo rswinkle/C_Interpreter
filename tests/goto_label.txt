@@ -9,15 +9,14 @@ start1:
 	int a = 5;
 start2:
 	print i;
-	i -= 1;
-	a -= 1;
+	--i;
+	a--;
 	print a;
 	if (i)
 		goto start2;
 
 	print j;
-	j -= 1;
-	if (j)
+	if (--j)
 		goto start1;
 
 
@@ -32,7 +31,7 @@ start2:
 		int b = 4;
 
 into:
-		b += 1;
+		++b;
 		print b;
 		int a = b / 2;
 		print a;
@@ -44,7 +43,7 @@ into:
 
 		goto outof;
 
-		int a = b += 1;
+		int a = b++;
 		print a;
 	}
 
@@ -123,7 +122,7 @@ backinto:
 		}
 		print test;
 		test /= 2;
-		check -= 1;
+		check--;
 	}
 
 	int test = 123;

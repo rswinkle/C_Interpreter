@@ -150,6 +150,7 @@ int execute_expr(program_state* prog, expression* e)
 	function* old_func, *func;
 	vector_void* old_stmt_list;
 	size_t* old_pc;
+	int tmp;
 
 
 	switch (e->tok.type) {
@@ -171,6 +172,22 @@ int execute_expr(program_state* prog, expression* e)
 	case COMMA:        return execute_expr(prog, e->left) , execute_expr(prog, e->right);
 
 	case TERNARY:      return execute_expr(prog, e->left) ? execute_expr(prog, e->right->left) : execute_expr(prog, e->right->right);
+
+	case PRE_INCREMENT:
+		var = look_up_value(prog, e->left->tok.v.id, BOTH);
+		return ++var->v.int_val;
+
+	case PRE_DECREMENT:
+		var = look_up_value(prog, e->left->tok.v.id, BOTH);
+		return --var->v.int_val;
+
+	case POST_INCREMENT:
+		var = look_up_value(prog, e->left->tok.v.id, BOTH);
+		return var->v.int_val++;
+
+	case POST_DECREMENT:
+		var = look_up_value(prog, e->left->tok.v.id, BOTH);
+		return var->v.int_val--;
 
 	case EQUAL:
 		var = look_up_value(prog, e->left->tok.v.id, BOTH);

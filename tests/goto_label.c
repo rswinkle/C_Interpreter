@@ -11,15 +11,14 @@ start1:
 	int a = 5;
 start2:
 	printf("%d\n", i);
-	i -= 1;
-	a -= 1;
+	--i;
+	a--;
 	printf("%d\n", a);
 	if (i)
 		goto start2;
 
 	printf("%d\n", j);
-	j -= 1;
-	if (j)
+	if (--j)
 		goto start1;
 
 
@@ -35,7 +34,7 @@ start2:
 		int b = 4;
 
 into:
-		b += 1;
+		++b;
 		printf("%d\n", b);
 		int a = b / 2;
 		printf("%d\n", a);
@@ -47,8 +46,9 @@ into:
 
 		goto outof;
 
-		int a = b += 1;
+		int a = b++;
 		printf("%d\n", a);
+		printf("%d\n", b);
 	}
 
 outof:
@@ -125,7 +125,7 @@ backinto:
 		}
 		printf("%d\n", test);
 		test /= 2;
-		check -= 1;
+		check--;
 	}
 
 	int test = 123;

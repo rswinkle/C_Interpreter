@@ -133,12 +133,23 @@ mult_expr                 -> unary_expr
 mult_op                   -> one of '*' '/' '%'
 
 unary_expr                -> postfix_expr
-                          -> logical_negation_expr
+                             logical_negation_expr
+                             preincrement_expr
+                             predecrement_expr
+
+preincrement_expr         -> '++' unary_expr
+predecrement_expr         -> '--' unary_expr
 
 logical_negation_expr     -> '!' unary_expr
 
+
 postfix_expr              -> function_call
                              primary_expr
+                             postincrement_expr
+                             postdecrement_expr
+
+postincrement_expr        -> postfix_expr '++'
+postdecrement_expr        -> postfix_expr '--'
 
 function_call             -> identifier '(' expression_list ')'
 

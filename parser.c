@@ -118,7 +118,9 @@ start:
 
 	case '+':
 		c = getc(file);
-		if (c == '=') {
+		if (c == '+') {
+			tok.type = INCREMENT;
+		} else if (c == '=') {
 			tok.type = ADDEQUAL;
 		} else {
 			ungetc(c, file);
@@ -128,7 +130,9 @@ start:
 
 	case '-':
 		c = getc(file);
-		if (c == '=') {
+		if (c == '-') {
+			tok.type = DECREMENT;
+		} else if (c == '=') {
 			tok.type = SUBEQUAL;
 		} else {
 			ungetc(c, file);
@@ -409,6 +413,9 @@ void print_token(token_value* tok)
 		case RBRACKET:         puts("RBRACKET");     break;
 		case LBRACE:           puts("LBRACE");     break;
 		case RBRACE:           puts("RBRACE");     break;
+		case INCREMENT:        puts("INCREMENT");     break;
+		case DECREMENT:        puts("DECREMENT");     break;
+
 		case ADDEQUAL:         puts("ADDEQUAL");     break;
 		case SUBEQUAL:         puts("SUBEQUAL");     break;
 		case MULTEQUAL:        puts("MULTEQUAL");     break;
@@ -948,8 +955,11 @@ void statement_rule(parsing_state* p, program_state* prog)
 		break;
 
 	default:
+		expression_stmt(p, prog);
+/*
 		parse_error(peek_token(p, 0), "in statement unexpected token\n");
 		exit(0);
+		*/
 	}
 }
 
@@ -1084,8 +1094,11 @@ void for_stmt(parsing_state* p, program_state* prog)
 
 	//close enclosing block scope
 	memset(&a_stmt, 0, sizeof(statement));
+	a_stmt.parent = prog->cur_parent;
 	a_stmt.type = END_COMPOUND_STMT;
 	push_void(prog->stmt_list, &a_stmt);
+
+	prog->cur_parent = old_parent;
 
 	statement* stmt;
 	for (int i=for_loc+1; i<prog->stmt_list->size-3; ++i) {
@@ -1419,10 +1432,37 @@ void mult_expr(parsing_state* p, program_state* prog, expression* e)
 /* unary_expr -> postfix_expr | logical_negation_expr */
 void unary_expr(parsing_state* p, program_state* prog, expression* e)
 {
-	if (peek_token(p, 0)->type == LOGICAL_NEGATION) {
+	switch (peek_token(p, 0)->type) {
+	case LOGICAL_NEGATION:
 		logical_negation_expr(p, prog, e);
-	} else {
+		break;
+
+	case INCREMENT:
+	case DECREMENT:
+		pre_inc_decrement_expr(p, prog, e);
+		break;
+
+	default:
 		postfix_expr(p, prog, e);
+	}
+}
+
+void pre_inc_decrement_expr(parsing_state* p, program_state* prog, expression* e)
+{
+	token_value* tok = get_token(p);
+	e->tok.type = (tok->type == INCREMENT) ? PRE_INCREMENT : PRE_DECREMENT;
+	e->left = make_expression(prog);
+	unary_expr(p, prog, e->left);
+
+	//This check will have to change later
+	expression* tmp = e->left;
+	while (tmp->tok.type != ID) {
+		if (tmp->tok.type == EXP) {
+			tmp = tmp->left;
+		} else {
+			parse_error(&tmp->tok, "lvalue required as increment or decrement operand\n");
+			exit(0);
+		}
 	}
 }
 
@@ -1439,10 +1479,25 @@ void logical_negation_expr(parsing_state* p, program_state* prog, expression* e)
 
 void postfix_expr(parsing_state* p, program_state* prog, expression* e)
 {
-	if (peek_token(p, 0)->type == ID && peek_token(p, 1)->type == LPAREN) {
+	token_value* tok = peek_token(p, 0);
+	if (tok->type == ID && peek_token(p, 1)->type == LPAREN) {
 		function_call(p, prog, e);
 	} else {
 		primary_expr(p, prog, e);
+		tok = peek_token(p, 0);
+		if (tok->type == INCREMENT || tok->type == DECREMENT) {
+			while (e->tok.type != ID) {
+				if (e->tok.type == EXP) {
+					e = e->left;
+				} else {
+					parse_error(&e->tok, "lvalue required as increment operand\n");
+					exit(0);
+				}
+			}
+			e->left = copy_expr(prog, e);
+			e->tok.type = (tok->type == INCREMENT) ? POST_INCREMENT : POST_DECREMENT;
+			get_token(p);
+		}
 	}
 }
 

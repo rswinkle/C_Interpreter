@@ -103,7 +103,7 @@ int main()
 
 	float test_function = 1.2;     // <-- legal
 	printf("%f\n", test_function);
-	test_function();               // <-- ilegal
+	//test_function();               // <-- ilegal
 
 	printf("main function = %p\n", main);
 	double main = 10.5;
@@ -117,16 +117,21 @@ int main()
 	printf("%d %d\n", blah, blah);
 
 
-	int testif = 2
+	int testif = 2;
 	if (testif > 1) {
 		int amihere = 3;
 		printf("amihere = %d\n", amihere);
 	}
 
-	printf("amihere = %d\n", amihere);
 
+	testif++;
+	printf("%d\n", testif);
+	(testif)++;
+	printf("%d\n", testif);
+	((testif))++;
+	printf("%d\n", testif);
 
-
+	"hello"[0];
 
 
 

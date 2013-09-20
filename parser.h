@@ -25,7 +25,7 @@ typedef enum {
 	ERROR, END,
 	
 	EQUALEQUAL, GREATER, GTEQ, LESS, LTEQ, NOTEQUAL,
-	LOGICAL_OR, LOGICAL_AND, LOGICAL_NEGATION,
+	LOGICAL_OR, LOGICAL_AND, LOGICAL_NEGATION, INCREMENT, DECREMENT,
 
 	/* types and type qualifiers */
 	INT, SHORT, LONG, FLOAT, DOUBLE, CHAR, VOID, SIGNED, UNSIGNED,
@@ -46,7 +46,8 @@ typedef enum {
 
 
 	/* for internal use/hacks, not really tokens */
-	LABEL, DECLARATION, EXP, EXPR_LIST, FUNC_CALL
+	LABEL, DECLARATION, EXP, EXPR_LIST, FUNC_CALL,
+	POST_INCREMENT, POST_DECREMENT, PRE_INCREMENT, PRE_DECREMENT
 } Token;
 
 
@@ -278,7 +279,10 @@ void add_expr(parsing_state* p, program_state* prog, expression* exp);
 void mult_expr(parsing_state* p, program_state* prog, expression* exp);
 
 void unary_expr(parsing_state* p, program_state* prog, expression* e);
+void pre_inc_decrement_expr(parsing_state* p, program_state* prog, expression* e);
+
 void postfix_expr(parsing_state* p, program_state* prog, expression* e);
+
 void logical_negation_expr(parsing_state* p, program_state* prog, expression* e);
 
 void function_call(parsing_state* p, program_state* prog, expression* e);
