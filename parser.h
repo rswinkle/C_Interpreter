@@ -130,7 +130,7 @@ typedef struct expr_block
 
 typedef enum {
 	NULL_STMT = 0, WHILE_STMT, PRINT_STMT, EXPR_STMT, IF_STMT, GOTO_STMT,
-	FOR_STMT, CONTINUE_STMT, BREAK_STMT,
+	FOR_STMT, CONTINUE_STMT, BREAK_STMT, DO_STMT,
 	DECL_STMT, RETURN_STMT, START_COMPOUND_STMT, END_COMPOUND_STMT
 } stmt_type;
 
@@ -292,6 +292,7 @@ void primary_expr(parsing_state* p, program_state* prog, expression* exp);
 
 
 void while_stmt(parsing_state* p, program_state* prog);
+void do_stmt(parsing_state* p, program_state* prog);
 void for_stmt(parsing_state* p, program_state* prog);
 void break_or_continue_stmt(parsing_state* p, program_state* prog);
 void if_stmt(parsing_state* p, program_state* prog);

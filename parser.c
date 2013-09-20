@@ -914,6 +914,10 @@ void statement_rule(parsing_state* p, program_state* prog)
 		for_stmt(p, prog);
 		break;
 
+	case DO:
+		do_stmt(p, prog);
+		break;
+
 	case WHILE:
 		while_stmt(p, prog);
 		break;
@@ -960,6 +964,44 @@ void statement_rule(parsing_state* p, program_state* prog)
 		parse_error(peek_token(p, 0), "in statement unexpected token\n");
 		exit(0);
 		*/
+	}
+}
+
+void do_stmt(parsing_state* p, program_state* prog)
+{
+	get_token(p);
+
+	size_t start_loc = prog->stmt_list->size;
+
+	statement_rule(p, prog);
+
+	token_value* tok = get_token(p);
+	if (tok->type != WHILE) {
+		parse_error(tok, "in do_stmt expected WHILE\n");
+		exit(0);
+	}
+	tok = get_token(p);
+	if (tok->type != LPAREN) {
+		parse_error(tok, "in do_stmt epected LPAREN\n");
+		exit(0);
+	}
+	
+	statement do_stmt;
+	memset(&do_stmt, 0, sizeof(statement));
+	do_stmt.type = DO_STMT;
+	do_stmt.parent = prog->cur_parent;
+	do_stmt.jump_to = start_loc;
+
+	do_stmt.exp = make_expression(prog);
+
+	expr(p, prog, do_stmt.exp);
+
+	push_void(prog->stmt_list, &do_stmt);
+
+	tok = get_token(p);
+	if (tok->type != RPAREN) {
+		parse_error(tok, "in do_stmt epected RPAREN\n");
+		exit(0);
 	}
 }
 

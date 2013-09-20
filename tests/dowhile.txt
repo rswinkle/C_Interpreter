@@ -1,0 +1,31 @@
+
+int main()
+{
+	int i = 0;
+
+	do print i; while (i);
+
+	i = 10;
+	do {
+		print i;
+	} while (i--);
+
+	print i;
+
+	i = 10;
+	do {
+		print i;
+	} while (--i);
+
+	print i;
+
+	do {
+		int j = 0;
+		do print j; while (++j < 5);
+		print i;
+	} while (i++ < 3);
+	
+	print i;
+
+	return 0;
+}

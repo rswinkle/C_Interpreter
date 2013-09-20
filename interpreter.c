@@ -59,11 +59,16 @@ void execute(program_state* prog)
 
 		case IF_STMT:
 			if (!execute_expr(prog, stmt->exp))
-				*prog->pc = stmt->jump_to - 1;
+				*prog->pc = stmt->jump_to - 1; //could get rid of -1's and continue
 			break;
 
 		case WHILE_STMT:
 			if (!execute_expr(prog, stmt->exp))
+				*prog->pc = stmt->jump_to - 1;
+			break;
+
+		case DO_STMT:
+			if (execute_expr(prog, stmt->exp))
 				*prog->pc = stmt->jump_to - 1;
 			break;
 
@@ -76,13 +81,10 @@ void execute(program_state* prog)
 			target = GET_STMT(prog->stmt_list, stmt->jump_to);
 			if (stmt->parent != target->parent) {
 				if (is_ancestor(prog, stmt->parent, target->parent)) {
-					//puts("jumping to child");
 					apply_scope(prog, stmt->jump_to, target->parent, stmt->parent);
 				} else if (is_ancestor(prog, target->parent, stmt->parent)) {
 					remove_scope(prog, stmt->jump_to, stmt->parent, target->parent);
-
 				} else {
-					//puts("siblings\n");
 					int ancestor = find_lowest_common_ancestor(prog, stmt->parent, target->parent);
 					remove_scope(prog, stmt->jump_to, stmt->parent, ancestor);
 					apply_scope(prog, stmt->jump_to, target->parent, ancestor);
