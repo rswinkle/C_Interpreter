@@ -7,15 +7,16 @@ in C++.  You can see that in the first commit though I
 might have made some minor changes/improvements during
 port.
 
-The tests have been updated to match the current
-state but not to extensively test the new functionality.
-I'll get to that.
-
 Now my goal is to make something approaching scriptable
 C.  I'll consider it done when it can run itself ...
 so it'll probably never be completely done.
 
-I'm using the 5th edition of C A Reference Manual for
+I've kept the old tests around (updating them so they
+keep working) but I've been adding new tests for
+new features.  They're not comprehensive and they
+don't test every edge case but they're growing.
+
+I'm using the 5th edition of C: A Reference Manual for
 all the nitty gritty details and the very convenient
 complete C grammar/syntax in the appendix.
 
@@ -66,6 +67,7 @@ decl_or_stmt              -> declaration
 
 statement                 -> expr_stmt
                              while_stmt
+                             do_stmt
                              if_stmt
                              print_stmt
                              compound_statement
@@ -73,11 +75,23 @@ statement                 -> expr_stmt
                              goto_stmt
                              labeled_stmt
                              break_or_continue_stmt
+                             switch_stmt
+                             case_or_default_stmt
+
+switch_stmt               -> switch '(' expr ')' statement
+
+case_or_default_stmt      -> case constant_expr ':'
+                          -> default ':'
+
+constant_expr             -> cond_expr  //nothing but integer literals allowed
+                                        //see tests/switch.c
 
 break_or_continue_stmt    -> break ';'
                              continue ';'
 
 labeled_stmt              -> identifier ':' statement
+
+do_stmt                   -> do statement while '(' expr ')' ';'
 
 while_stmt                -> while '(' expr ')' statement
 
@@ -89,9 +103,9 @@ initial_clause            -> expr
 if_stmt                   -> if '(' expr ')' statement
 						  -> if '(' expr ')' statement else statement
 
-print_stmt                -> print identifier ';'
+print_stmt                -> print expr ';'
 
-goto_stmt                 -> goto identifier ';'
+goto_stmt                 -> goto expr ';'
 
 expr_stmt                 -> expr ';'
 
@@ -105,7 +119,8 @@ assign_expr               -> cond_expr
 
 assign_op                 -> one of '=' '+=' '-=' '*=' '/=' '%='
 
-cond_expr                 -> logical_or_expr  //could add ternary here
+cond_expr                 -> logical_or_expr
+                          -> logica_or_expr '?' expr ':' cond_expr
 
 logical_or_expr           -> logical_and_expr
                              logical_or_expr '||' logical_and_expr

@@ -130,8 +130,8 @@ typedef struct expr_block
 
 typedef enum {
 	NULL_STMT = 0, WHILE_STMT, PRINT_STMT, EXPR_STMT, IF_STMT, GOTO_STMT,
-	FOR_STMT, CONTINUE_STMT, BREAK_STMT, DO_STMT,
-	DECL_STMT, RETURN_STMT, START_COMPOUND_STMT, END_COMPOUND_STMT
+	FOR_STMT, CONTINUE_STMT, BREAK_STMT, DO_STMT, CASE_STMT, DEFAULT_STMT,
+	SWITCH_STMT, DECL_STMT, RETURN_STMT, START_COMPOUND_STMT, END_COMPOUND_STMT
 } stmt_type;
 
 
@@ -141,6 +141,12 @@ typedef struct binding
 	var_type vtype;
 	int decl_stmt;
 } binding;
+
+typedef struct a_case
+{
+	int val;
+	unsigned int jump_to;
+} a_case;
 
 typedef struct active_binding
 {
@@ -160,6 +166,7 @@ typedef struct statement
 	
 	long parent;
 
+	int case_val;
 	vector_void* bindings;
 } statement;
 
@@ -294,6 +301,8 @@ void primary_expr(parsing_state* p, program_state* prog, expression* exp);
 void while_stmt(parsing_state* p, program_state* prog);
 void do_stmt(parsing_state* p, program_state* prog);
 void for_stmt(parsing_state* p, program_state* prog);
+void switch_stmt(parsing_state* p, program_state* prog);
+void case_or_default_stmt(parsing_state* p, program_state* prog);
 void break_or_continue_stmt(parsing_state* p, program_state* prog);
 void if_stmt(parsing_state* p, program_state* prog);
 void print_stmt(parsing_state* p, program_state* prog);
@@ -302,8 +311,9 @@ void return_stmt(parsing_state* p, program_state* prog);
 void labeled_stmt(parsing_state* p, program_state* prog);
 
 
-//can I put these prototypes here too?
+//can I put these prototypes here too? apparently
 int execute_expr(program_state* prog, expression* e);
+int execute_constant_expr(program_state* prog, expression* e);
 
 void add_binding(program_state* prog, char* name, var_type vtype);
 void remove_binding(program_state* prog, char* name);

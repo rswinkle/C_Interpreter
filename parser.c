@@ -340,8 +340,7 @@ exit_error:
 }
 
 
-
-
+	
 void print_statement(statement* stmt)
 {
 	switch (stmt->type) {
@@ -351,6 +350,13 @@ void print_statement(statement* stmt)
 	case EXPR_STMT:                  puts("EXPR_STMT");  break;
 	case IF_STMT:                  puts("IF_STMT");  break;
 	case GOTO_STMT:                  puts("GOTO_STMT");  break;
+	case FOR_STMT:                  puts("FOR_STMT");  break;
+	case CONTINUE_STMT:              puts("CONTINUE_STMT");  break;
+	case BREAK_STMT:              puts("BREAK_STMT");  break;
+	case DO_STMT:     		         puts("DO_STMT");  break;
+	case CASE_STMT:              puts("CASE_STMT");  break;
+	case DEFAULT_STMT:              puts("DEFAULT_STMT");  break;
+	case SWITCH_STMT:              puts("SWITCH_STMT");  break;
 	case DECL_STMT:                  puts("DECL_STMT");  break;
 	case RETURN_STMT:              puts("RETURN_STMT");  break;
 	case START_COMPOUND_STMT:      puts("START_COMPOUND_STMT");  break;
@@ -415,6 +421,8 @@ void print_token(token_value* tok)
 		case RBRACE:           puts("RBRACE");     break;
 		case INCREMENT:        puts("INCREMENT");     break;
 		case DECREMENT:        puts("DECREMENT");     break;
+		case TERNARY:          puts("TERNARY");     break;
+
 
 		case ADDEQUAL:         puts("ADDEQUAL");     break;
 		case SUBEQUAL:         puts("SUBEQUAL");     break;
@@ -564,13 +572,6 @@ void function_definition(parsing_state* p, program_state* prog)
 			}
 		}
 	}
-
-	for (int i=0; i<prog->stmt_list->size; ++i) {
-		stmt = GET_STMT(prog->stmt_list, i);
-		assert(stmt->bindings == 0 || stmt->type == START_COMPOUND_STMT);
-	}
-
-
 
 	free_vec_str(&prog->func->labels);
 	free_vec_i(&prog->func->label_locs);
@@ -922,6 +923,15 @@ void statement_rule(parsing_state* p, program_state* prog)
 		while_stmt(p, prog);
 		break;
 
+	case SWITCH:
+		switch_stmt(p, prog);
+		break;
+
+	case CASE:
+	case DEFAULT:
+		case_or_default_stmt(p, prog);
+		break;
+		
 	case IF:
 		if_stmt(p, prog);
 		break;
@@ -967,13 +977,115 @@ void statement_rule(parsing_state* p, program_state* prog)
 	}
 }
 
+void case_or_default_stmt(parsing_state* p, program_state* prog)
+{
+	token_value* tok = get_token(p);
+
+	statement stmt;
+	memset(&stmt, 0, sizeof(statement));
+	stmt.type = (tok->type == CASE) ? CASE_STMT : DEFAULT_STMT;
+	stmt.parent = prog->cur_parent;
+
+	if (stmt.type == CASE_STMT) {
+		stmt.exp = make_expression(prog);
+		cond_expr(p, prog, stmt.exp);
+		stmt.case_val = execute_constant_expr(prog, stmt.exp);
+	}
+
+	push_void(prog->stmt_list, &stmt);
+
+	tok = get_token(p);
+	if (tok->type != COLON) {
+		parse_error(tok, "in case or default statement expected COLON\n");
+		exit(0);
+	}
+}
+
+void switch_stmt(parsing_state* p, program_state* prog)
+{
+	get_token(p);
+	token_value* tok = get_token(p);
+	if (tok->type != LPAREN) {
+		parse_error(tok, "in switch_stmt, expected LPAREN\n");
+		exit(0);
+	}
+
+	statement a_switch;
+	memset(&a_switch, 0, sizeof(statement));
+	a_switch.type = SWITCH_STMT;
+	a_switch.parent = prog->cur_parent;
+	a_switch.exp = make_expression(prog);
+
+	expr(p, prog, a_switch.exp);
+	//TODO when I add more types make sure expression is integral type
+	
+	tok = get_token(p);
+	if (tok->type != RPAREN) {
+		parse_error(tok, "in switch_stmt, expected RPAREN\n");
+		exit(0);
+	}
+
+	int old_i_switch = prog->cur_iter_switch;
+	prog->cur_iter_switch = prog->stmt_list->size;
+
+	push_void(prog->stmt_list, &a_switch);
+	statement* the_switch = (statement*)back_void(prog->stmt_list);
+
+	statement_rule(p, prog);
+
+	//I know, I know another terrible violation of the one variable,
+	//one use/meaning principle ...
+	the_switch->bindings = vec_void_heap(0, 10, sizeof(a_case), NULL, NULL);
+	statement* stmt;
+	a_case c;
+	int j;
+	for (int i=prog->cur_iter_switch; i<prog->stmt_list->size; ++i) {
+		stmt = GET_STMT(prog->stmt_list, i);
+		if (stmt->type == BREAK_STMT && stmt->jump_to == 0) {
+			stmt->type = GOTO_STMT;
+			stmt->jump_to =  prog->stmt_list->size;
+		} else if (stmt->type == CASE_STMT) {
+			c.val = stmt->case_val;
+			/* probably not worth it since the interpreter can just fall through
+ 			 * case statements anyway but if I decide to erase case statements ..*/
+			j = i + 1;
+			while (GET_STMT(prog->stmt_list, j)->type == CASE_STMT)
+				j++;
+
+			c.jump_to = j;
+			push_void(the_switch->bindings, &c);
+		} else if (stmt->type == DEFAULT_STMT) {
+			if (the_switch->jump_to) {
+				parse_error(NULL, "more than one default statement in switch\n");
+				exit(0);
+			}
+			j = i + 1;
+			while (GET_STMT(prog->stmt_list, j)->type == CASE_STMT)
+				j++;
+			the_switch->jump_to = j;
+		}
+	}
+	//if no default then jump to end
+	if (!the_switch->jump_to)
+		the_switch->jump_to = prog->stmt_list->size;
+
+	prog->cur_iter_switch = old_i_switch;
+}
+
 void do_stmt(parsing_state* p, program_state* prog)
 {
 	get_token(p);
 
 	size_t start_loc = prog->stmt_list->size;
+	int old_iter = prog->cur_iter;
+	int old_i_switch = prog->cur_iter_switch;
+
+	prog->cur_iter = prog->cur_iter_switch = start_loc;
 
 	statement_rule(p, prog);
+
+	prog->cur_iter = old_iter;
+	prog->cur_iter_switch = old_i_switch;
 
 	token_value* tok = get_token(p);
 	if (tok->type != WHILE) {
@@ -1002,6 +1114,18 @@ void do_stmt(parsing_state* p, program_state* prog)
 	if (tok->type != RPAREN) {
 		parse_error(tok, "in do_stmt epected RPAREN\n");
 		exit(0);
+	}
+
+	statement* stmt;
+	for (int i=start_loc; i<prog->stmt_list->size; ++i) {
+		stmt = GET_STMT(prog->stmt_list, i);
+		if (stmt->type == BREAK_STMT && stmt->jump_to == 0) {
+			stmt->type = GOTO_STMT;
+			stmt->jump_to =  prog->stmt_list->size;
+		} else if (stmt->type == CONTINUE_STMT && stmt->jump_to == 0) {
+			stmt->type = GOTO_STMT;
+			stmt->jump_to = prog->stmt_list->size - 1;
+		}
 	}
 }
 
@@ -1635,8 +1759,6 @@ void primary_expr(parsing_state* p, program_state* prog, expression* e)
 		break;
 	default:
 		parse_error(tok, "in primary_expr, LPAREN or literal expected\n");
-		if (tok->type == ADDEQUAL)
-			puts("plusequal");
 		exit(0);
 	}
 }
@@ -1701,21 +1823,17 @@ void print_stmt(parsing_state* p, program_state* prog)
 {
 	get_token(p); //get print
 
-	token_value* tok = get_token(p);
-
-	if (tok->type != ID) {
-		parse_error(tok, "in print_stmt, ID expected.\n");
-		exit(0);
-	}
-
 	statement a_print;
 	memset(&a_print, 0, sizeof(statement));
 	a_print.type = PRINT_STMT;
 	a_print.parent = prog->cur_parent;
+	a_print.exp = make_expression(prog);
 
-	a_print.lvalue = tok->v.id;
+	expr(p, prog, a_print.exp);
+
+	//a_print.lvalue = tok->v.id;
 	
-	tok = get_token(p);
+	token_value* tok = get_token(p);
 	if (tok->type != SEMICOLON) {
 		parse_error(tok, "in print_stmt, SEMICOLON expected.\n");
 		exit(0);

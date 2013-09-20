@@ -14,7 +14,9 @@
 void run(program_state* prog, char* start_func);
 void execute(program_state* prog);
 int execute_expr(program_state* prog, expression* e);
+int execute_constant_expr(program_state* prog, expression* e);
 void execute_expr_list(program_state* prog, function* callee, expression* e);
+void execute_goto(program_state* prog, statement* stmt);
 
 
 void add_binding(program_state* prog, char* name, var_type vtype);

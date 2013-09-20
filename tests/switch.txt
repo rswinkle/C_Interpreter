@@ -1,0 +1,49 @@
+
+int main()
+{
+	int i = 1;
+	for (int i=0; i<20; ++i) {
+		switch (i) {
+		case 1:
+			print 1;
+			break;
+		case 2:
+			print 2;
+			break;
+		case 1+2:
+			print 3;
+			break;
+		case 3 + (3 > 2):
+			print 4;
+			break;
+		case 5:
+		case 6:
+			print i;
+			break;
+		case (2 > 1) ? 7 : 5:
+			print 7;
+			break;
+		case 8:
+			print 8;
+			break;
+
+		case 9:
+		case 10:
+		case (1+2+3)*2-1:
+			print i;
+			break;
+
+		case (2, 3, 12):
+			print 12;
+			break;
+
+		default:
+		case 13:
+			print i;
+		}
+	}
+
+	print i;
+
+	return 0;
+}

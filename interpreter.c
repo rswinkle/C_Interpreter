@@ -50,11 +50,27 @@ void execute(program_state* prog)
 
 		case PRINT_STMT:
 			//TODO print expression
-			printf("%d\n", look_up_value(prog, stmt->lvalue, BOTH)->v.int_val);
+			printf("%d\n", execute_expr(prog, stmt->exp));
 			break;
 
 		case EXPR_STMT:
 			execute_expr(prog, stmt->exp);
+			break;
+
+		case SWITCH_STMT:
+		{
+			int val = execute_expr(prog, stmt->exp);
+			a_case* c;
+			for (i=0; i<stmt->bindings->size; ++i) {
+				c = GET_VOID(stmt->bindings, a_case, i);
+				if (c->val == val) {
+					*prog->pc = c->jump_to - 1;
+					break;
+				}
+			}
+			if (i == stmt->bindings->size)
+				*prog->pc = stmt->jump_to - 1;
+		}
 			break;
 
 		case IF_STMT:
@@ -78,34 +94,7 @@ void execute(program_state* prog)
 			break;
 
 		case GOTO_STMT:
-			target = GET_STMT(prog->stmt_list, stmt->jump_to);
-			if (stmt->parent != target->parent) {
-				if (is_ancestor(prog, stmt->parent, target->parent)) {
-					apply_scope(prog, stmt->jump_to, target->parent, stmt->parent);
-				} else if (is_ancestor(prog, target->parent, stmt->parent)) {
-					remove_scope(prog, stmt->jump_to, stmt->parent, target->parent);
-				} else {
-					int ancestor = find_lowest_common_ancestor(prog, stmt->parent, target->parent);
-					remove_scope(prog, stmt->jump_to, stmt->parent, ancestor);
-					apply_scope(prog, stmt->jump_to, target->parent, ancestor);
-				}
-			} else {
-				if (stmt->jump_to > *prog->pc) {
-					binding* b;
-					target = GET_STMT(prog->stmt_list, stmt->parent);
-					for (i=0; i<target->bindings->size; ++i) {
-						b = GET_BINDING(target->bindings, i);
-						if (b->decl_stmt > *prog->pc) {
-							if (b->decl_stmt < stmt->jump_to) {
-								add_binding(prog, b->name, b->vtype);
-							} else {
-								break;
-							}
-						}
-					}
-				}
-			}
-
+			execute_goto(prog, stmt);
 			*prog->pc = stmt->jump_to-1;
 			break;
 
@@ -126,6 +115,7 @@ void execute(program_state* prog)
 			prog->cur_parent = GET_STMT(prog->stmt_list, stmt->parent)->parent;
 			break;
 
+		case CASE_STMT:
 		case NULL_STMT:
 			break;
 
@@ -250,6 +240,42 @@ int execute_expr(program_state* prog, expression* e)
 }
 
 
+int execute_constant_expr(program_state* prog, expression* e)
+{
+	switch (e->tok.type) {
+	case EXP:          return execute_expr(prog, e->left);
+	case ADD:          return execute_expr(prog, e->left) + execute_expr(prog, e->right);
+	case SUB:          return execute_expr(prog, e->left) - execute_expr(prog, e->right);
+	case MULT:         return execute_expr(prog, e->left) * execute_expr(prog, e->right);
+	case DIV:          return execute_expr(prog, e->left) / execute_expr(prog, e->right);
+	case MOD:          return execute_expr(prog, e->left) % execute_expr(prog, e->right);
+
+	case GREATER:      return execute_expr(prog, e->left) > execute_expr(prog, e->right);
+	case LESS:         return execute_expr(prog, e->left) < execute_expr(prog, e->right);
+	case GTEQ:         return execute_expr(prog, e->left) >= execute_expr(prog, e->right);
+	case LTEQ:         return execute_expr(prog, e->left) <= execute_expr(prog, e->right);
+	case NOTEQUAL:     return execute_expr(prog, e->left) != execute_expr(prog, e->right);
+	case EQUALEQUAL:   return execute_expr(prog, e->left) == execute_expr(prog, e->right);
+		break;
+
+	case COMMA:        return execute_expr(prog, e->left) , execute_expr(prog, e->right);
+
+	case TERNARY:      return execute_expr(prog, e->left) ? execute_expr(prog, e->right->left) : execute_expr(prog, e->right->right);
+
+
+	case LOGICAL_OR:    return execute_expr(prog, e->left) || execute_expr(prog, e->right);
+	case LOGICAL_AND:   return execute_expr(prog, e->left) && execute_expr(prog, e->right);
+	case LOGICAL_NEGATION: return !execute_expr(prog, e->left);
+
+	case INT_LITERAL:     return e->tok.v.integer;
+	default:
+		parse_error(&e->tok, "constant expression expected\n");
+		exit(0);
+	}
+}
+
+
+
 /* executes parameter list of function call (aka expression_list)
  * from left to right assigning them to ascending parameters
  * order of evaluation is unspecified/implementation specific according to C spec
@@ -281,6 +307,42 @@ void execute_expr_list(program_state* prog, function* callee, expression* e)
 	list_add(&v->list, &s->head);
 	s->cur_parent = v->parent = 0;
 }	
+
+
+void execute_goto(program_state* prog, statement* stmt)
+{
+	int ancestor;
+	statement* target = GET_STMT(prog->stmt_list, stmt->jump_to);
+	if (stmt->parent != target->parent) {
+		if (is_ancestor(prog, stmt->parent, target->parent)) {
+			apply_scope(prog, stmt->jump_to, target->parent, stmt->parent);
+		} else if (is_ancestor(prog, target->parent, stmt->parent)) {
+			remove_scope(prog, stmt->jump_to, stmt->parent, target->parent);
+		} else {
+			ancestor = find_lowest_common_ancestor(prog, stmt->parent, target->parent);
+			remove_scope(prog, stmt->jump_to, stmt->parent, ancestor);
+			apply_scope(prog, stmt->jump_to, target->parent, ancestor);
+		}
+	} else {
+		if (stmt->jump_to > *prog->pc) {
+			binding* b;
+			target = GET_STMT(prog->stmt_list, stmt->parent);
+			for (int i=0; i<target->bindings->size; ++i) {
+				b = GET_BINDING(target->bindings, i);
+				if (b->decl_stmt > *prog->pc) {
+					if (b->decl_stmt < stmt->jump_to) {
+						add_binding(prog, b->name, b->vtype);
+					} else {
+						break;
+					}
+				}
+			}
+		}
+	}
+}
+
+
+
 
 void add_binding(program_state* prog, char* name, var_type vtype)
 {
