@@ -41,6 +41,7 @@ void execute(program_state* prog)
 
 	while ( *prog->pc < prog->stmt_list->size ) {
 		stmt = GET_STMT(prog->stmt_list, *prog->pc);
+	//	print_statement(stmt);
 
 		switch (stmt->type) {
 
@@ -50,7 +51,7 @@ void execute(program_state* prog)
 
 		case PRINT_STMT:
 			//TODO print expression
-			printf("%d\n", execute_expr(prog, stmt->exp));
+			execute_print(execute_expr(prog, stmt->exp));
 			break;
 
 		case EXPR_STMT:
@@ -59,11 +60,11 @@ void execute(program_state* prog)
 
 		case SWITCH_STMT:
 		{
-			int val = execute_expr(prog, stmt->exp);
+			var_value v = execute_expr(prog, stmt->exp);
 			a_case* c;
 			for (i=0; i<stmt->bindings->size; ++i) {
 				c = GET_VOID(stmt->bindings, a_case, i);
-				if (c->val == val) {
+				if (c->val == v.v.int_val) {
 					*prog->pc = c->jump_to - 1;
 					break;
 				}
@@ -74,22 +75,22 @@ void execute(program_state* prog)
 			break;
 
 		case IF_STMT:
-			if (!execute_expr(prog, stmt->exp))
+			if (!is_true(execute_expr(prog, stmt->exp)))
 				*prog->pc = stmt->jump_to - 1; //could get rid of -1's and continue
 			break;
 
 		case WHILE_STMT:
-			if (!execute_expr(prog, stmt->exp))
+			if (!is_true(execute_expr(prog, stmt->exp)))
 				*prog->pc = stmt->jump_to - 1;
 			break;
 
 		case DO_STMT:
-			if (execute_expr(prog, stmt->exp))
+			if (is_true(execute_expr(prog, stmt->exp)))
 				*prog->pc = stmt->jump_to - 1;
 			break;
 
 		case FOR_STMT:
-			if (stmt->exp && !execute_expr(prog, stmt->exp))
+			if (stmt->exp && !is_true(execute_expr(prog, stmt->exp)))
 				*prog->pc = stmt->jump_to - 1;
 			break;
 
@@ -100,7 +101,7 @@ void execute(program_state* prog)
 
 		case RETURN_STMT:
 			if (prog->func->ret_val.type != VOID_TYPE)
-				prog->func->ret_val.v.int_val = execute_expr(prog, stmt->exp);
+				prog->func->ret_val = execute_expr(prog, stmt->exp);
 
 			clear_bindings(prog);
 			prog->cur_parent = outer_parent;
@@ -133,9 +134,37 @@ void execute(program_state* prog)
 	}
 }
 
+int is_true(var_value v)
+{
+	switch (v.type) {
+	case INT_TYPE:      return (v.v.int_val != 0);
+	case DOUBLE_TYPE:   return (v.v.double_val) ? 1 : 0; //required for correct behavior
+
+	default:
+		printf("%d\n", v.type);
+		fprintf(stderr, "Error unknown type\n");
+		exit(0);
+	}
+}
 
 
-int execute_expr(program_state* prog, expression* e)
+
+void execute_print(var_value a)
+{
+	switch (a.type) {
+		case INT_TYPE:
+			printf("%d\n", a.v.int_val);
+			break;
+		case DOUBLE_TYPE:
+			printf("%f\n", a.v.double_val);
+			break;
+		default:
+			fprintf(stderr, "type not supported yet\n");
+			exit(0);
+	}
+}
+
+var_value execute_expr(program_state* prog, expression* e)
 {
 	var_value* var;
 
@@ -144,67 +173,129 @@ int execute_expr(program_state* prog, expression* e)
 	size_t* old_pc;
 	int tmp;
 
+	var_value result, left, right;
+	var_value *left_ptr = &left, *right_ptr = &right;
 
 	switch (e->tok.type) {
 	case EXP:          return execute_expr(prog, e->left);
-	case ADD:          return execute_expr(prog, e->left) + execute_expr(prog, e->right);
-	case SUB:          return execute_expr(prog, e->left) - execute_expr(prog, e->right);
-	case MULT:         return execute_expr(prog, e->left) * execute_expr(prog, e->right);
-	case DIV:          return execute_expr(prog, e->left) / execute_expr(prog, e->right);
-	case MOD:          return execute_expr(prog, e->left) % execute_expr(prog, e->right);
 
-	case GREATER:      return execute_expr(prog, e->left) > execute_expr(prog, e->right);
-	case LESS:         return execute_expr(prog, e->left) < execute_expr(prog, e->right);
-	case GTEQ:         return execute_expr(prog, e->left) >= execute_expr(prog, e->right);
-	case LTEQ:         return execute_expr(prog, e->left) <= execute_expr(prog, e->right);
-	case NOTEQUAL:     return execute_expr(prog, e->left) != execute_expr(prog, e->right);
-	case EQUALEQUAL:   return execute_expr(prog, e->left) == execute_expr(prog, e->right);
+//binary operations
+	case ADD:
+	case SUB:
+	case MULT:
+	case DIV:
+	case MOD:
+
+	case GREATER:
+	case LESS:
+	case GTEQ:
+	case LTEQ:
+	case NOTEQUAL:
+	case EQUALEQUAL:
+	case LOGICAL_OR:
+	case LOGICAL_AND:
+	case COMMA:
+
+		left = execute_expr(prog, e->left);
+		right = execute_expr(prog, e->right);
+
 		break;
 
-	case COMMA:        return execute_expr(prog, e->left) , execute_expr(prog, e->right);
 
-	case TERNARY:      return execute_expr(prog, e->left) ? execute_expr(prog, e->right->left) : execute_expr(prog, e->right->right);
+	case TERNARY:
+		left = execute_expr(prog, e->right->left);
+		right = execute_expr(prog, e->right->right);
+		break;
+
 
 	case PRE_INCREMENT:
-		var = look_up_value(prog, e->left->tok.v.id, BOTH);
-		return ++var->v.int_val;
-
 	case PRE_DECREMENT:
-		var = look_up_value(prog, e->left->tok.v.id, BOTH);
-		return --var->v.int_val;
-
 	case POST_INCREMENT:
-		var = look_up_value(prog, e->left->tok.v.id, BOTH);
-		return var->v.int_val++;
-
 	case POST_DECREMENT:
 		var = look_up_value(prog, e->left->tok.v.id, BOTH);
-		return var->v.int_val--;
-
-	case EQUAL:
-		var = look_up_value(prog, e->left->tok.v.id, BOTH);
-		return var->v.int_val = execute_expr(prog, e->right);
-	case ADDEQUAL:
-		var = look_up_value(prog, e->left->tok.v.id, BOTH);
-		return var->v.int_val += execute_expr(prog, e->right);
-	case SUBEQUAL:
-		var = look_up_value(prog, e->left->tok.v.id, BOTH);
-		return var->v.int_val -= execute_expr(prog, e->right);
-	case MULTEQUAL:
-		var = look_up_value(prog, e->left->tok.v.id, BOTH);
-		return var->v.int_val *= execute_expr(prog, e->right);
-	case DIVEQUAL:
-		var = look_up_value(prog, e->left->tok.v.id, BOTH);
-		return var->v.int_val /= execute_expr(prog, e->right);
-	case MODEQUAL:
-		var = look_up_value(prog, e->left->tok.v.id, BOTH);
-		return var->v.int_val %= execute_expr(prog, e->right);
-	
 		break;
 
-	case LOGICAL_OR:    return execute_expr(prog, e->left) || execute_expr(prog, e->right);
-	case LOGICAL_AND:   return execute_expr(prog, e->left) && execute_expr(prog, e->right);
-	case LOGICAL_NEGATION: return !execute_expr(prog, e->left);
+	case EQUAL:
+	case ADDEQUAL:
+	case SUBEQUAL:
+	case MULTEQUAL:
+	case DIVEQUAL:
+	case MODEQUAL:
+		right = execute_expr(prog, e->right);
+		var = look_up_value(prog, e->left->tok.v.id, BOTH);
+		break;
+
+	case LOGICAL_NEGATION:
+		left = execute_expr(prog, e->left);
+		break;
+
+	case FUNC_CALL:
+		break;
+
+
+	case ID:
+		var = look_up_value(prog, e->tok.v.id, BOTH);
+		result = *var;
+		return result;
+
+	case INT_LITERAL:
+		result.type = INT_TYPE;
+		result.v.int_val = e->tok.v.integer;
+		return result;
+
+	case FLOAT_LITERAL:
+		result.type = DOUBLE_TYPE;
+		result.v.double_val = e->tok.v.real;
+		return result;
+
+	default:
+		fprintf(stderr, "Interpreter error: Unrecognized op %d in expression.\n\n", e->tok.type);
+		print_token(&e->tok);
+		exit(0);
+	}
+	
+
+
+	switch (e->tok.type) {
+
+//binary operations
+	case ADD:             BINARY_OP(left_ptr, +, right_ptr);    break;
+	case SUB:             BINARY_OP(left_ptr, -, right_ptr);    break;
+	case MULT:            BINARY_OP(left_ptr, *, right_ptr);    break;
+	case DIV:             BINARY_OP(left_ptr, /, right_ptr);    break;
+	case MOD:             INTEGRAL_BINARY_OP(left_ptr, %, right_ptr);    break;
+
+	case GREATER:         BINARY_OP(left_ptr, >, right_ptr);    break;
+	case LESS:            BINARY_OP(left_ptr, <, right_ptr);    break;
+	case GTEQ:            BINARY_OP(left_ptr, >=, right_ptr);    break;
+	case LTEQ:            BINARY_OP(left_ptr, <=, right_ptr);    break;
+	case NOTEQUAL:        BINARY_OP(left_ptr, !=, right_ptr);    break;
+	case EQUALEQUAL:      BINARY_OP(left_ptr, ==, right_ptr);    break;
+	case LOGICAL_OR:      BINARY_OP(left_ptr, ||, right_ptr);    break;
+	case LOGICAL_AND:     BINARY_OP(left_ptr, &&, right_ptr);    break;
+
+#define MYCOMMA ,
+	case COMMA:           BINARY_OP(left_ptr, MYCOMMA, right_ptr);    break;
+#undef MYCOMMA
+
+
+	case TERNARY:         COND_EXPR(e->left, left_ptr, right_ptr);    break;
+
+	case PRE_INCREMENT:      PRE_OP(++, var);    break;
+	case PRE_DECREMENT:      PRE_OP(--, var);    break;
+	case POST_INCREMENT:     POST_OP(var, ++);    break;
+	case POST_DECREMENT:     POST_OP(var, --);    break;
+
+
+	case EQUAL:              BINARY_OP(var, =, right_ptr);   break;
+	case ADDEQUAL:           BINARY_OP(var, +=, right_ptr);   break;
+	case SUBEQUAL:           BINARY_OP(var, -=, right_ptr);   break;
+	case MULTEQUAL:          BINARY_OP(var, *=, right_ptr);   break;
+	case DIVEQUAL:           BINARY_OP(var, /=, right_ptr);   break;
+	case MODEQUAL:           INTEGRAL_BINARY_OP(var, %=, right_ptr);   break;
+	
+
+	case LOGICAL_NEGATION:   PRE_OP(!, left_ptr);   break;
 
 
 	case FUNC_CALL:
@@ -228,50 +319,130 @@ int execute_expr(program_state* prog, expression* e)
 		prog->pc = old_pc;
 		prog->func = old_func;
 
-		return func->ret_val.v.int_val;
+		return func->ret_val;
 
-	case ID:              return look_up_value(prog, e->tok.v.id, BOTH)->v.int_val;
-	case INT_LITERAL:     return e->tok.v.integer;
 	default:
 		fprintf(stderr, "Interpreter error: Unrecognized op %d in expression.\n\n", e->tok.type);
 		print_token(&e->tok);
 		exit(0);
 	}
+
+	return result;
 }
 
-
-int execute_constant_expr(program_state* prog, expression* e)
+//TODO
+var_value execute_constant_expr(program_state* prog, expression* e)
 {
+	var_value *var;
+
+	var_value result, left, right;
+	var_value *left_ptr = &left, *right_ptr = &right;
+
 	switch (e->tok.type) {
 	case EXP:          return execute_expr(prog, e->left);
-	case ADD:          return execute_expr(prog, e->left) + execute_expr(prog, e->right);
-	case SUB:          return execute_expr(prog, e->left) - execute_expr(prog, e->right);
-	case MULT:         return execute_expr(prog, e->left) * execute_expr(prog, e->right);
-	case DIV:          return execute_expr(prog, e->left) / execute_expr(prog, e->right);
-	case MOD:          return execute_expr(prog, e->left) % execute_expr(prog, e->right);
 
-	case GREATER:      return execute_expr(prog, e->left) > execute_expr(prog, e->right);
-	case LESS:         return execute_expr(prog, e->left) < execute_expr(prog, e->right);
-	case GTEQ:         return execute_expr(prog, e->left) >= execute_expr(prog, e->right);
-	case LTEQ:         return execute_expr(prog, e->left) <= execute_expr(prog, e->right);
-	case NOTEQUAL:     return execute_expr(prog, e->left) != execute_expr(prog, e->right);
-	case EQUALEQUAL:   return execute_expr(prog, e->left) == execute_expr(prog, e->right);
+//binary operations
+	case ADD: case SUB: case MULT: case DIV: case MOD:
+
+	case GREATER: case LESS: case GTEQ: case LTEQ:
+	case NOTEQUAL: case EQUALEQUAL: case LOGICAL_OR:
+	case LOGICAL_AND: case COMMA:
+
+		left = execute_expr(prog, e->left);
+		right = execute_expr(prog, e->right);
+
 		break;
 
-	case COMMA:        return execute_expr(prog, e->left) , execute_expr(prog, e->right);
 
-	case TERNARY:      return execute_expr(prog, e->left) ? execute_expr(prog, e->right->left) : execute_expr(prog, e->right->right);
+	case TERNARY:
+		left = execute_expr(prog, e->right->left);
+		right = execute_expr(prog, e->right->right);
+		break;
 
 
-	case LOGICAL_OR:    return execute_expr(prog, e->left) || execute_expr(prog, e->right);
-	case LOGICAL_AND:   return execute_expr(prog, e->left) && execute_expr(prog, e->right);
-	case LOGICAL_NEGATION: return !execute_expr(prog, e->left);
+	case PRE_INCREMENT:
+	case PRE_DECREMENT:
+	case POST_INCREMENT:
+	case POST_DECREMENT:
+		var = look_up_value(prog, e->left->tok.v.id, BOTH);
+		break;
 
-	case INT_LITERAL:     return e->tok.v.integer;
+	case EQUAL:
+	case ADDEQUAL:
+	case SUBEQUAL:
+	case MULTEQUAL:
+	case DIVEQUAL:
+	case MODEQUAL:
+		right = execute_expr(prog, e->right);
+		var = look_up_value(prog, e->left->tok.v.id, BOTH);
+		break;
+
+	case LOGICAL_NEGATION:
+		left = execute_expr(prog, e->left);
+		break;
+
+	case INT_LITERAL:
+		result.type = INT_TYPE;
+		result.v.int_val = e->tok.v.integer;
+		return result;
+
+	case FLOAT_LITERAL:
+		result.type = DOUBLE_TYPE;
+		result.v.double_val = e->tok.v.real;
+		return result;
+
 	default:
 		parse_error(&e->tok, "constant expression expected\n");
 		exit(0);
 	}
+
+
+	switch (e->tok.type) {
+
+//binary operations
+	case ADD:             BINARY_OP(left_ptr, +, right_ptr);    break;
+	case SUB:             BINARY_OP(left_ptr, -, right_ptr);    break;
+	case MULT:            BINARY_OP(left_ptr, *, right_ptr);    break;
+	case DIV:             BINARY_OP(left_ptr, /, right_ptr);    break;
+	case MOD:             INTEGRAL_BINARY_OP(left_ptr, %, right_ptr);    break;
+
+	case GREATER:         BINARY_OP(left_ptr, >, right_ptr);    break;
+	case LESS:            BINARY_OP(left_ptr, <, right_ptr);    break;
+	case GTEQ:            BINARY_OP(left_ptr, >=, right_ptr);    break;
+	case LTEQ:            BINARY_OP(left_ptr, <=, right_ptr);    break;
+	case NOTEQUAL:        BINARY_OP(left_ptr, !=, right_ptr);    break;
+	case EQUALEQUAL:      BINARY_OP(left_ptr, ==, right_ptr);    break;
+	case LOGICAL_OR:      BINARY_OP(left_ptr, ||, right_ptr);    break;
+	case LOGICAL_AND:     BINARY_OP(left_ptr, &&, right_ptr);    break;
+
+#define MYCOMMA ,
+	case COMMA:           BINARY_OP(left_ptr, MYCOMMA, right_ptr);    break;
+#undef MYCOMMA
+
+
+	case TERNARY:         COND_EXPR(e->left, left_ptr, right_ptr);    break;
+
+	case PRE_INCREMENT:      PRE_OP(++, var);    break;
+	case PRE_DECREMENT:      PRE_OP(--, var);    break;
+	case POST_INCREMENT:     POST_OP(var, ++);    break;
+	case POST_DECREMENT:     POST_OP(var, --);    break;
+
+
+	case EQUAL:              BINARY_OP(var, =, right_ptr);   break;
+	case ADDEQUAL:           BINARY_OP(var, +=, right_ptr);   break;
+	case SUBEQUAL:           BINARY_OP(var, -=, right_ptr);   break;
+	case MULTEQUAL:          BINARY_OP(var, *=, right_ptr);   break;
+	case DIVEQUAL:           BINARY_OP(var, /=, right_ptr);   break;
+	case MODEQUAL:           INTEGRAL_BINARY_OP(var, %=, right_ptr);   break;
+	
+
+	case LOGICAL_NEGATION:   PRE_OP(!, left_ptr);   break;
+
+	default:
+		parse_error(&e->tok, "constant expression expected\n");
+		exit(0);
+	}
+	return result;
 }
 
 
@@ -293,7 +464,7 @@ void execute_expr_list(program_state* prog, function* callee, expression* e)
 	expression* tmp = e;
 	while (e->tok.type == EXPR_LIST) {
 		s = GET_SYMBOL(&func->symbols, i);
-		v->val.v.int_val = execute_expr(prog, e->left);
+		v->val = execute_expr(prog, e->left);
 		list_add(&v->list, &s->head);
 		s->cur_parent = v->parent = 0; //reset for recursive call
 
@@ -303,7 +474,7 @@ void execute_expr_list(program_state* prog, function* callee, expression* e)
 	}
 
 	s = GET_SYMBOL(&func->symbols, i);
-	v->val.v.int_val = execute_expr(prog, tmp);
+	v->val = execute_expr(prog, tmp);
 	list_add(&v->list, &s->head);
 	s->cur_parent = v->parent = 0;
 }	
@@ -548,6 +719,13 @@ var_value* look_up_value(program_state* prog, const char* var, int search)
 
 	return NULL;
 }
+
+
+
+
+
+
+
 
 
 

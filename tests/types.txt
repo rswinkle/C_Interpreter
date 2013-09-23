@@ -1,0 +1,16 @@
+
+double d = 2.48;
+
+int main()
+{
+	int a = 5;
+	print d;
+	print a;
+
+	a = d;
+	d += a;
+	print d;
+	print a;
+
+	return 0;
+}

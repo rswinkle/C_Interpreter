@@ -65,11 +65,16 @@ typedef enum
 	INT_TYPE,
 	SINT_TYPE,
 
+	LONG_TYPE,
+	ULONG_TYPE,
+
 	FLOAT_TYPE,
 	DOUBLE_TYPE,
 
 	FUNCTION_TYPE,
-	VOID_TYPE
+	VOID_TYPE,
+	
+	INT_PTR_TYPE
 } var_type;
 
 
@@ -78,9 +83,19 @@ typedef struct var_value
 {
 	var_type type;
 	union {
+		char char_val;
+		unsigned char uchar_val;
+		short short_val;
+		unsigned short ushort_val;
 		int int_val;
+		unsigned int uint_val;
+		long long_val;
+		unsigned long ulong_val;
+
+		float float_val;
 		double double_val;
 		unsigned int func_loc; //change to direct pointer?
+		unsigned int ptr;
 	} v;
 //	list_head list;
 } var_value;
@@ -312,8 +327,8 @@ void labeled_stmt(parsing_state* p, program_state* prog);
 
 
 //can I put these prototypes here too? apparently
-int execute_expr(program_state* prog, expression* e);
-int execute_constant_expr(program_state* prog, expression* e);
+var_value execute_expr(program_state* prog, expression* e);
+var_value execute_constant_expr(program_state* prog, expression* e);
 
 void add_binding(program_state* prog, char* name, var_type vtype);
 void remove_binding(program_state* prog, char* name);

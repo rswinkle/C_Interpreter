@@ -257,6 +257,7 @@ start:
 					goto exit_error;
 
 				token_buf[i++] = c;
+				c = getc(file);
 				
 				while (isdigit(c)) {
 					token_buf[i++] = c;
@@ -450,7 +451,7 @@ token_value* peek_token(parsing_state* p, long offset)
 token_value* get_token(parsing_state* p)
 {
 	token_value* tok = GET_TOKEN_VAL(&p->tokens, p->pos++);
-//	print_token(tok);
+	//print_token(tok);
 	//return GET_TOKEN_VAL(&p->tokens, p->pos++);
 	return tok;
 }
@@ -688,6 +689,33 @@ void declaration(parsing_state* p, program_state* prog)
 	}
 }
 
+
+/* auto extern register static typedef
+ * probably will only support static and typedef
+void storage_specifier(parsing_state* p, program_state* prog, int match)
+{
+	token_value* tok = peek_token(p, 0);
+	switch (tok->type) {
+	case EXTERN:
+
+		break;
+	case STATIC:
+		
+		break;
+	case TYPEDEF:
+
+		break;
+
+	default:
+		if (tok->type == AUTO && prog->cur_parent == -1) {
+			parse_error(tok, "auto storage specifer only allowed within a block\n");
+			exit(0);
+		}
+	}
+
+}
+*/
+
 var_type declaration_specifier(parsing_state* p, program_state* prog, int match)
 {
 	token_value* tok = peek_token(p, 0);
@@ -740,6 +768,9 @@ void initialized_declarator_list(parsing_state* p, program_state* prog, var_type
 void initialized_declarator(parsing_state* p, program_state* prog, var_type v_type)
 {
 	token_value* tok = peek_token(p, 0);
+
+
+	//pointer_declarator or direct_declarator
 	if (tok->type != ID) {
 		parse_error(tok, "in initialized_declarator, ID expected.\n");
 		exit(0);
@@ -820,7 +851,7 @@ void initialized_declarator(parsing_state* p, program_state* prog, var_type v_ty
 		if (peek_token(p, 1)->type == EQUAL) {
 			expression* e = make_expression(prog);
 			assign_expr(p, prog, e);
-			execute_expr(prog, e); //does the assignment inside
+			execute_constant_expr(prog, e); //does the assignment inside
 		} else {
 			get_token(p); //read ID
 		}
@@ -977,6 +1008,21 @@ void statement_rule(parsing_state* p, program_state* prog)
 	}
 }
 
+
+int is_integral_type(var_value* v)
+{
+	switch (v->type) {
+	case INT_TYPE:
+
+		return 1;
+
+	}
+	return 0;
+}
+
+
+
+
 void case_or_default_stmt(parsing_state* p, program_state* prog)
 {
 	token_value* tok = get_token(p);
@@ -986,10 +1032,17 @@ void case_or_default_stmt(parsing_state* p, program_state* prog)
 	stmt.type = (tok->type == CASE) ? CASE_STMT : DEFAULT_STMT;
 	stmt.parent = prog->cur_parent;
 
+	var_value v;
 	if (stmt.type == CASE_STMT) {
 		stmt.exp = make_expression(prog);
 		cond_expr(p, prog, stmt.exp);
-		stmt.case_val = execute_constant_expr(prog, stmt.exp);
+		v = execute_constant_expr(prog, stmt.exp);
+		if (!is_integral_type(&v)) {
+			parse_error(NULL, "case label does not reduce to integer constant\n");
+			exit(0);
+		}
+		//TODO
+		stmt.case_val = v.v.int_val;
 	}
 
 	push_void(prog->stmt_list, &stmt);
