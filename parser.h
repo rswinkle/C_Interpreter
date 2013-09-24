@@ -57,6 +57,7 @@ typedef enum
 	UNKNOWN = 0,
 
 	CHAR_TYPE, /* implementation defined whether plain char is signed or not ...*/
+	//SCHAR_TYPE
 	UCHAR_TYPE,
 
 	SHORT_TYPE,
@@ -84,6 +85,7 @@ typedef struct var_value
 	var_type type;
 	union {
 		char char_val;
+		signed schar_val; // <- because plain char can be signed or unsigned
 		unsigned char uchar_val;
 		short short_val;
 		unsigned short ushort_val;

@@ -68,6 +68,14 @@ typedef enum
 #define PRE_OP(op, a) \
 do { \
 	switch (a->type) { \
+	case CHAR_TYPE: \
+		result.type = CHAR_TYPE; \
+		result.v.char_val = op a->v.char_val; \
+		break; \
+	case UCHAR_TYPE: \
+		result.type = UCHAR_TYPE; \
+		result.v.uchar_val = op a->v.uchar_val; \
+		break; \
 	case SHORT_TYPE: \
 		result.type = SHORT_TYPE; \
 		result.v.short_val = op a->v.short_val; \
@@ -98,6 +106,14 @@ do { \
 #define POST_OP(a, op) \
 do { \
 	switch (a->type) { \
+	case CHAR_TYPE: \
+		result.type = CHAR_TYPE; \
+		result.v.char_val = a->v.char_val op; \
+		break; \
+	case UCHAR_TYPE: \
+		result.type = UCHAR_TYPE; \
+		result.v.uchar_val = a->v.uchar_val op; \
+		break; \
 	case SHORT_TYPE: \
 		result.type = SHORT_TYPE; \
 		result.v.short_val = a->v.short_val op; \
@@ -126,7 +142,7 @@ do { \
 } while (0)
 
 
-//parenthesis are necessary for comma expression since
+//parentheses are necessary for comma expression since
 //it has lower priority than assignment.  Before when I
 //was returning ints directly it worked without because return evaluates
 //the expression completely before returning ie it's lower priority
@@ -140,8 +156,132 @@ do { \
 #define BINARY_OP(a, op, b) \
 do { \
 	switch (a->type) { \
+	case CHAR_TYPE: \
+		switch (b->type) { \
+		case CHAR_TYPE: \
+			result.type = CHAR_TYPE; \
+			result.v.char_val = (a->v.char_val op b->v.char_val); \
+			break; \
+		\
+		case UCHAR_TYPE: \
+			result.type = UCHAR_TYPE; \
+			result.v.uchar_val = (a->v.char_val op b->v.uchar_val); \
+			break; \
+		\
+		case SHORT_TYPE: \
+			result.type = SHORT_TYPE; \
+			result.v.short_val = (a->v.char_val op b->v.short_val); \
+			break; \
+		\
+		case USHORT_TYPE: \
+			result.type = USHORT_TYPE; \
+			result.v.ushort_val = (a->v.char_val op b->v.ushort_val); \
+			break; \
+		\
+		case INT_TYPE: \
+			result.type = INT_TYPE; \
+			result.v.int_val = (a->v.char_val op b->v.int_val); \
+			break; \
+		\
+		case UINT_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.char_val op b->v.uint_val); \
+			break; \
+		\
+		case LONG_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.char_val op b->v.long_val); \
+			break; \
+		\
+		case ULONG_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.char_val op b->v.ulong_val); \
+			break; \
+		\
+		case FLOAT_TYPE: \
+			result.type = FLOAT_TYPE; \
+			result.v.float_val = (a->v.char_val op b->v.float_val); \
+			break; \
+		\
+		case DOUBLE_TYPE: \
+			result.type = DOUBLE_TYPE; \
+			result.v.double_val = (a->v.char_val op b->v.double_val); \
+			break; \
+\
+		default: \
+			puts("wtf1"); \
+		} \
+		break; \
+		\
+	case UCHAR_TYPE: \
+		switch (b->type) { \
+		case CHAR_TYPE: \
+			result.type = UCHAR_TYPE; \
+			result.v.uchar_val = (a->v.uchar_val op b->v.char_val); \
+			break; \
+		\
+		case UCHAR_TYPE: \
+			result.type = UCHAR_TYPE; \
+			result.v.uchar_val = (a->v.uchar_val op b->v.uchar_val); \
+			break; \
+		\
+		case SHORT_TYPE: \
+			result.type = SHORT_TYPE; \
+			result.v.short_val = (a->v.uchar_val op b->v.short_val); \
+			break; \
+		\
+		case USHORT_TYPE: \
+			result.type = USHORT_TYPE; \
+			result.v.ushort_val = (a->v.uchar_val op b->v.ushort_val); \
+			break; \
+		\
+		case INT_TYPE: \
+			result.type = INT_TYPE; \
+			result.v.int_val = (a->v.uchar_val op b->v.int_val); \
+			break; \
+		\
+		case UINT_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.uchar_val op b->v.uint_val); \
+			break; \
+		\
+		case LONG_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.uchar_val op b->v.long_val); \
+			break; \
+		\
+		case ULONG_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.uchar_val op b->v.ulong_val); \
+			break; \
+		\
+		case FLOAT_TYPE: \
+			result.type = FLOAT_TYPE; \
+			result.v.float_val = (a->v.uchar_val op b->v.float_val); \
+			break; \
+		\
+		case DOUBLE_TYPE: \
+			result.type = DOUBLE_TYPE; \
+			result.v.double_val = (a->v.uchar_val op b->v.double_val); \
+			break; \
+\
+		default: \
+			puts("wtf1"); \
+		} \
+		break; \
+		\
 	case SHORT_TYPE: \
 		switch (b->type) { \
+		case CHAR_TYPE: \
+			result.type = SHORT_TYPE; \
+			result.v.short_val = (a->v.short_val op b->v.char_val); \
+			break; \
+		\
+		case UCHAR_TYPE: \
+			result.type = SHORT_TYPE; \
+			result.v.short_val = (a->v.short_val op b->v.uchar_val); \
+			break; \
+		\
 		case SHORT_TYPE: \
 			result.type = SHORT_TYPE; \
 			result.v.short_val = (a->v.short_val op b->v.short_val); \
@@ -172,6 +312,11 @@ do { \
 			result.v.ulong_val = (a->v.short_val op b->v.ulong_val); \
 			break; \
 		\
+		case FLOAT_TYPE: \
+			result.type = FLOAT_TYPE; \
+			result.v.float_val = (a->v.short_val op b->v.float_val); \
+			break; \
+		\
 		case DOUBLE_TYPE: \
 			result.type = DOUBLE_TYPE; \
 			result.v.double_val = (a->v.short_val op b->v.double_val); \
@@ -184,9 +329,19 @@ do { \
 		\
 	case USHORT_TYPE: \
 		switch (b->type) { \
+		case CHAR_TYPE: \
+			result.type = USHORT_TYPE; \
+			result.v.ushort_val = (a->v.ushort_val op b->v.char_val); \
+			break; \
+		\
+		case UCHAR_TYPE: \
+			result.type = USHORT_TYPE; \
+			result.v.ushort_val = (a->v.ushort_val op b->v.uchar_val); \
+			break; \
+		\
 		case SHORT_TYPE: \
 			result.type = USHORT_TYPE; \
-			result.v.short_val = (a->v.ushort_val op b->v.short_val); \
+			result.v.ushort_val = (a->v.ushort_val op b->v.short_val); \
 			break; \
 		\
 		case USHORT_TYPE: \
@@ -214,6 +369,11 @@ do { \
 			result.v.ulong_val = (a->v.ushort_val op b->v.ulong_val); \
 			break; \
 		\
+		case FLOAT_TYPE: \
+			result.type = FLOAT_TYPE; \
+			result.v.float_val = (a->v.ushort_val op b->v.float_val); \
+			break; \
+		\
 		case DOUBLE_TYPE: \
 			result.type = DOUBLE_TYPE; \
 			result.v.double_val = (a->v.ushort_val op b->v.double_val); \
@@ -226,6 +386,16 @@ do { \
 		\
 	case INT_TYPE: \
 		switch (b->type) { \
+		case CHAR_TYPE: \
+			result.type = INT_TYPE; \
+			result.v.int_val = (a->v.int_val op b->v.char_val); \
+			break; \
+		\
+		case UCHAR_TYPE: \
+			result.type = INT_TYPE; \
+			result.v.int_val = (a->v.int_val op b->v.uchar_val); \
+			break; \
+		\
 		case SHORT_TYPE: \
 			result.type = INT_TYPE; \
 			result.v.int_val = (a->v.int_val op b->v.short_val); \
@@ -256,6 +426,11 @@ do { \
 			result.v.ulong_val = (a->v.int_val op b->v.ulong_val); \
 			break; \
 		\
+		case FLOAT_TYPE: \
+			result.type = FLOAT_TYPE; \
+			result.v.float_val = (a->v.int_val op b->v.float_val); \
+			break; \
+		\
 		case DOUBLE_TYPE: \
 			result.type = DOUBLE_TYPE; \
 			result.v.double_val = (a->v.int_val op b->v.double_val); \
@@ -268,6 +443,16 @@ do { \
 		\
 	case UINT_TYPE: \
 		switch (b->type) { \
+		case CHAR_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.uint_val op b->v.char_val); \
+			break; \
+		\
+		case UCHAR_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.uint_val op b->v.uchar_val); \
+			break; \
+		\
 		case SHORT_TYPE: \
 			result.type = UINT_TYPE; \
 			result.v.uint_val = (a->v.uint_val op b->v.short_val); \
@@ -298,6 +483,11 @@ do { \
 			result.v.ulong_val = (a->v.uint_val op b->v.ulong_val); \
 			break; \
 		\
+		case FLOAT_TYPE: \
+			result.type = FLOAT_TYPE; \
+			result.v.float_val = (a->v.uint_val op b->v.float_val); \
+			break; \
+		\
 		case DOUBLE_TYPE: \
 			result.type = DOUBLE_TYPE; \
 			result.v.double_val = (a->v.uint_val op b->v.double_val); \
@@ -310,6 +500,16 @@ do { \
 	\
 	case LONG_TYPE: \
 		switch (b->type) { \
+		case CHAR_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.long_val op b->v.char_val); \
+			break; \
+		\
+		case UCHAR_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.long_val op b->v.uchar_val); \
+			break; \
+		\
 		case SHORT_TYPE: \
 			result.type = LONG_TYPE; \
 			result.v.long_val = (a->v.long_val op b->v.short_val); \
@@ -340,6 +540,11 @@ do { \
 			result.v.ulong_val = (a->v.long_val op b->v.ulong_val); \
 			break; \
 		\
+		case FLOAT_TYPE: \
+			result.type = FLOAT_TYPE; \
+			result.v.float_val = (a->v.long_val op b->v.float_val); \
+			break; \
+		\
 		case DOUBLE_TYPE: \
 			result.type = DOUBLE_TYPE; \
 			result.v.double_val = (a->v.long_val op b->v.double_val); \
@@ -352,6 +557,16 @@ do { \
 		\
 	case ULONG_TYPE: \
 		switch (b->type) { \
+		case CHAR_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.ulong_val op b->v.char_val); \
+			break; \
+		\
+		case UCHAR_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.ulong_val op b->v.uchar_val); \
+			break; \
+		\
 		case SHORT_TYPE: \
 			result.type = ULONG_TYPE; \
 			result.v.ulong_val = (a->v.ulong_val op b->v.short_val); \
@@ -382,14 +597,90 @@ do { \
 			result.v.ulong_val = (a->v.ulong_val op b->v.ulong_val); \
 			break; \
 		\
+		case FLOAT_TYPE: \
+			result.type = FLOAT_TYPE; \
+			result.v.float_val = (a->v.ulong_val op b->v.float_val); \
+			break; \
+		\
 		case DOUBLE_TYPE: \
 			result.type = DOUBLE_TYPE; \
 			result.v.double_val = (a->v.ulong_val op b->v.double_val); \
 			break; \
+		\
+		default: \
+			puts("wtf1"); \
 		} \
+		break; \
 \
+	case FLOAT_TYPE: \
+		switch (b->type) { \
+		case CHAR_TYPE: \
+			result.type = FLOAT_TYPE; \
+			result.v.float_val = (a->v.float_val op b->v.char_val); \
+			break; \
+		\
+		case UCHAR_TYPE: \
+			result.type = FLOAT_TYPE; \
+			result.v.float_val = (a->v.float_val op b->v.uchar_val); \
+			break; \
+		\
+		case SHORT_TYPE: \
+			result.type = FLOAT_TYPE; \
+			result.v.float_val = (a->v.float_val op b->v.short_val); \
+			break; \
+		\
+		case USHORT_TYPE: \
+			result.type = FLOAT_TYPE; \
+			result.v.float_val = (a->v.float_val op b->v.ushort_val); \
+			break; \
+		\
+		case INT_TYPE: \
+			result.type = FLOAT_TYPE; \
+			result.v.float_val = (a->v.float_val op b->v.int_val); \
+			break; \
+		\
+		case UINT_TYPE: \
+			result.type = FLOAT_TYPE; \
+			result.v.float_val = (a->v.float_val op b->v.uint_val); \
+			break; \
+		\
+		case LONG_TYPE: \
+			result.type = FLOAT_TYPE; \
+			result.v.float_val = (a->v.float_val op b->v.long_val); \
+			break; \
+		\
+		case ULONG_TYPE: \
+			result.type = FLOAT_TYPE; \
+			result.v.float_val = (a->v.float_val op b->v.ulong_val); \
+			break; \
+		\
+		case FLOAT_TYPE: \
+			result.type = FLOAT_TYPE; \
+			result.v.float_val = (a->v.float_val op b->v.float_val); \
+			break; \
+		\
+		case DOUBLE_TYPE: \
+			result.type = DOUBLE_TYPE; \
+			result.v.double_val = (a->v.float_val op b->v.double_val); \
+			break; \
+\
+		default: \
+			puts("wtf2"); \
+		} \
+		break; \
+		\
 	case DOUBLE_TYPE: \
 		switch (b->type) { \
+		case CHAR_TYPE: \
+			result.type = DOUBLE_TYPE; \
+			result.v.double_val = (a->v.double_val op b->v.char_val); \
+			break; \
+		\
+		case UCHAR_TYPE: \
+			result.type = DOUBLE_TYPE; \
+			result.v.double_val = (a->v.double_val op b->v.uchar_val); \
+			break; \
+		\
 		case SHORT_TYPE: \
 			result.type = DOUBLE_TYPE; \
 			result.v.double_val = (a->v.double_val op b->v.short_val); \
@@ -420,6 +711,11 @@ do { \
 			result.v.double_val = (a->v.double_val op b->v.ulong_val); \
 			break; \
 		\
+		case FLOAT_TYPE: \
+			result.type = DOUBLE_TYPE; \
+			result.v.double_val = (a->v.double_val op b->v.float_val); \
+			break; \
+		\
 		case DOUBLE_TYPE: \
 			result.type = DOUBLE_TYPE; \
 			result.v.double_val = (a->v.double_val op b->v.double_val); \
@@ -439,8 +735,112 @@ do { \
 #define INTEGRAL_BINARY_OP(a, op, b) \
 do { \
 	switch (a->type) { \
+	case CHAR_TYPE: \
+		switch (b->type) { \
+		case CHAR_TYPE: \
+			result.type = CHAR_TYPE; \
+			result.v.char_val = (a->v.char_val op b->v.char_val); \
+			break; \
+		\
+		case UCHAR_TYPE: \
+			result.type = UCHAR_TYPE; \
+			result.v.uchar_val = (a->v.char_val op b->v.uchar_val); \
+			break; \
+		\
+		case SHORT_TYPE: \
+			result.type = SHORT_TYPE; \
+			result.v.short_val = (a->v.char_val op b->v.short_val); \
+			break; \
+		\
+		case USHORT_TYPE: \
+			result.type = USHORT_TYPE; \
+			result.v.ushort_val = (a->v.char_val op b->v.ushort_val); \
+			break; \
+		\
+		case INT_TYPE: \
+			result.type = INT_TYPE; \
+			result.v.int_val = (a->v.char_val op b->v.int_val); \
+			break; \
+		\
+		case UINT_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.char_val op b->v.uint_val); \
+			break; \
+		\
+		case LONG_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.char_val op b->v.long_val); \
+			break; \
+		\
+		case ULONG_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.char_val op b->v.ulong_val); \
+			break; \
+		\
+		default: \
+			puts("wtf1"); \
+		} \
+		break; \
+		\
+	case UCHAR_TYPE: \
+		switch (b->type) { \
+		case CHAR_TYPE: \
+			result.type = UCHAR_TYPE; \
+			result.v.uchar_val = (a->v.uchar_val op b->v.char_val); \
+			break; \
+		\
+		case UCHAR_TYPE: \
+			result.type = UCHAR_TYPE; \
+			result.v.uchar_val = (a->v.uchar_val op b->v.uchar_val); \
+			break; \
+		\
+		case SHORT_TYPE: \
+			result.type = SHORT_TYPE; \
+			result.v.short_val = (a->v.uchar_val op b->v.short_val); \
+			break; \
+		\
+		case USHORT_TYPE: \
+			result.type = USHORT_TYPE; \
+			result.v.ushort_val = (a->v.uchar_val op b->v.ushort_val); \
+			break; \
+		\
+		case INT_TYPE: \
+			result.type = INT_TYPE; \
+			result.v.int_val = (a->v.uchar_val op b->v.int_val); \
+			break; \
+		\
+		case UINT_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.uchar_val op b->v.uint_val); \
+			break; \
+		\
+		case LONG_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.uchar_val op b->v.long_val); \
+			break; \
+		\
+		case ULONG_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.uchar_val op b->v.ulong_val); \
+			break; \
+		\
+		default: \
+			puts("wtf1"); \
+		} \
+		break; \
+		\
 	case SHORT_TYPE: \
 		switch (b->type) { \
+		case CHAR_TYPE: \
+			result.type = SHORT_TYPE; \
+			result.v.short_val = (a->v.short_val op b->v.char_val); \
+			break; \
+		\
+		case UCHAR_TYPE: \
+			result.type = SHORT_TYPE; \
+			result.v.short_val = (a->v.short_val op b->v.uchar_val); \
+			break; \
+		\
 		case SHORT_TYPE: \
 			result.type = SHORT_TYPE; \
 			result.v.short_val = (a->v.short_val op b->v.short_val); \
@@ -478,9 +878,19 @@ do { \
 		\
 	case USHORT_TYPE: \
 		switch (b->type) { \
+		case CHAR_TYPE: \
+			result.type = USHORT_TYPE; \
+			result.v.ushort_val = (a->v.ushort_val op b->v.char_val); \
+			break; \
+		\
+		case UCHAR_TYPE: \
+			result.type = USHORT_TYPE; \
+			result.v.ushort_val = (a->v.ushort_val op b->v.uchar_val); \
+			break; \
+		\
 		case SHORT_TYPE: \
 			result.type = USHORT_TYPE; \
-			result.v.short_val = (a->v.ushort_val op b->v.short_val); \
+			result.v.ushort_val = (a->v.ushort_val op b->v.short_val); \
 			break; \
 		\
 		case USHORT_TYPE: \
@@ -515,6 +925,16 @@ do { \
 		\
 	case INT_TYPE: \
 		switch (b->type) { \
+		case CHAR_TYPE: \
+			result.type = INT_TYPE; \
+			result.v.int_val = (a->v.int_val op b->v.char_val); \
+			break; \
+		\
+		case UCHAR_TYPE: \
+			result.type = INT_TYPE; \
+			result.v.int_val = (a->v.int_val op b->v.uchar_val); \
+			break; \
+		\
 		case SHORT_TYPE: \
 			result.type = INT_TYPE; \
 			result.v.int_val = (a->v.int_val op b->v.short_val); \
@@ -552,6 +972,16 @@ do { \
 		\
 	case UINT_TYPE: \
 		switch (b->type) { \
+		case CHAR_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.uint_val op b->v.char_val); \
+			break; \
+		\
+		case UCHAR_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.uint_val op b->v.uchar_val); \
+			break; \
+		\
 		case SHORT_TYPE: \
 			result.type = UINT_TYPE; \
 			result.v.uint_val = (a->v.uint_val op b->v.short_val); \
@@ -589,6 +1019,16 @@ do { \
 	\
 	case LONG_TYPE: \
 		switch (b->type) { \
+		case CHAR_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.long_val op b->v.char_val); \
+			break; \
+		\
+		case UCHAR_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.long_val op b->v.uchar_val); \
+			break; \
+		\
 		case SHORT_TYPE: \
 			result.type = LONG_TYPE; \
 			result.v.long_val = (a->v.long_val op b->v.short_val); \
@@ -626,6 +1066,16 @@ do { \
 		\
 	case ULONG_TYPE: \
 		switch (b->type) { \
+		case CHAR_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.ulong_val op b->v.char_val); \
+			break; \
+		\
+		case UCHAR_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.ulong_val op b->v.uchar_val); \
+			break; \
+		\
 		case SHORT_TYPE: \
 			result.type = ULONG_TYPE; \
 			result.v.ulong_val = (a->v.ulong_val op b->v.short_val); \
@@ -655,10 +1105,15 @@ do { \
 			result.type = ULONG_TYPE; \
 			result.v.ulong_val = (a->v.ulong_val op b->v.ulong_val); \
 			break; \
+		\
+		default: \
+			puts("wtf1"); \
 		} \
+		break; \
 \
 	default: \
 		puts("wtf3"); \
+ \
 	} \
  \
 } while (0)
@@ -667,6 +1122,12 @@ do { \
 do { \
 	var_value c = execute_expr(prog, cond); \
 	switch (c.type) { \
+	case CHAR_TYPE: \
+		result = (c.v.char_val) ? *a : *b; \
+		break; \
+	case UCHAR_TYPE: \
+		result = (c.v.uchar_val) ? *a : *b; \
+		break; \
 	case SHORT_TYPE: \
 		result = (c.v.short_val) ? *a : *b; \
 		break; \
@@ -684,6 +1145,9 @@ do { \
 		break; \
 	case ULONG_TYPE: \
 		result = (c.v.ulong_val) ? *a : *b; \
+		break; \
+	case FLOAT_TYPE: \
+		result = (c.v.float_val) ? *a : *b; \
 		break; \
 	case DOUBLE_TYPE: \
 		result = (c.v.double_val) ? *a : *b; \

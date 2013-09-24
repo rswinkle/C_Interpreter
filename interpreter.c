@@ -41,7 +41,7 @@ void execute(program_state* prog)
 
 	while ( *prog->pc < prog->stmt_list->size ) {
 		stmt = GET_STMT(prog->stmt_list, *prog->pc);
-	//	print_statement(stmt);
+//		print_statement(stmt);
 
 		switch (stmt->type) {
 
@@ -142,8 +142,16 @@ void execute(program_state* prog)
 int is_true(var_value v)
 {
 	switch (v.type) {
+	case CHAR_TYPE:     return (v.v.char_val != 0);
+	case UCHAR_TYPE:    return (v.v.uchar_val != 0);
+	case SHORT_TYPE:    return (v.v.short_val != 0);
+	case USHORT_TYPE:   return (v.v.ushort_val != 0);
 	case INT_TYPE:      return (v.v.int_val != 0);
-	case DOUBLE_TYPE:   return (v.v.double_val) ? 1 : 0; //required for correct behavior
+	case UINT_TYPE:     return (v.v.uint_val != 0);
+	case LONG_TYPE:     return (v.v.long_val != 0);
+	case ULONG_TYPE:    return (v.v.ulong_val != 0);
+	case FLOAT_TYPE:    return (v.v.float_val) ? 1 : 0; //required for correct behavior
+	case DOUBLE_TYPE:   return (v.v.double_val) ? 1 : 0;//for floating types
 
 	default:
 		printf("%d\n", v.type);
@@ -157,6 +165,12 @@ int is_true(var_value v)
 void execute_print(var_value a)
 {
 	switch (a.type) {
+		case CHAR_TYPE:
+			printf("%d\n", a.v.char_val); //use %c ?
+			break;
+		case UCHAR_TYPE:
+			printf("%u\n", a.v.uchar_val);
+			break;
 		case SHORT_TYPE:
 			printf("%d\n", a.v.short_val);
 			break;
@@ -174,6 +188,9 @@ void execute_print(var_value a)
 			break;
 		case ULONG_TYPE:
 			printf("%u\n", a.v.ulong_val);
+			break;
+		case FLOAT_TYPE:
+			printf("%f\n", a.v.float_val);
 			break;
 		case DOUBLE_TYPE:
 			printf("%f\n", a.v.double_val);

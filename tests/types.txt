@@ -54,5 +54,11 @@ int main()
 	a = 70000;
 	print testfunc(a, d);
 	print testfunc(d, d);
+
+	a = 50000;
+	unsigned short s = testshort(a, a);
+	print s;
+
+
 	return 0;
 }

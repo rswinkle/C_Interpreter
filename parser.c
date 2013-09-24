@@ -94,7 +94,7 @@ void free_var_value(void* var)
 token_value read_token(FILE* file)
 {
 	static char token_buf[MAX_TOKEN_LEN];
-	int c, i = 0;
+	int c, i = 0, tmp;
 
 	token_value tok;
 	memset(&tok, 0, sizeof(token_value));
@@ -240,6 +240,18 @@ start:
 			ungetc(c, file);
 			tok.type = GREATER;
 		}
+		break;
+
+	case '\'':
+		c = getc(file);
+		tmp = getc(file);
+		//TODO add support for escape characters ... like I'm using here
+		if (tmp != '\'') {
+			fprintf(stderr, "Error: multi-character character constant\n");
+			exit(0);
+		}
+		tok.type = INT_LITERAL;
+		tok.v.int_val = c;
 		break;
 
 	default:
@@ -462,8 +474,8 @@ token_value* peek_token(parsing_state* p, long offset)
 token_value* get_token(parsing_state* p)
 {
 	token_value* tok = GET_TOKEN_VAL(&p->tokens, p->pos++);
-	//print_token(tok);
-	//return GET_TOKEN_VAL(&p->tokens, p->pos++);
+//	print_token(tok);
+//	return GET_TOKEN_VAL(&p->tokens, p->pos++);
 	return tok;
 }
 
@@ -729,10 +741,12 @@ void storage_specifier(parsing_state* p, program_state* prog, int match)
 
 /* equivalenct names (and only names accepted, no mixing the order):
  *
+ * char, signed char
  * short, short int, signed short, signed short int
  * int, signed int, signed
  * long, long int, signed long, signed long int
  *
+ * unsigned char
  * unsigned short, unsigned short int
  * unsigned, unsigned int
  * unsigned long, unsigned long int
@@ -745,6 +759,9 @@ var_type declaration_specifier(parsing_state* p, program_state* prog, int match)
 	int seek = match;
 
 	switch (tok->type) {
+	case CHAR:
+		type = CHAR_TYPE;
+		break;
 	case SHORT:
 		if (tok[1].type == INT)
 			seek++;
@@ -760,6 +777,9 @@ var_type declaration_specifier(parsing_state* p, program_state* prog, int match)
 		break;
 	case UNSIGNED:
 		switch (tok[1].type) {
+		case CHAR:
+			type = UCHAR_TYPE;
+			seek++;
 		case SHORT:
 			type = USHORT_TYPE;
 			seek++;
@@ -782,6 +802,10 @@ var_type declaration_specifier(parsing_state* p, program_state* prog, int match)
 
 	case SIGNED:
 		switch (tok[1].type) {
+		case CHAR:
+			type = CHAR_TYPE; //assume plain char is signed
+			seek++;
+			break;
 		case SHORT:
 			type = SHORT_TYPE;
 			seek++;
@@ -802,6 +826,9 @@ var_type declaration_specifier(parsing_state* p, program_state* prog, int match)
 		}
 		break;
 	
+	case FLOAT:
+		type = FLOAT_TYPE;
+		break;
 	case DOUBLE:
 		type = DOUBLE_TYPE;
 		break;
@@ -1542,6 +1569,15 @@ void assign_expr(parsing_state* p, program_state* prog, expression* e)
 		return;
 	}
 
+	tok = peek_token(p, 0);
+	if (prog->func) {
+		var_value* check = look_up_value(prog, tok->v.id, BOTH);
+		if (!check) {
+			parse_error(tok, "undeclared variable\n");
+			exit(0);
+		}
+	}
+
 	if (!assignment_operator(peek_token(p, 1)->type)) {
 		cond_expr(p, prog, e);
 
@@ -1554,8 +1590,8 @@ void assign_expr(parsing_state* p, program_state* prog, expression* e)
 		return;
 	}
 
-	e->tok.type = ID;
-	e->tok.v.id = get_token(p)->v.id;
+	get_token(p);  //match ID
+	e->tok = *tok; //id from above
 	
 	tok = get_token(p); //get assignment op
 	
@@ -1568,6 +1604,7 @@ void assign_expr(parsing_state* p, program_state* prog, expression* e)
 	//operators.  The difference is the others aren't recursive
 	//just loop always modifying the same top level expression
 	//copying it into the left side (the recursion) as needed.
+	//(apparently that method is called tail recursion ...)
 	//
 	//Here the top level left side never changes and only the right
 	//side is expanded in the recursive call
@@ -1876,6 +1913,12 @@ void primary_expr(parsing_state* p, program_state* prog, expression* e)
 		if (!prog->func) {
 			parse_error(tok, "global variable initializer element is not a constant\n");
 			exit(0);
+		} else {
+			var_value* check = look_up_value(prog, tok->v.id, BOTH);
+			if (!check) {
+				parse_error(tok, "undeclared variable\n");
+				exit(0);
+			}
 		}
 		e->tok.type = ID;
 		e->tok.v.id = tok->v.id;

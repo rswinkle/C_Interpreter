@@ -67,11 +67,14 @@ int main()
 	int test2 = (d > 2) ? 1.5 : 3; 
 	printf("%d\n", test2);
 
+	char letter = 'ab';
+	printf("%c %d\n", letter, letter);
 
 	switch (test2) {
 		//tcc allows this ...
 		//gcc error case does not reduce to integer constant
-		case 1.5:
+		//case 1.5:
+		case 1:
 			printf("am I here\n");
 			break;
 	}

@@ -60,5 +60,10 @@ int main()
 
 	//2 4 8 so my conversions are ok here at least
 	//printf("%lu %lu %lu\n", sizeof(short), sizeof(int), sizeof(long));
+
+	a = 50000;
+	s = testshort(a, a);
+	printf("%d\n", s);
+
 	return 0;
 }
