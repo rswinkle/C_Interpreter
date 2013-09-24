@@ -105,7 +105,7 @@ start:
 		c = getc(file);
 	} while (isspace(c));
 
-	//printf("getting token starting with '%c'\n", c);
+//	printf("getting token starting with '%c'\n", c);
 	switch (c) {
 	case ':': tok.type = COLON;     break;
 	case ',': tok.type = COMMA;     break;
@@ -269,14 +269,14 @@ start:
 
 				ungetc(c, file);
 				token_buf[i] = '\0';
-				tok.type = FLOAT_LITERAL;
-				tok.v.real = atof(token_buf);
+				tok.type = DOUBLE_LITERAL;
+				tok.v.double_val = atof(token_buf);
 			} else {
 				ungetc(c, file);
 				token_buf[i] = '\0';
 
 				tok.type = INT_LITERAL;
-				tok.v.integer = atoi(token_buf);
+				tok.v.int_val = atoi(token_buf);
 			}
 
 		} else if (isalpha(c)) {
@@ -295,7 +295,6 @@ start:
 			if (!strcmp(token_buf, "for")) {        tok.type = FOR;      break; }
 			if (!strcmp(token_buf, "if")) {         tok.type = IF;         break; }
 			if (!strcmp(token_buf, "else")) {       tok.type = ELSE;       break; }
-			if (!strcmp(token_buf, "int")) {        tok.type = INT;        break; }
 			if (!strcmp(token_buf, "print")) {      tok.type = PRINT;      break; }
 			if (!strcmp(token_buf, "goto")) {       tok.type = GOTO;       break; }
 			if (!strcmp(token_buf, "return")) {     tok.type = RETURN;     break; }
@@ -306,7 +305,9 @@ start:
 			if (!strcmp(token_buf, "default")) {    tok.type = DEFAULT;    break; }
 			if (!strcmp(token_buf, "continue")) {   tok.type = CONTINUE;   break; }
 
+			if (!strcmp(token_buf, "short")) {      tok.type = SHORT;      break; }
 			if (!strcmp(token_buf, "int")) {        tok.type = INT;        break; }
+			if (!strcmp(token_buf, "long")) {       tok.type = LONG;        break; }
 			if (!strcmp(token_buf, "signed")) {     tok.type = SIGNED;     break; }
 			if (!strcmp(token_buf, "unsigned")) {   tok.type = UNSIGNED;   break; }
 			if (!strcmp(token_buf, "double")) {     tok.type = DOUBLE;     break; }
@@ -430,8 +431,9 @@ void print_token(token_value* tok)
 		case MULTEQUAL:        puts("MULTEQUAL");     break;
 		case DIVEQUAL:         puts("DIVEQUAL");     break;
 		case MODEQUAL:         puts("MODEQUAL");     break;
-		case INT_LITERAL:      printf("INT_LITERAL = %d\n", tok->v.integer);     break;
-		case FLOAT_LITERAL:    puts("FLOAT_LITERAL");     break;
+		case INT_LITERAL:      printf("INT_LITERAL = %d\n", tok->v.int_val);     break;
+		case FLOAT_LITERAL:    printf("FLOAT_LITERAL = %f\n", tok->v.float_val);     break;
+		case DOUBLE_LITERAL:   printf("DOUBLE_LITERAL = %f\n", tok->v.double_val);     break;
 		case CHAR_LITERAL:     puts("CHAR_LITERAL");     break;
 		case STR_LITERAL:      puts("STR_LITERAL");     break;
 		case LABEL:            puts("LABEL");     break;
@@ -442,6 +444,15 @@ void print_token(token_value* tok)
 	}
 }
 
+void print_type(var_value* v)
+{
+	switch (v->type) {
+	case INT_TYPE:       puts("INT_TYPE"); break;
+	case DOUBLE_TYPE:    puts("DOUBLE_TYPE"); break;
+	default:
+		puts("unknown type in print_type");
+	}
+}
 
 token_value* peek_token(parsing_state* p, long offset)
 {
@@ -716,15 +727,81 @@ void storage_specifier(parsing_state* p, program_state* prog, int match)
 }
 */
 
+/* equivalenct names (and only names accepted, no mixing the order):
+ *
+ * short, short int, signed short, signed short int
+ * int, signed int, signed
+ * long, long int, signed long, signed long int
+ *
+ * unsigned short, unsigned short int
+ * unsigned, unsigned int
+ * unsigned long, unsigned long int
+ */
 var_type declaration_specifier(parsing_state* p, program_state* prog, int match)
 {
 	token_value* tok = peek_token(p, 0);
 	var_type type = UNKNOWN;
 
+	int seek = match;
+
 	switch (tok->type) {
+	case SHORT:
+		if (tok[1].type == INT)
+			seek++;
+		type = SHORT_TYPE;
+		break;
 	case INT:
 		type = INT_TYPE;
 		break;
+	case LONG:
+		if (tok[1].type == INT)
+			seek++;
+		type = LONG_TYPE;
+		break;
+	case UNSIGNED:
+		switch (tok[1].type) {
+		case SHORT:
+			type = USHORT_TYPE;
+			seek++;
+			if (tok[2].type == INT)
+				seek++;
+			break;
+		case LONG:
+			type = ULONG_TYPE;
+			seek++;
+			if (tok[2].type == INT)
+				seek++;
+			break;
+		case INT:
+			seek++;
+		default:
+			type = UINT_TYPE;
+			break;
+		}
+		break;
+
+	case SIGNED:
+		switch (tok[1].type) {
+		case SHORT:
+			type = SHORT_TYPE;
+			seek++;
+			if (tok[2].type == INT)
+				seek++;
+			break;
+		case LONG:
+			type = LONG_TYPE;
+			seek++;
+			if (tok[2].type == INT)
+				seek++;
+			break;
+		case INT:
+			seek++;
+		default:
+			type = INT_TYPE;
+			break;
+		}
+		break;
+	
 	case DOUBLE:
 		type = DOUBLE_TYPE;
 		break;
@@ -734,14 +811,15 @@ var_type declaration_specifier(parsing_state* p, program_state* prog, int match)
 
 	default:
 		if (match) {
-			parse_error(tok, "in declaration_specifier, INT_TYPE expected\n");
+			parse_error(tok, "in declaration_specifier, valid type expected\n");
 			exit(0);
 		}
 	}
 
-	if (match)
-		get_token(p);
-	
+	if (match) {
+		for (int i=0; i<seek; ++i)
+			get_token(p); //makes it easier to debug otherwise I'd just seek
+	}
 	return type;
 }
 
@@ -1804,11 +1882,15 @@ void primary_expr(parsing_state* p, program_state* prog, expression* e)
 		break;
 	case INT_LITERAL:
 		e->tok.type = INT_LITERAL;
-		e->tok.v.integer = tok->v.integer;
+		e->tok.v.int_val = tok->v.int_val;
 		break;
 	case FLOAT_LITERAL:
 		e->tok.type = FLOAT_LITERAL;
-		e->tok.v.real = tok->v.real;
+		e->tok.v.float_val = tok->v.float_val;
+		break;
+	case DOUBLE_LITERAL:
+		e->tok.type = DOUBLE_LITERAL;
+		e->tok.v.double_val = tok->v.double_val;
 		break;
 	default:
 		parse_error(tok, "in primary_expr, LPAREN or literal expected\n");

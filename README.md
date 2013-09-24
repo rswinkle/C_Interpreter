@@ -55,7 +55,13 @@ initialized_declarator_list     -> initialized_declarator
 initialized_declarator    -> identifier
                           -> identifier '=' assign_expr
 
-declaration_specifier     -> int
+declaration_specifier     -> short, short int, signed short int
+                             unsigned short, unsigned short int
+                             int, signed int, signed
+                             unsigned, unsigned int
+                             long, long int, signed long int
+                             unsigned long, unsigned long int
+                             double
 
 compound_statement        -> '{' decl_or_stmt_list '}'
 

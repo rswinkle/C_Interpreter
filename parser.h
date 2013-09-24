@@ -42,7 +42,7 @@ typedef enum {
 	ADDEQUAL, SUBEQUAL, MULTEQUAL, DIVEQUAL, MODEQUAL,
 
 	/* literals aka constants */
-	INT_LITERAL, FLOAT_LITERAL, CHAR_LITERAL, STR_LITERAL,
+	INT_LITERAL, FLOAT_LITERAL, DOUBLE_LITERAL, CHAR_LITERAL, STR_LITERAL,
 
 
 	/* for internal use/hacks, not really tokens */
@@ -63,7 +63,7 @@ typedef enum
 	USHORT_TYPE,
 
 	INT_TYPE,
-	SINT_TYPE,
+	UINT_TYPE,
 
 	LONG_TYPE,
 	ULONG_TYPE,
@@ -113,8 +113,9 @@ typedef struct token_value
 	Token type;
 	union {
 		char* id;
-		int integer;
-		double real;
+		int int_val;
+		float float_val;
+		double double_val;
 	} v;
 } token_value;
 
@@ -249,9 +250,10 @@ int make_expression_block(size_t n, expr_block* block);
 
 void free_statement(void* stmt);
 
-//should probably make these static in parser.c
 void print_token(token_value* tok);
 void print_statement(statement* stmt);
+void print_type(var_value* v);
+
 expression* copy_expr(program_state* prog, expression* e);
 expression* make_expression(program_state* prog);
 

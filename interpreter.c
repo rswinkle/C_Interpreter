@@ -100,8 +100,13 @@ void execute(program_state* prog)
 			break;
 
 		case RETURN_STMT:
-			if (prog->func->ret_val.type != VOID_TYPE)
-				prog->func->ret_val = execute_expr(prog, stmt->exp);
+			{
+				var_value result, tmp;
+				if (prog->func->ret_val.type != VOID_TYPE) {
+					tmp = execute_expr(prog, stmt->exp);
+					BINARY_OP((&prog->func->ret_val), =, (&tmp));
+				}
+			}
 
 			clear_bindings(prog);
 			prog->cur_parent = outer_parent;
@@ -152,8 +157,23 @@ int is_true(var_value v)
 void execute_print(var_value a)
 {
 	switch (a.type) {
+		case SHORT_TYPE:
+			printf("%d\n", a.v.short_val);
+			break;
+		case USHORT_TYPE:
+			printf("%u\n", a.v.ushort_val);
+			break;
 		case INT_TYPE:
 			printf("%d\n", a.v.int_val);
+			break;
+		case UINT_TYPE:
+			printf("%u\n", a.v.uint_val);
+			break;
+		case LONG_TYPE:
+			printf("%d\n", a.v.long_val);
+			break;
+		case ULONG_TYPE:
+			printf("%u\n", a.v.ulong_val);
 			break;
 		case DOUBLE_TYPE:
 			printf("%f\n", a.v.double_val);
@@ -240,12 +260,17 @@ var_value execute_expr(program_state* prog, expression* e)
 
 	case INT_LITERAL:
 		result.type = INT_TYPE;
-		result.v.int_val = e->tok.v.integer;
+		result.v.int_val = e->tok.v.int_val;
 		return result;
 
 	case FLOAT_LITERAL:
+		result.type = FLOAT_TYPE;
+		result.v.float_val = e->tok.v.float_val;
+		return result;
+		
+	case DOUBLE_LITERAL:
 		result.type = DOUBLE_TYPE;
-		result.v.double_val = e->tok.v.real;
+		result.v.double_val = e->tok.v.double_val;
 		return result;
 
 	default:
@@ -381,14 +406,20 @@ var_value execute_constant_expr(program_state* prog, expression* e)
 		left = execute_expr(prog, e->left);
 		break;
 
+
 	case INT_LITERAL:
 		result.type = INT_TYPE;
-		result.v.int_val = e->tok.v.integer;
+		result.v.int_val = e->tok.v.int_val;
 		return result;
 
 	case FLOAT_LITERAL:
+		result.type = FLOAT_TYPE;
+		result.v.float_val = e->tok.v.float_val;
+		return result;
+		
+	case DOUBLE_LITERAL:
 		result.type = DOUBLE_TYPE;
-		result.v.double_val = e->tok.v.real;
+		result.v.double_val = e->tok.v.double_val;
 		return result;
 
 	default:
@@ -460,21 +491,37 @@ void execute_expr_list(program_state* prog, function* callee, expression* e)
 	symbol* s;
 	active_binding* v = malloc(sizeof(active_binding));;
 
+	var_value result; // <-- necessary for macros but not used ... should refactor
+	var_value val, *val_ptr = &val;
+
 	int i = 0;
-	expression* tmp = e;
 	while (e->tok.type == EXPR_LIST) {
 		s = GET_SYMBOL(&func->symbols, i);
-		v->val = execute_expr(prog, e->left);
+
+		val = execute_expr(prog, e->left);
+
+		//this is really stupid ... maybe I should separate parameters from other bindings
+		//a binding is allocated in parsing with the correct type ... so here we grab the type
+		//of the last element.  It doesn't matter if it's recursive function and it calls itself
+		//from a block where the symbol has another type because the "last" element
+		//is always that unused binding put in during parsing with the original type of the parameter
+		v->val.type = (list_entry(s->head.prev, active_binding, list))->val.type;
+		BINARY_OP((&v->val), =, val_ptr);
+
 		list_add(&v->list, &s->head);
 		s->cur_parent = v->parent = 0; //reset for recursive call
 
-		e = tmp = e->right;
+		e = e->right;
 		++i;
 		v = malloc(sizeof(active_binding));
 	}
 
 	s = GET_SYMBOL(&func->symbols, i);
-	v->val = execute_expr(prog, tmp);
+
+	val = execute_expr(prog, e);
+	v->val.type = (list_entry(s->head.prev, active_binding, list))->val.type;
+	BINARY_OP((&v->val), =, val_ptr);
+	
 	list_add(&v->list, &s->head);
 	s->cur_parent = v->parent = 0;
 }	

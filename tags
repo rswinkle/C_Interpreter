@@ -8,21 +8,21 @@ ADD	parser.h	/^	MOD='%', LPAREN='(', RPAREN=')', MULT='*', ADD='+', SUB='-', DIV
 ADDEQUAL	parser.h	/^	ADDEQUAL, SUBEQUAL, MULTEQUAL, DIVEQUAL, MODEQUAL,$/;"	e	enum:__anon1
 ALPHABET_SIZE	c_utils.c	526;"	d	file:
 BASIC_TYPES	basic_types.h	2;"	d
-BINARY_OP	interpreter.h	87;"	d
-BINARY_OP1	tests/types.c	3;"	d	file:
+BINARY_OP	interpreter.h	121;"	d
+BINARY_OP1	tests/types_experimenting.c	3;"	d	file:
 BOTH	parser.h	/^	BOTH$/;"	e	enum:__anon6
 BREAK	parser.h	/^	DO, WHILE, FOR, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,$/;"	e	enum:__anon1
 BREAK_STMT	parser.h	/^	FOR_STMT, CONTINUE_STMT, BREAK_STMT, DO_STMT, CASE_STMT, DEFAULT_STMT,$/;"	e	enum:__anon5
 CASE	parser.h	/^	DO, WHILE, FOR, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,$/;"	e	enum:__anon1
 CASE_STMT	parser.h	/^	FOR_STMT, CONTINUE_STMT, BREAK_STMT, DO_STMT, CASE_STMT, DEFAULT_STMT,$/;"	e	enum:__anon5
 CHAR	parser.h	/^	INT, SHORT, LONG, FLOAT, DOUBLE, CHAR, VOID, SIGNED, UNSIGNED,$/;"	e	enum:__anon1
-CHAR_LITERAL	parser.h	/^	INT_LITERAL, FLOAT_LITERAL, CHAR_LITERAL, STR_LITERAL,$/;"	e	enum:__anon1
+CHAR_LITERAL	parser.h	/^	INT_LITERAL, FLOAT_LITERAL, DOUBLE_LITERAL, CHAR_LITERAL, STR_LITERAL,$/;"	e	enum:__anon1
 CHAR_TYPE	parser.h	/^	CHAR_TYPE, \/* implementation defined whether plain char is signed or not ...*\/$/;"	e	enum:__anon2
 CLEAR_SCREEN	c_utils.h	71;"	d
 CLIST_H	clist.h	2;"	d
 COLON	parser.h	/^	MOD='%', LPAREN='(', RPAREN=')', MULT='*', ADD='+', SUB='-', DIV='\/', COLON=':', SEMICOLON=';',$/;"	e	enum:__anon1
 COMMA	parser.h	/^	EQUAL='=', COMMA=',', LBRACKET='[', RBRACKET=']', LBRACE='{', RBRACE='}', TERNARY,$/;"	e	enum:__anon1
-COND_EXPR	interpreter.h	139;"	d
+COND_EXPR	interpreter.h	410;"	d
 CONTINUE	parser.h	/^	DO, WHILE, FOR, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,$/;"	e	enum:__anon1
 CONTINUE_STMT	parser.h	/^	FOR_STMT, CONTINUE_STMT, BREAK_STMT, DO_STMT, CASE_STMT, DEFAULT_STMT,$/;"	e	enum:__anon5
 CVECTOR_H	cvector.h	4;"	d
@@ -37,6 +37,7 @@ DIV	parser.h	/^	MOD='%', LPAREN='(', RPAREN=')', MULT='*', ADD='+', SUB='-', DIV
 DIVEQUAL	parser.h	/^	ADDEQUAL, SUBEQUAL, MULTEQUAL, DIVEQUAL, MODEQUAL,$/;"	e	enum:__anon1
 DO	parser.h	/^	DO, WHILE, FOR, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,$/;"	e	enum:__anon1
 DOUBLE	parser.h	/^	INT, SHORT, LONG, FLOAT, DOUBLE, CHAR, VOID, SIGNED, UNSIGNED,$/;"	e	enum:__anon1
+DOUBLE_LITERAL	parser.h	/^	INT_LITERAL, FLOAT_LITERAL, DOUBLE_LITERAL, CHAR_LITERAL, STR_LITERAL,$/;"	e	enum:__anon1
 DOUBLE_TYPE	parser.h	/^	DOUBLE_TYPE,$/;"	e	enum:__anon2
 DO_STMT	parser.h	/^	FOR_STMT, CONTINUE_STMT, BREAK_STMT, DO_STMT, CASE_STMT, DEFAULT_STMT,$/;"	e	enum:__anon5
 ELSE	parser.h	/^	DO, WHILE, FOR, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,$/;"	e	enum:__anon1
@@ -49,7 +50,7 @@ EXP	parser.h	/^	LABEL, DECLARATION, EXP, EXPR_LIST, FUNC_CALL,$/;"	e	enum:__anon
 EXPR_LIST	parser.h	/^	LABEL, DECLARATION, EXP, EXPR_LIST, FUNC_CALL,$/;"	e	enum:__anon1
 EXPR_STMT	parser.h	/^	NULL_STMT = 0, WHILE_STMT, PRINT_STMT, EXPR_STMT, IF_STMT, GOTO_STMT,$/;"	e	enum:__anon5
 FLOAT	parser.h	/^	INT, SHORT, LONG, FLOAT, DOUBLE, CHAR, VOID, SIGNED, UNSIGNED,$/;"	e	enum:__anon1
-FLOAT_LITERAL	parser.h	/^	INT_LITERAL, FLOAT_LITERAL, CHAR_LITERAL, STR_LITERAL,$/;"	e	enum:__anon1
+FLOAT_LITERAL	parser.h	/^	INT_LITERAL, FLOAT_LITERAL, DOUBLE_LITERAL, CHAR_LITERAL, STR_LITERAL,$/;"	e	enum:__anon1
 FLOAT_TYPE	parser.h	/^	FLOAT_TYPE,$/;"	e	enum:__anon2
 FOR	parser.h	/^	DO, WHILE, FOR, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,$/;"	e	enum:__anon1
 FOR_STMT	parser.h	/^	FOR_STMT, CONTINUE_STMT, BREAK_STMT, DO_STMT, CASE_STMT, DEFAULT_STMT,$/;"	e	enum:__anon5
@@ -71,11 +72,11 @@ IF	parser.h	/^	DO, WHILE, FOR, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE,
 IF_STMT	parser.h	/^	NULL_STMT = 0, WHILE_STMT, PRINT_STMT, EXPR_STMT, IF_STMT, GOTO_STMT,$/;"	e	enum:__anon5
 INCREMENT	parser.h	/^	LOGICAL_OR, LOGICAL_AND, LOGICAL_NEGATION, INCREMENT, DECREMENT,$/;"	e	enum:__anon1
 INIT_LIST_HEAD	clist.h	/^static inline void INIT_LIST_HEAD(list_head *list)$/;"	f	signature:(list_head *list)
-INIT_STATEMENT	parser.h	188;"	d
+INIT_STATEMENT	parser.h	189;"	d
 INT	parser.h	/^	INT, SHORT, LONG, FLOAT, DOUBLE, CHAR, VOID, SIGNED, UNSIGNED,$/;"	e	enum:__anon1
-INTEGRAL_BINARY_OP	interpreter.h	123;"	d
+INTEGRAL_BINARY_OP	interpreter.h	290;"	d
 INTERPRETER_H	interpreter.h	2;"	d
-INT_LITERAL	parser.h	/^	INT_LITERAL, FLOAT_LITERAL, CHAR_LITERAL, STR_LITERAL,$/;"	e	enum:__anon1
+INT_LITERAL	parser.h	/^	INT_LITERAL, FLOAT_LITERAL, DOUBLE_LITERAL, CHAR_LITERAL, STR_LITERAL,$/;"	e	enum:__anon1
 INT_PTR_TYPE	parser.h	/^	INT_PTR_TYPE$/;"	e	enum:__anon2
 INT_TYPE	parser.h	/^	INT_TYPE,$/;"	e	enum:__anon2
 LABEL	parser.h	/^	LABEL, DECLARATION, EXP, EXPR_LIST, FUNC_CALL,$/;"	e	enum:__anon1
@@ -96,11 +97,11 @@ MOD	parser.h	/^	MOD='%', LPAREN='(', RPAREN=')', MULT='*', ADD='+', SUB='-', DIV
 MODEQUAL	parser.h	/^	ADDEQUAL, SUBEQUAL, MULTEQUAL, DIVEQUAL, MODEQUAL,$/;"	e	enum:__anon1
 MULT	parser.h	/^	MOD='%', LPAREN='(', RPAREN=')', MULT='*', ADD='+', SUB='-', DIV='\/', COLON=':', SEMICOLON=';',$/;"	e	enum:__anon1
 MULTEQUAL	parser.h	/^	ADDEQUAL, SUBEQUAL, MULTEQUAL, DIVEQUAL, MODEQUAL,$/;"	e	enum:__anon1
-MYCOMMA	interpreter.c	267;"	d	file:
-MYCOMMA	interpreter.c	269;"	d	file:
-MYCOMMA	interpreter.c	403;"	d	file:
-MYCOMMA	interpreter.c	405;"	d	file:
-MYCOMMA	tests/types.c	5;"	d	file:
+MYCOMMA	interpreter.c	287;"	d	file:
+MYCOMMA	interpreter.c	289;"	d	file:
+MYCOMMA	interpreter.c	434;"	d	file:
+MYCOMMA	interpreter.c	436;"	d	file:
+MYCOMMA	tests/types_experimenting.c	5;"	d	file:
 NOTEQUAL	parser.h	/^	EQUALEQUAL, GREATER, GTEQ, LESS, LTEQ, NOTEQUAL,$/;"	e	enum:__anon1
 NULL_STMT	parser.h	/^	NULL_STMT = 0, WHILE_STMT, PRINT_STMT, EXPR_STMT, IF_STMT, GOTO_STMT,$/;"	e	enum:__anon5
 ONLY_GLOBAL	parser.h	/^	ONLY_GLOBAL,$/;"	e	enum:__anon6
@@ -108,11 +109,11 @@ ONLY_LOCAL	parser.h	/^	ONLY_LOCAL,$/;"	e	enum:__anon6
 PARSER_H	parser.h	2;"	d
 POST_DECREMENT	parser.h	/^	POST_INCREMENT, POST_DECREMENT, PRE_INCREMENT, PRE_DECREMENT$/;"	e	enum:__anon1
 POST_INCREMENT	parser.h	/^	POST_INCREMENT, POST_DECREMENT, PRE_INCREMENT, PRE_DECREMENT$/;"	e	enum:__anon1
-POST_OP	interpreter.h	77;"	d
+POST_OP	interpreter.h	90;"	d
 PRE_DECREMENT	parser.h	/^	POST_INCREMENT, POST_DECREMENT, PRE_INCREMENT, PRE_DECREMENT$/;"	e	enum:__anon1
 PRE_INCREMENT	parser.h	/^	POST_INCREMENT, POST_DECREMENT, PRE_INCREMENT, PRE_DECREMENT$/;"	e	enum:__anon1
 PRE_OP	interpreter.h	68;"	d
-PRE_OP	tests/types.c	61;"	d	file:
+PRE_OP	tests/types_experimenting.c	61;"	d	file:
 PRINT	parser.h	/^	DO, WHILE, FOR, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,$/;"	e	enum:__anon1
 PRINT_STMT	parser.h	/^	NULL_STMT = 0, WHILE_STMT, PRINT_STMT, EXPR_STMT, IF_STMT, GOTO_STMT,$/;"	e	enum:__anon5
 PROJECTS	build/Makefile	/^PROJECTS := cinterpreter$/;"	m
@@ -127,14 +128,13 @@ SET_C_ARRAY	c_utils.h	18;"	d
 SHORT	parser.h	/^	INT, SHORT, LONG, FLOAT, DOUBLE, CHAR, VOID, SIGNED, UNSIGNED,$/;"	e	enum:__anon1
 SHORT_TYPE	parser.h	/^	SHORT_TYPE,$/;"	e	enum:__anon2
 SIGNED	parser.h	/^	INT, SHORT, LONG, FLOAT, DOUBLE, CHAR, VOID, SIGNED, UNSIGNED,$/;"	e	enum:__anon1
-SINT_TYPE	parser.h	/^	SINT_TYPE,$/;"	e	enum:__anon2
 SORT_COLUMN_INDEX	stats/sortable.js	/^var SORT_COLUMN_INDEX;$/;"	v
 SPACE_SET	c_utils.h	75;"	d
 SPACE_SET_NO_NEWLINE	c_utils.h	76;"	d
 START_COMPOUND_STMT	parser.h	/^	SWITCH_STMT, DECL_STMT, RETURN_STMT, START_COMPOUND_STMT, END_COMPOUND_STMT$/;"	e	enum:__anon5
 STDERR	vector_binding.c	5;"	d	file:
 STDERR	vector_template.c	5;"	d	file:
-STR_LITERAL	parser.h	/^	INT_LITERAL, FLOAT_LITERAL, CHAR_LITERAL, STR_LITERAL,$/;"	e	enum:__anon1
+STR_LITERAL	parser.h	/^	INT_LITERAL, FLOAT_LITERAL, DOUBLE_LITERAL, CHAR_LITERAL, STR_LITERAL,$/;"	e	enum:__anon1
 SUB	parser.h	/^	MOD='%', LPAREN='(', RPAREN=')', MULT='*', ADD='+', SUB='-', DIV='\/', COLON=':', SEMICOLON=';',$/;"	e	enum:__anon1
 SUBEQUAL	parser.h	/^	ADDEQUAL, SUBEQUAL, MULTEQUAL, DIVEQUAL, MODEQUAL,$/;"	e	enum:__anon1
 SWITCH	parser.h	/^	DO, WHILE, FOR, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,$/;"	e	enum:__anon1
@@ -142,6 +142,7 @@ SWITCH_STMT	parser.h	/^	SWITCH_STMT, DECL_STMT, RETURN_STMT, START_COMPOUND_STMT
 TERNARY	parser.h	/^	EQUAL='=', COMMA=',', LBRACKET='[', RBRACKET=']', LBRACE='{', RBRACE='}', TERNARY,$/;"	e	enum:__anon1
 Token	parser.h	/^} Token;$/;"	t	typeref:enum:__anon1
 UCHAR_TYPE	parser.h	/^	UCHAR_TYPE,$/;"	e	enum:__anon2
+UINT_TYPE	parser.h	/^	UINT_TYPE,$/;"	e	enum:__anon2
 ULONG_TYPE	parser.h	/^	ULONG_TYPE,$/;"	e	enum:__anon2
 UNKNOWN	parser.h	/^	UNKNOWN = 0,$/;"	e	enum:__anon2
 UNSIGNED	parser.h	/^	INT, SHORT, LONG, FLOAT, DOUBLE, CHAR, VOID, SIGNED, UNSIGNED,$/;"	e	enum:__anon1
@@ -336,6 +337,7 @@ cur_iter	parser.h	/^	int cur_iter;$/;"	m	struct:program_state	access:public
 cur_iter_switch	parser.h	/^	int cur_iter_switch;$/;"	m	struct:program_state	access:public
 cur_parent	parser.h	/^	int cur_parent; \/\/<-- location of open block statement$/;"	m	struct:program_state	access:public
 cur_parent	parser.h	/^	int cur_parent;$/;"	m	struct:symbol	access:public
+d	tests/types.c	/^double d = 2.48;$/;"	v
 data	c_utils.h	/^	byte* data;$/;"	m	struct:c_array	access:public
 data	clist.h	/^	int data;$/;"	m	struct:int_list	access:public
 data	parser.h	/^	expression* data;$/;"	m	struct:expr_block	access:public
@@ -351,6 +353,7 @@ declaration_specifier	parser.c	/^var_type declaration_specifier(parsing_state* p
 declaration_specifier	parser.h	/^var_type declaration_specifier(parsing_state* p, program_state* prog, int match);$/;"	p	signature:(parsing_state* p, program_state* prog, int match)
 do_stmt	parser.c	/^void do_stmt(parsing_state* p, program_state* prog)$/;"	f	signature:(parsing_state* p, program_state* prog)
 do_stmt	parser.h	/^void do_stmt(parsing_state* p, program_state* prog);$/;"	p	signature:(parsing_state* p, program_state* prog)
+double_val	parser.h	/^		double double_val;$/;"	m	union:token_value::__anon4	access:public
 double_val	parser.h	/^		double double_val;$/;"	m	union:var_value::__anon3	access:public
 elem_free	cvector.h	/^	void (*elem_free)(void*);$/;"	m	struct:vector_void	access:public
 elem_init	cvector.h	/^	void (*elem_init)(void*, void*);$/;"	m	struct:vector_void	access:public
@@ -431,6 +434,7 @@ file_write	c_utils.h	/^int file_write(FILE* file, c_array* out);$/;"	p	signature
 find_lowest_common_ancestor	interpreter.c	/^int find_lowest_common_ancestor(program_state* prog, int parent1, int parent2)$/;"	f	signature:(program_state* prog, int parent1, int parent2)
 find_lowest_common_ancestor	interpreter.h	/^int find_lowest_common_ancestor(program_state* prog, int parent1, int parent2);$/;"	p	signature:(program_state* prog, int parent1, int parent2)
 find_lowest_common_ancestor	parser.h	/^int find_lowest_common_ancestor(program_state* prog, int parent1, int parent2);$/;"	p	signature:(program_state* prog, int parent1, int parent2)
+float_val	parser.h	/^		float float_val;$/;"	m	union:token_value::__anon4	access:public
 float_val	parser.h	/^		float float_val;$/;"	m	union:var_value::__anon3	access:public
 for_stmt	parser.c	/^void for_stmt(parsing_state* p, program_state* prog)$/;"	f	signature:(parsing_state* p, program_state* prog)
 for_stmt	parser.h	/^void for_stmt(parsing_state* p, program_state* prog);$/;"	p	signature:(parsing_state* p, program_state* prog)
@@ -500,7 +504,7 @@ functions	parser.h	/^	vector_void functions;$/;"	m	struct:program_state	access:p
 gen_type	generate_code.py	/^gen_type = sys.argv[1];$/;"	v
 getParent	stats/sortable.js	/^function getParent(el, pTagName) {$/;"	f
 get_token	parser.c	/^token_value* get_token(parsing_state* p)$/;"	f	signature:(parsing_state* p)
-global	tests/types.c	/^int global = 1.5;$/;"	v
+global	tests/types_experimenting.c	/^int global = 1.5;$/;"	v
 global_values	parser.h	/^	vector_void global_values;$/;"	m	struct:program_state	access:public
 global_variables	parser.h	/^	vector_str global_variables;$/;"	m	struct:program_state	access:public
 goto_stmt	parser.c	/^void goto_stmt(parsing_state* p, program_state* prog)$/;"	f	signature:(parsing_state* p, program_state* prog)
@@ -578,8 +582,8 @@ int_list	clist.h	/^typedef struct int_list$/;"	s
 int_list	clist.h	/^} int_list;$/;"	t	typeref:struct:int_list
 int_list::data	clist.h	/^	int data;$/;"	m	struct:int_list	access:public
 int_list::list	clist.h	/^	list_head list;$/;"	m	struct:int_list	access:public
+int_val	parser.h	/^		int int_val;$/;"	m	union:token_value::__anon4	access:public
 int_val	parser.h	/^		int int_val;$/;"	m	union:var_value::__anon3	access:public
-integer	parser.h	/^		int integer;$/;"	m	union:token_value::__anon4	access:public
 is_ancestor	interpreter.c	/^int is_ancestor(program_state* prog, int parent, int child)$/;"	f	signature:(program_state* prog, int parent, int child)
 is_ancestor	interpreter.h	/^int is_ancestor(program_state* prog, int parent, int child);$/;"	p	signature:(program_state* prog, int parent, int child)
 is_ancestor	parser.h	/^int is_ancestor(program_state* prog, int parent, int child);$/;"	p	signature:(program_state* prog, int parent, int child)
@@ -662,6 +666,7 @@ main	tests/scope.c	/^int main()$/;"	f
 main	tests/switch.c	/^int main()$/;"	f
 main	tests/ternary.c	/^int main()$/;"	f
 main	tests/types.c	/^int main()$/;"	f
+main	tests/types_experimenting.c	/^int main()$/;"	f
 make_expression	parser.c	/^expression* make_expression(program_state* prog)$/;"	f	signature:(program_state* prog)
 make_expression	parser.h	/^expression* make_expression(program_state* prog);$/;"	p	signature:(program_state* prog)
 make_expression_block	parser.c	/^int make_expression_block(size_t n, expr_block* block)$/;"	f	signature:(size_t n, expr_block* block)
@@ -732,6 +737,8 @@ print_stmt	parser.c	/^void print_stmt(parsing_state* p, program_state* prog)$/;"
 print_stmt	parser.h	/^void print_stmt(parsing_state* p, program_state* prog);$/;"	p	signature:(parsing_state* p, program_state* prog)
 print_token	parser.c	/^void print_token(token_value* tok)$/;"	f	signature:(token_value* tok)
 print_token	parser.h	/^void print_token(token_value* tok);$/;"	p	signature:(token_value* tok)
+print_type	parser.c	/^void print_type(var_value* v)$/;"	f	signature:(var_value* v)
+print_type	parser.h	/^void print_type(var_value* v);$/;"	p	signature:(var_value* v)
 program_state	parser.h	/^typedef struct program_state$/;"	s
 program_state	parser.h	/^} program_state;$/;"	t	typeref:struct:program_state
 program_state::bindings	parser.h	/^	vector_void* bindings;$/;"	m	struct:program_state	access:public
@@ -772,7 +779,6 @@ readstring	c_utils.c	/^char* readstring(c_array* input, char delim, size_t max_l
 readstring	c_utils.h	/^char* readstring(c_array* input, char delim, size_t max_len);$/;"	p	signature:(c_array* input, char delim, size_t max_len)
 readstring_into_str	c_utils.c	/^int readstring_into_str(c_array* input, char delim, char* str, size_t len)$/;"	f	signature:(c_array* input, char delim, char* str, size_t len)
 readstring_into_str	c_utils.h	/^int readstring_into_str(c_array* input, char delim, char* str, size_t len);$/;"	p	signature:(c_array* input, char delim, char* str, size_t len)
-real	parser.h	/^		double real;$/;"	m	union:token_value::__anon4	access:public
 relational_expr	parser.c	/^void relational_expr(parsing_state* p, program_state* prog, expression* e)$/;"	f	signature:(parsing_state* p, program_state* prog, expression* e)
 relational_expr	parser.h	/^void relational_expr(parsing_state* p, program_state* prog, expression* e);$/;"	p	signature:(parsing_state* p, program_state* prog, expression* e)
 remove_binding	interpreter.c	/^void remove_binding(program_state* prog, char* name)$/;"	f	signature:(program_state* prog, char* name)
@@ -853,6 +859,7 @@ sort_list	clist.h	/^void sort_list(list_head* head, int cmp(list_head*, list_hea
 sortables_init	stats/sortable.js	/^function sortables_init() {$/;"	f
 split	c_utils.c	/^int split(c_array* array, byte* delim, size_t delim_len, c_array* out)$/;"	f	signature:(c_array* array, byte* delim, size_t delim_len, c_array* out)
 split	c_utils.h	/^int split(c_array* in, byte* delim, size_t delim_len, c_array* out);$/;"	p	signature:(c_array* in, byte* delim, size_t delim_len, c_array* out)
+sqrt	tests/types.c	/^double sqrt(double x)$/;"	f	signature:(double x)
 statement	parser.h	/^typedef struct statement$/;"	s
 statement	parser.h	/^} statement;$/;"	t	typeref:struct:statement
 statement::bindings	parser.h	/^	vector_void* bindings;$/;"	m	struct:statement	access:public
@@ -880,13 +887,15 @@ symbols	parser.h	/^	vector_void symbols;$/;"	m	struct:function	access:public
 test_func_in_block	tests/experimenting.c	/^	void test_func_in_block()$/;"	f
 test_function	tests/experimenting.c	/^int* test_function()$/;"	f
 test_ret	tests/experimenting.c	/^int test_ret()$/;"	f
+testfunc	tests/types.c	/^int testfunc(int a, double b)$/;"	f	signature:(int a, double b)
 thead	stats/sortable.js	/^var thead = false;$/;"	v
 tok	parser.h	/^	token_value tok;$/;"	m	struct:expression	access:public
 token_value	parser.h	/^typedef struct token_value$/;"	s
 token_value	parser.h	/^} token_value;$/;"	t	typeref:struct:token_value
+token_value::__anon4::double_val	parser.h	/^		double double_val;$/;"	m	union:token_value::__anon4	access:public
+token_value::__anon4::float_val	parser.h	/^		float float_val;$/;"	m	union:token_value::__anon4	access:public
 token_value::__anon4::id	parser.h	/^		char* id;$/;"	m	union:token_value::__anon4	access:public
-token_value::__anon4::integer	parser.h	/^		int integer;$/;"	m	union:token_value::__anon4	access:public
-token_value::__anon4::real	parser.h	/^		double real;$/;"	m	union:token_value::__anon4	access:public
+token_value::__anon4::int_val	parser.h	/^		int int_val;$/;"	m	union:token_value::__anon4	access:public
 token_value::type	parser.h	/^	Token type;$/;"	m	struct:token_value	access:public
 token_value::v	parser.h	/^	} v;$/;"	m	struct:token_value	typeref:union:token_value::__anon4	access:public
 tokens	parser.h	/^	vector_void tokens;$/;"	m	struct:parsing_state	access:public

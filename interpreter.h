@@ -68,9 +68,29 @@ typedef enum
 #define PRE_OP(op, a) \
 do { \
 	switch (a->type) { \
+	case SHORT_TYPE: \
+		result.type = SHORT_TYPE; \
+		result.v.short_val = op a->v.short_val; \
+		break; \
+	case USHORT_TYPE: \
+		result.type = USHORT_TYPE; \
+		result.v.ushort_val = op a->v.ushort_val; \
+		break; \
 	case INT_TYPE: \
 		result.type = INT_TYPE; \
 		result.v.int_val = op a->v.int_val; \
+		break; \
+	case UINT_TYPE: \
+		result.type = UINT_TYPE; \
+		result.v.uint_val = op a->v.uint_val; \
+		break; \
+	case LONG_TYPE: \
+		result.type = LONG_TYPE; \
+		result.v.long_val = op a->v.long_val; \
+		break; \
+	case ULONG_TYPE: \
+		result.type = ULONG_TYPE; \
+		result.v.ulong_val = op a->v.ulong_val; \
 		break; \
 	} \
 } while (0)
@@ -78,9 +98,29 @@ do { \
 #define POST_OP(a, op) \
 do { \
 	switch (a->type) { \
+	case SHORT_TYPE: \
+		result.type = SHORT_TYPE; \
+		result.v.short_val = a->v.short_val op; \
+		break; \
+	case USHORT_TYPE: \
+		result.type = USHORT_TYPE; \
+		result.v.ushort_val = a->v.ushort_val op; \
+		break; \
 	case INT_TYPE: \
 		result.type = INT_TYPE; \
 		result.v.int_val = a->v.int_val op; \
+		break; \
+	case UINT_TYPE: \
+		result.type = UINT_TYPE; \
+		result.v.uint_val = a->v.uint_val op; \
+		break; \
+	case LONG_TYPE: \
+		result.type = LONG_TYPE; \
+		result.v.long_val = a->v.long_val op; \
+		break; \
+	case ULONG_TYPE: \
+		result.type = ULONG_TYPE; \
+		result.v.ulong_val = a->v.ulong_val op; \
 		break; \
 	} \
 } while (0)
@@ -90,37 +130,300 @@ do { \
 //it has lower priority than assignment.  Before when I
 //was returning ints directly it worked without because return evaluates
 //the expression completely before returning ie it's lower priority
+//
+//Also note for now I'm assuming (true on my 64 bit linux machine)
+//INT_MAX > USHORT_MAX
+//LONG_MAX > UINT_MAX
+//
+//I should somehow put that check in and have correct conversion behavior
+//either way
 #define BINARY_OP(a, op, b) \
 do { \
 	switch (a->type) { \
-	case INT_TYPE: \
+	case SHORT_TYPE: \
 		switch (b->type) { \
-			case INT_TYPE: \
-				result.type = INT_TYPE; \
-				result.v.int_val = (a->v.int_val op b->v.int_val); \
-				break; \
-\
-			case DOUBLE_TYPE: \
-				result.type = DOUBLE_TYPE; \
-				result.v.double_val = (a->v.int_val op b->v.double_val); \
-				break; \
+		case SHORT_TYPE: \
+			result.type = SHORT_TYPE; \
+			result.v.short_val = (a->v.short_val op b->v.short_val); \
+			break; \
+		\
+		case USHORT_TYPE: \
+			result.type = USHORT_TYPE; \
+			result.v.ushort_val = (a->v.short_val op b->v.ushort_val); \
+			break; \
+		\
+		case INT_TYPE: \
+			result.type = INT_TYPE; \
+			result.v.int_val = (a->v.short_val op b->v.int_val); \
+			break; \
+		\
+		case UINT_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.short_val op b->v.uint_val); \
+			break; \
+		\
+		case LONG_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.short_val op b->v.long_val); \
+			break; \
+		\
+		case ULONG_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.short_val op b->v.ulong_val); \
+			break; \
+		\
+		case DOUBLE_TYPE: \
+			result.type = DOUBLE_TYPE; \
+			result.v.double_val = (a->v.short_val op b->v.double_val); \
+			break; \
 \
 		default: \
 			puts("wtf1"); \
 		} \
 		break; \
+		\
+	case USHORT_TYPE: \
+		switch (b->type) { \
+		case SHORT_TYPE: \
+			result.type = USHORT_TYPE; \
+			result.v.short_val = (a->v.ushort_val op b->v.short_val); \
+			break; \
+		\
+		case USHORT_TYPE: \
+			result.type = USHORT_TYPE; \
+			result.v.ushort_val = (a->v.ushort_val op b->v.ushort_val); \
+			break; \
+		\
+		case INT_TYPE: \
+			result.type = INT_TYPE; \
+			result.v.int_val = (a->v.ushort_val op b->v.int_val); \
+			break; \
+		\
+		case UINT_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.ushort_val op b->v.uint_val); \
+			break; \
+		\
+		case LONG_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.ushort_val op b->v.long_val); \
+			break; \
+		\
+		case ULONG_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.ushort_val op b->v.ulong_val); \
+			break; \
+		\
+		case DOUBLE_TYPE: \
+			result.type = DOUBLE_TYPE; \
+			result.v.double_val = (a->v.ushort_val op b->v.double_val); \
+			break; \
+\
+		default: \
+			puts("wtf1"); \
+		} \
+		break; \
+		\
+	case INT_TYPE: \
+		switch (b->type) { \
+		case SHORT_TYPE: \
+			result.type = INT_TYPE; \
+			result.v.int_val = (a->v.int_val op b->v.short_val); \
+			break; \
+		\
+		case USHORT_TYPE: \
+			result.type = INT_TYPE; \
+			result.v.int_val = (a->v.int_val op b->v.ushort_val); \
+			break; \
+		\
+		case INT_TYPE: \
+			result.type = INT_TYPE; \
+			result.v.int_val = (a->v.int_val op b->v.int_val); \
+			break; \
+		\
+		case UINT_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.int_val op b->v.uint_val); \
+			break; \
+		\
+		case LONG_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.int_val op b->v.long_val); \
+			break; \
+		\
+		case ULONG_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.int_val op b->v.ulong_val); \
+			break; \
+		\
+		case DOUBLE_TYPE: \
+			result.type = DOUBLE_TYPE; \
+			result.v.double_val = (a->v.int_val op b->v.double_val); \
+			break; \
+\
+		default: \
+			puts("wtf1"); \
+		} \
+		break; \
+		\
+	case UINT_TYPE: \
+		switch (b->type) { \
+		case SHORT_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.uint_val op b->v.short_val); \
+			break; \
+		\
+		case USHORT_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.uint_val op b->v.ushort_val); \
+			break; \
+		\
+		case INT_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.uint_val op b->v.int_val); \
+			break; \
+		\
+		case UINT_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.uint_val op b->v.uint_val); \
+			break; \
+		\
+		case LONG_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.uint_val op b->v.long_val); \
+			break; \
+		\
+		case ULONG_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.uint_val op b->v.ulong_val); \
+			break; \
+		\
+		case DOUBLE_TYPE: \
+			result.type = DOUBLE_TYPE; \
+			result.v.double_val = (a->v.uint_val op b->v.double_val); \
+			break; \
+\
+		default: \
+			puts("wtf1"); \
+		} \
+		break; \
+	\
+	case LONG_TYPE: \
+		switch (b->type) { \
+		case SHORT_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.long_val op b->v.short_val); \
+			break; \
+		\
+		case USHORT_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.long_val op b->v.ushort_val); \
+			break; \
+		\
+		case INT_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.long_val op b->v.int_val); \
+			break; \
+		\
+		case UINT_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.long_val op b->v.uint_val); \
+			break; \
+		\
+		case LONG_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.long_val op b->v.long_val); \
+			break; \
+		\
+		case ULONG_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.long_val op b->v.ulong_val); \
+			break; \
+		\
+		case DOUBLE_TYPE: \
+			result.type = DOUBLE_TYPE; \
+			result.v.double_val = (a->v.long_val op b->v.double_val); \
+			break; \
+\
+		default: \
+			puts("wtf1"); \
+		} \
+		break; \
+		\
+	case ULONG_TYPE: \
+		switch (b->type) { \
+		case SHORT_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.ulong_val op b->v.short_val); \
+			break; \
+		\
+		case USHORT_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.ulong_val op b->v.ushort_val); \
+			break; \
+		\
+		case INT_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.ulong_val op b->v.int_val); \
+			break; \
+		\
+		case UINT_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.ulong_val op b->v.uint_val); \
+			break; \
+		\
+		case LONG_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.ulong_val op b->v.long_val); \
+			break; \
+		\
+		case ULONG_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.ulong_val op b->v.ulong_val); \
+			break; \
+		\
+		case DOUBLE_TYPE: \
+			result.type = DOUBLE_TYPE; \
+			result.v.double_val = (a->v.ulong_val op b->v.double_val); \
+			break; \
+		} \
 \
 	case DOUBLE_TYPE: \
 		switch (b->type) { \
-			case INT_TYPE: \
-				result.type = DOUBLE_TYPE; \
-				result.v.double_val = (a->v.double_val op b->v.int_val); \
-				break; \
- \
-			case DOUBLE_TYPE: \
-				result.type = DOUBLE_TYPE; \
-				result.v.double_val = (a->v.double_val op b->v.double_val); \
-				break; \
+		case SHORT_TYPE: \
+			result.type = DOUBLE_TYPE; \
+			result.v.double_val = (a->v.double_val op b->v.short_val); \
+			break; \
+		\
+		case USHORT_TYPE: \
+			result.type = DOUBLE_TYPE; \
+			result.v.double_val = (a->v.double_val op b->v.ushort_val); \
+			break; \
+		\
+		case INT_TYPE: \
+			result.type = DOUBLE_TYPE; \
+			result.v.double_val = (a->v.double_val op b->v.int_val); \
+			break; \
+		\
+		case UINT_TYPE: \
+			result.type = DOUBLE_TYPE; \
+			result.v.double_val = (a->v.double_val op b->v.uint_val); \
+			break; \
+		\
+		case LONG_TYPE: \
+			result.type = DOUBLE_TYPE; \
+			result.v.double_val = (a->v.double_val op b->v.long_val); \
+			break; \
+		\
+		case ULONG_TYPE: \
+			result.type = DOUBLE_TYPE; \
+			result.v.double_val = (a->v.double_val op b->v.ulong_val); \
+			break; \
+		\
+		case DOUBLE_TYPE: \
+			result.type = DOUBLE_TYPE; \
+			result.v.double_val = (a->v.double_val op b->v.double_val); \
+			break; \
 \
 		default: \
 			puts("wtf2"); \
@@ -136,15 +439,226 @@ do { \
 #define INTEGRAL_BINARY_OP(a, op, b) \
 do { \
 	switch (a->type) { \
-	case INT_TYPE: \
+	case SHORT_TYPE: \
 		switch (b->type) { \
-			case INT_TYPE: \
-				result.type = INT_TYPE; \
-				result.v.int_val = a->v.int_val op b->v.int_val; \
-				break; \
-\
+		case SHORT_TYPE: \
+			result.type = SHORT_TYPE; \
+			result.v.short_val = (a->v.short_val op b->v.short_val); \
+			break; \
+		\
+		case USHORT_TYPE: \
+			result.type = USHORT_TYPE; \
+			result.v.ushort_val = (a->v.short_val op b->v.ushort_val); \
+			break; \
+		\
+		case INT_TYPE: \
+			result.type = INT_TYPE; \
+			result.v.int_val = (a->v.short_val op b->v.int_val); \
+			break; \
+		\
+		case UINT_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.short_val op b->v.uint_val); \
+			break; \
+		\
+		case LONG_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.short_val op b->v.long_val); \
+			break; \
+		\
+		case ULONG_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.short_val op b->v.ulong_val); \
+			break; \
+		\
+		default: \
+			puts("wtf1"); \
 		} \
 		break; \
+		\
+	case USHORT_TYPE: \
+		switch (b->type) { \
+		case SHORT_TYPE: \
+			result.type = USHORT_TYPE; \
+			result.v.short_val = (a->v.ushort_val op b->v.short_val); \
+			break; \
+		\
+		case USHORT_TYPE: \
+			result.type = USHORT_TYPE; \
+			result.v.ushort_val = (a->v.ushort_val op b->v.ushort_val); \
+			break; \
+		\
+		case INT_TYPE: \
+			result.type = INT_TYPE; \
+			result.v.int_val = (a->v.ushort_val op b->v.int_val); \
+			break; \
+		\
+		case UINT_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.ushort_val op b->v.uint_val); \
+			break; \
+		\
+		case LONG_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.ushort_val op b->v.long_val); \
+			break; \
+		\
+		case ULONG_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.ushort_val op b->v.ulong_val); \
+			break; \
+		\
+		default: \
+			puts("wtf1"); \
+		} \
+		break; \
+		\
+	case INT_TYPE: \
+		switch (b->type) { \
+		case SHORT_TYPE: \
+			result.type = INT_TYPE; \
+			result.v.int_val = (a->v.int_val op b->v.short_val); \
+			break; \
+		\
+		case USHORT_TYPE: \
+			result.type = INT_TYPE; \
+			result.v.int_val = (a->v.int_val op b->v.ushort_val); \
+			break; \
+		\
+		case INT_TYPE: \
+			result.type = INT_TYPE; \
+			result.v.int_val = (a->v.int_val op b->v.int_val); \
+			break; \
+		\
+		case UINT_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.int_val op b->v.uint_val); \
+			break; \
+		\
+		case LONG_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.int_val op b->v.long_val); \
+			break; \
+		\
+		case ULONG_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.int_val op b->v.ulong_val); \
+			break; \
+		\
+		default: \
+			puts("wtf1"); \
+		} \
+		break; \
+		\
+	case UINT_TYPE: \
+		switch (b->type) { \
+		case SHORT_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.uint_val op b->v.short_val); \
+			break; \
+		\
+		case USHORT_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.uint_val op b->v.ushort_val); \
+			break; \
+		\
+		case INT_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.uint_val op b->v.int_val); \
+			break; \
+		\
+		case UINT_TYPE: \
+			result.type = UINT_TYPE; \
+			result.v.uint_val = (a->v.uint_val op b->v.uint_val); \
+			break; \
+		\
+		case LONG_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.uint_val op b->v.long_val); \
+			break; \
+		\
+		case ULONG_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.uint_val op b->v.ulong_val); \
+			break; \
+		\
+		default: \
+			puts("wtf1"); \
+		} \
+		break; \
+	\
+	case LONG_TYPE: \
+		switch (b->type) { \
+		case SHORT_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.long_val op b->v.short_val); \
+			break; \
+		\
+		case USHORT_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.long_val op b->v.ushort_val); \
+			break; \
+		\
+		case INT_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.long_val op b->v.int_val); \
+			break; \
+		\
+		case UINT_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.long_val op b->v.uint_val); \
+			break; \
+		\
+		case LONG_TYPE: \
+			result.type = LONG_TYPE; \
+			result.v.long_val = (a->v.long_val op b->v.long_val); \
+			break; \
+		\
+		case ULONG_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.long_val op b->v.ulong_val); \
+			break; \
+		\
+		default: \
+			puts("wtf1"); \
+		} \
+		break; \
+		\
+	case ULONG_TYPE: \
+		switch (b->type) { \
+		case SHORT_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.ulong_val op b->v.short_val); \
+			break; \
+		\
+		case USHORT_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.ulong_val op b->v.ushort_val); \
+			break; \
+		\
+		case INT_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.ulong_val op b->v.int_val); \
+			break; \
+		\
+		case UINT_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.ulong_val op b->v.uint_val); \
+			break; \
+		\
+		case LONG_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.ulong_val op b->v.long_val); \
+			break; \
+		\
+		case ULONG_TYPE: \
+			result.type = ULONG_TYPE; \
+			result.v.ulong_val = (a->v.ulong_val op b->v.ulong_val); \
+			break; \
+		} \
+\
+	default: \
+		puts("wtf3"); \
 	} \
  \
 } while (0)
@@ -153,8 +667,23 @@ do { \
 do { \
 	var_value c = execute_expr(prog, cond); \
 	switch (c.type) { \
+	case SHORT_TYPE: \
+		result = (c.v.short_val) ? *a : *b; \
+		break; \
+	case USHORT_TYPE: \
+		result = (c.v.ushort_val) ? *a : *b; \
+		break; \
 	case INT_TYPE: \
 		result = (c.v.int_val) ? *a : *b; \
+		break; \
+	case UINT_TYPE: \
+		result = (c.v.uint_val) ? *a : *b; \
+		break; \
+	case LONG_TYPE: \
+		result = (c.v.long_val) ? *a : *b; \
+		break; \
+	case ULONG_TYPE: \
+		result = (c.v.ulong_val) ? *a : *b; \
 		break; \
 	case DOUBLE_TYPE: \
 		result = (c.v.double_val) ? *a : *b; \

@@ -1,6 +1,36 @@
 
 double d = 2.48;
 
+
+double sqrt(double x)
+{
+	double guess = 1.0;
+	double tmp;
+	while (1) {
+		tmp = guess * guess - x;
+		tmp = (tmp < 0) ? 0 - tmp : tmp;
+		if (tmp < 0.001)
+			return guess;
+		guess = (guess + x/guess) / 2;
+	}
+}
+
+
+int testfunc(int a, double b)
+{
+	print a;
+	print b;
+	return a + b;
+}
+
+short testshort(short a, unsigned short b)
+{
+	print a;
+	print b;
+
+	return a + b;
+}
+
 int main()
 {
 	int a = 5;
@@ -12,5 +42,17 @@ int main()
 	print d;
 	print a;
 
+	d = sqrt(2);
+	print d;
+	print sqrt(25);
+
+
+	print testfunc(a, d);
+	print testfunc(d, d);
+
+	d = 2.5;
+	a = 70000;
+	print testfunc(a, d);
+	print testfunc(d, d);
 	return 0;
 }
