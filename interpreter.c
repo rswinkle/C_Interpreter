@@ -292,7 +292,7 @@ var_value execute_expr(program_state* prog, expression* e)
 
 	default:
 		fprintf(stderr, "Interpreter error: Unrecognized op %d in expression.\n\n", e->tok.type);
-		print_token(&e->tok);
+		print_token(&e->tok, stderr, 0);
 		exit(0);
 	}
 	
@@ -365,7 +365,7 @@ var_value execute_expr(program_state* prog, expression* e)
 
 	default:
 		fprintf(stderr, "Interpreter error: Unrecognized op %d in expression.\n\n", e->tok.type);
-		print_token(&e->tok);
+		print_token(&e->tok, stderr, 0);
 		exit(0);
 	}
 

@@ -3,53 +3,20 @@
 
 
 
-#include <stdlib.h>
 #include <stdarg.h>
-#include <ctype.h>
+
+#include "lexer.h"
 
 #include "clist.h"
 
 #include "cvector.h"
 
-#define MAX_TOKEN_LEN 256
 
 #define GET_STMT(VEC, I) GET_VOID(VEC, statement, I)
 #define GET_TOKEN_VAL(VEC, I) GET_VOID((VEC), token_value, (I))
 #define GET_FUNCTION(VEC, I) GET_VOID(VEC, function, I)
 #define GET_SYMBOL(VEC, I) GET_VOID(VEC, symbol, I)
 #define GET_BINDING(VEC, I) GET_VOID(VEC, binding, I)
-
-
-//tokens pg 20
-typedef enum {
-	ERROR, END,
-	
-	EQUALEQUAL, GREATER, GTEQ, LESS, LTEQ, NOTEQUAL,
-	LOGICAL_OR, LOGICAL_AND, LOGICAL_NEGATION, INCREMENT, DECREMENT,
-
-	/* types and type qualifiers */
-	INT, SHORT, LONG, FLOAT, DOUBLE, CHAR, VOID, SIGNED, UNSIGNED,
-	
-	/* other keywords */
-	DO, WHILE, FOR, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,
-	
-	ID,
-
-	MOD='%', LPAREN='(', RPAREN=')', MULT='*', ADD='+', SUB='-', DIV='/', COLON=':', SEMICOLON=';',
-	EQUAL='=', COMMA=',', LBRACKET='[', RBRACKET=']', LBRACE='{', RBRACE='}', TERNARY,
-
-	/* compound assignment operators */
-	ADDEQUAL, SUBEQUAL, MULTEQUAL, DIVEQUAL, MODEQUAL,
-
-	/* literals aka constants */
-	INT_LITERAL, FLOAT_LITERAL, DOUBLE_LITERAL, CHAR_LITERAL, STR_LITERAL,
-
-
-	/* for internal use/hacks, not really tokens */
-	LABEL, DECLARATION, EXP, EXPR_LIST, FUNC_CALL,
-	POST_INCREMENT, POST_DECREMENT, PRE_INCREMENT, PRE_DECREMENT
-} Token;
-
 
 
 typedef enum
@@ -108,18 +75,6 @@ typedef struct var_value
 void free_var_value(void* var);
 void free_active_binding_list(void* l);
 
-
-
-typedef struct token_value
-{
-	Token type;
-	union {
-		char* id;
-		int int_val;
-		float float_val;
-		double double_val;
-	} v;
-} token_value;
 
 typedef struct parsing_state
 {
@@ -188,14 +143,6 @@ typedef struct statement
 	vector_void* bindings;
 } statement;
 
-#define INIT_STATEMENT(stmt) \
-	stmt.type =
-
-//void init_statement(statement
-//* stmt, stmt_type 
-//
-
-
 
 /*********************************/
 
@@ -252,7 +199,6 @@ int make_expression_block(size_t n, expr_block* block);
 
 void free_statement(void* stmt);
 
-void print_token(token_value* tok);
 void print_statement(statement* stmt);
 void print_type(var_value* v);
 
