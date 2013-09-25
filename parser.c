@@ -91,6 +91,18 @@ void free_var_value(void* var)
 
 }
 
+#define HANDLE_BACKSLASH() \
+do { \
+	c = getc(file); \
+	while (c == '\\') { \
+		c = getc(file); \
+		if (c != '\n') \
+			goto stray_backslash; \
+		c = getc(file); \
+	} \
+} while (0)
+
+
 token_value read_token(FILE* file)
 {
 	static char token_buf[MAX_TOKEN_LEN];
@@ -117,7 +129,7 @@ start:
 	case '?': tok.type = TERNARY;   break;
 
 	case '+':
-		c = getc(file);
+		HANDLE_BACKSLASH();
 		if (c == '+') {
 			tok.type = INCREMENT;
 		} else if (c == '=') {
@@ -129,7 +141,7 @@ start:
 		break;
 
 	case '-':
-		c = getc(file);
+		HANDLE_BACKSLASH();
 		if (c == '-') {
 			tok.type = DECREMENT;
 		} else if (c == '=') {
@@ -141,7 +153,7 @@ start:
 		break;
 		
 	case '*':
-		c = getc(file);
+		HANDLE_BACKSLASH();
 		if (c == '=') {
 			tok.type = MULTEQUAL;
 		} else {
@@ -151,19 +163,23 @@ start:
 		break;
 
 	case '/':
-		c = getc(file);
+		HANDLE_BACKSLASH();
 		if (c == '=') {
 			tok.type = DIVEQUAL;
 		} else if (c == '/') { // it's a single line comment
-			//puts("single line comment");
-			do { c = getc(file); } while (c != '\n');
+			while (1) {
+				HANDLE_BACKSLASH();
+				if (c == '\n')
+					break;
+			}
 			goto start;
 		} else if (c == '*') { /* start of block comment */
 			while (1) {
 				c = getc(file);
-				if (c == '*' && fpeek(file) == '/') {
-					getc(file);
-					goto start;
+				if (c == '*') {
+					HANDLE_BACKSLASH();
+					if (c == '/')
+						goto start;
 				}
 			}
 		} else {
@@ -173,7 +189,7 @@ start:
 		break;
 
 	case '%':
-		c = getc(file);
+		HANDLE_BACKSLASH();
 		if (c == '=') {
 			tok.type = MODEQUAL;
 		} else {
@@ -183,7 +199,8 @@ start:
 		break;
 
 	case '=':
-		if ((c = getc(file)) == '=') {
+		HANDLE_BACKSLASH();
+		if (c == '=') {
 			tok.type = EQUALEQUAL;
 		} else {
 			ungetc(c, file);
@@ -192,30 +209,30 @@ start:
 		break;
 
 	case '|':
-		c = getc(file);
-		if (c == '|')
+		HANDLE_BACKSLASH();
+		if (c == '|') {
 			tok.type = LOGICAL_OR;
-		else {
+		} else {
 			parse_error(&tok, "BITWISE_OR not supported yet\n");
 			exit(0);
 		}
 		break;
 		  	  
 	case '&':
-		c = getc(file);
-		if (c == '&')
+		HANDLE_BACKSLASH();
+		if (c == '&') {
 			tok.type = LOGICAL_AND;
-		else {
+		} else {
 			parse_error(&tok, "BITWISE_AND not supported yet\n");
 			exit(0);
 		}
 		break;
 
 	case '!':
-		c = getc(file);
-		if (c == '=')
+		HANDLE_BACKSLASH();
+		if (c == '=') {
 			tok.type = NOTEQUAL;
-		else {
+		} else {
 			ungetc(c, file);
 			tok.type = LOGICAL_NEGATION;
 		}
@@ -223,7 +240,7 @@ start:
 		
 
 	case '<':
-		c = getc(file);
+		HANDLE_BACKSLASH();
 		if (c == '=') {
 			tok.type = LTEQ;
 		} else {
@@ -233,50 +250,50 @@ start:
 		break;
 
 	case '>':
-		c = getc(file);
-		if (c == '=')
+		HANDLE_BACKSLASH();
+		if (c == '=') {
 			tok.type = GTEQ;
-		else {
+		} else {
 			ungetc(c, file);
 			tok.type = GREATER;
 		}
 		break;
 
 	case '\'':
-		c = getc(file);
-		tmp = getc(file);
-		//TODO add support for escape characters ... like I'm using here
-		if (tmp != '\'') {
+		HANDLE_BACKSLASH(); //currently precludes escape characters, TODO
+		tmp = c; //save character
+		HANDLE_BACKSLASH();
+		if (c != '\'') {
 			fprintf(stderr, "Error: multi-character character constant\n");
 			exit(0);
 		}
 		tok.type = INT_LITERAL;
-		tok.v.int_val = c;
+		tok.v.int_val = tmp;
 		break;
 
 	default:
 		if (isdigit(c)) {
 			while (isdigit(c)) {
 				token_buf[i++] = c;
-				c = getc(file);
+				HANDLE_BACKSLASH();
 
 				if (i == MAX_TOKEN_LEN-1)
-					goto exit_error;
+					goto token_length_error;
 			}
 
 			if (c == '.') {
 				if (i == MAX_TOKEN_LEN-1)
-					goto exit_error;
+					goto token_length_error;
 
 				token_buf[i++] = c;
-				c = getc(file);
+				HANDLE_BACKSLASH();
 				
 				while (isdigit(c)) {
 					token_buf[i++] = c;
-					c = getc(file);
+					HANDLE_BACKSLASH();
 
 					if (i == MAX_TOKEN_LEN-1)
-						goto exit_error;
+						goto token_length_error;
 				}
 
 				ungetc(c, file);
@@ -294,10 +311,10 @@ start:
 		} else if (isalpha(c)) {
 			while (isalnum(c) || c == '_') {
 				token_buf[i++] = c;
-				c = getc(file);
+				HANDLE_BACKSLASH();
 
 				if (i == MAX_TOKEN_LEN-1)
-					goto exit_error;
+					goto token_length_error;
 			}
 			ungetc(c, file);
 			token_buf[i] = '\0';
@@ -317,6 +334,7 @@ start:
 			if (!strcmp(token_buf, "default")) {    tok.type = DEFAULT;    break; }
 			if (!strcmp(token_buf, "continue")) {   tok.type = CONTINUE;   break; }
 
+			if (!strcmp(token_buf, "char")) {       tok.type = CHAR;      break; }
 			if (!strcmp(token_buf, "short")) {      tok.type = SHORT;      break; }
 			if (!strcmp(token_buf, "int")) {        tok.type = INT;        break; }
 			if (!strcmp(token_buf, "long")) {       tok.type = LONG;        break; }
@@ -348,8 +366,12 @@ start:
 
 	return tok;
 
-exit_error:
-	parse_error(&tok, "Token length is too long, max token length is %d\n", MAX_TOKEN_LEN);
+stray_backslash:
+	fprintf(stderr, "Error: stray \\ in program (perhaps you have space between it and a newline)\n");
+	exit(0);
+
+token_length_error:
+	fprintf(stderr, "Error: Token length is too long, max token length is %d\n", MAX_TOKEN_LEN);
 	exit(0);
 }
 
@@ -459,7 +481,15 @@ void print_token(token_value* tok)
 void print_type(var_value* v)
 {
 	switch (v->type) {
+	case CHAR_TYPE:      puts("CHAR_TYPE"); break;
+	case UCHAR_TYPE:     puts("UCHAR_TYPE"); break;
+	case SHORT_TYPE:     puts("SHORT_TYPE"); break;
+	case USHORT_TYPE:    puts("USHORT_TYPE"); break;
 	case INT_TYPE:       puts("INT_TYPE"); break;
+	case UINT_TYPE:      puts("UINT_TYPE"); break;
+	case LONG_TYPE:      puts("LONG_TYPE"); break;
+	case ULONG_TYPE:     puts("ULONG_TYPE"); break;
+	case FLOAT_TYPE:     puts("FLOAT_TYPE"); break;
 	case DOUBLE_TYPE:    puts("DOUBLE_TYPE"); break;
 	default:
 		puts("unknown type in print_type");
@@ -847,6 +877,7 @@ var_type declaration_specifier(parsing_state* p, program_state* prog, int match)
 		for (int i=0; i<seek; ++i)
 			get_token(p); //makes it easier to debug otherwise I'd just seek
 	}
+
 	return type;
 }
 
@@ -1573,7 +1604,7 @@ void assign_expr(parsing_state* p, program_state* prog, expression* e)
 	if (prog->func) {
 		var_value* check = look_up_value(prog, tok->v.id, BOTH);
 		if (!check) {
-			parse_error(tok, "undeclared variable\n");
+			parse_error(tok, "in assign_expr, undeclared variable\n");
 			exit(0);
 		}
 	}

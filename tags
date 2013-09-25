@@ -8,7 +8,7 @@ ADD	parser.h	/^	MOD='%', LPAREN='(', RPAREN=')', MULT='*', ADD='+', SUB='-', DIV
 ADDEQUAL	parser.h	/^	ADDEQUAL, SUBEQUAL, MULTEQUAL, DIVEQUAL, MODEQUAL,$/;"	e	enum:__anon1
 ALPHABET_SIZE	c_utils.c	526;"	d	file:
 BASIC_TYPES	basic_types.h	2;"	d
-BINARY_OP	interpreter.h	121;"	d
+BINARY_OP	interpreter.h	156;"	d
 BINARY_OP1	tests/types_experimenting.c	3;"	d	file:
 BOTH	parser.h	/^	BOTH$/;"	e	enum:__anon6
 BREAK	parser.h	/^	DO, WHILE, FOR, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,$/;"	e	enum:__anon1
@@ -22,7 +22,7 @@ CLEAR_SCREEN	c_utils.h	71;"	d
 CLIST_H	clist.h	2;"	d
 COLON	parser.h	/^	MOD='%', LPAREN='(', RPAREN=')', MULT='*', ADD='+', SUB='-', DIV='\/', COLON=':', SEMICOLON=';',$/;"	e	enum:__anon1
 COMMA	parser.h	/^	EQUAL='=', COMMA=',', LBRACKET='[', RBRACKET=']', LBRACE='{', RBRACE='}', TERNARY,$/;"	e	enum:__anon1
-COND_EXPR	interpreter.h	410;"	d
+COND_EXPR	interpreter.h	1121;"	d
 CONTINUE	parser.h	/^	DO, WHILE, FOR, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,$/;"	e	enum:__anon1
 CONTINUE_STMT	parser.h	/^	FOR_STMT, CONTINUE_STMT, BREAK_STMT, DO_STMT, CASE_STMT, DEFAULT_STMT,$/;"	e	enum:__anon5
 CVECTOR_H	cvector.h	4;"	d
@@ -61,20 +61,21 @@ GET_FUNCTION	parser.h	18;"	d
 GET_STMT	parser.h	16;"	d
 GET_SYMBOL	parser.h	19;"	d
 GET_TOKEN_VAL	parser.h	17;"	d
-GET_VAR_VALUE	parser.h	103;"	d
+GET_VAR_VALUE	parser.h	105;"	d
 GET_VOID	cvector.h	135;"	d
 GOTO	parser.h	/^	DO, WHILE, FOR, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,$/;"	e	enum:__anon1
 GOTO_STMT	parser.h	/^	NULL_STMT = 0, WHILE_STMT, PRINT_STMT, EXPR_STMT, IF_STMT, GOTO_STMT,$/;"	e	enum:__anon5
 GREATER	parser.h	/^	EQUALEQUAL, GREATER, GTEQ, LESS, LTEQ, NOTEQUAL,$/;"	e	enum:__anon1
 GTEQ	parser.h	/^	EQUALEQUAL, GREATER, GTEQ, LESS, LTEQ, NOTEQUAL,$/;"	e	enum:__anon1
+HANDLE_BACKSLASH	parser.c	94;"	d	file:
 ID	parser.h	/^	ID,$/;"	e	enum:__anon1
 IF	parser.h	/^	DO, WHILE, FOR, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,$/;"	e	enum:__anon1
 IF_STMT	parser.h	/^	NULL_STMT = 0, WHILE_STMT, PRINT_STMT, EXPR_STMT, IF_STMT, GOTO_STMT,$/;"	e	enum:__anon5
 INCREMENT	parser.h	/^	LOGICAL_OR, LOGICAL_AND, LOGICAL_NEGATION, INCREMENT, DECREMENT,$/;"	e	enum:__anon1
 INIT_LIST_HEAD	clist.h	/^static inline void INIT_LIST_HEAD(list_head *list)$/;"	f	signature:(list_head *list)
-INIT_STATEMENT	parser.h	189;"	d
+INIT_STATEMENT	parser.h	191;"	d
 INT	parser.h	/^	INT, SHORT, LONG, FLOAT, DOUBLE, CHAR, VOID, SIGNED, UNSIGNED,$/;"	e	enum:__anon1
-INTEGRAL_BINARY_OP	interpreter.h	290;"	d
+INTEGRAL_BINARY_OP	interpreter.h	735;"	d
 INTERPRETER_H	interpreter.h	2;"	d
 INT_LITERAL	parser.h	/^	INT_LITERAL, FLOAT_LITERAL, DOUBLE_LITERAL, CHAR_LITERAL, STR_LITERAL,$/;"	e	enum:__anon1
 INT_PTR_TYPE	parser.h	/^	INT_PTR_TYPE$/;"	e	enum:__anon2
@@ -97,10 +98,10 @@ MOD	parser.h	/^	MOD='%', LPAREN='(', RPAREN=')', MULT='*', ADD='+', SUB='-', DIV
 MODEQUAL	parser.h	/^	ADDEQUAL, SUBEQUAL, MULTEQUAL, DIVEQUAL, MODEQUAL,$/;"	e	enum:__anon1
 MULT	parser.h	/^	MOD='%', LPAREN='(', RPAREN=')', MULT='*', ADD='+', SUB='-', DIV='\/', COLON=':', SEMICOLON=';',$/;"	e	enum:__anon1
 MULTEQUAL	parser.h	/^	ADDEQUAL, SUBEQUAL, MULTEQUAL, DIVEQUAL, MODEQUAL,$/;"	e	enum:__anon1
-MYCOMMA	interpreter.c	287;"	d	file:
-MYCOMMA	interpreter.c	289;"	d	file:
-MYCOMMA	interpreter.c	434;"	d	file:
-MYCOMMA	interpreter.c	436;"	d	file:
+MYCOMMA	interpreter.c	319;"	d	file:
+MYCOMMA	interpreter.c	321;"	d	file:
+MYCOMMA	interpreter.c	466;"	d	file:
+MYCOMMA	interpreter.c	468;"	d	file:
 MYCOMMA	tests/types_experimenting.c	5;"	d	file:
 NOTEQUAL	parser.h	/^	EQUALEQUAL, GREATER, GTEQ, LESS, LTEQ, NOTEQUAL,$/;"	e	enum:__anon1
 NULL_STMT	parser.h	/^	NULL_STMT = 0, WHILE_STMT, PRINT_STMT, EXPR_STMT, IF_STMT, GOTO_STMT,$/;"	e	enum:__anon5
@@ -109,7 +110,8 @@ ONLY_LOCAL	parser.h	/^	ONLY_LOCAL,$/;"	e	enum:__anon6
 PARSER_H	parser.h	2;"	d
 POST_DECREMENT	parser.h	/^	POST_INCREMENT, POST_DECREMENT, PRE_INCREMENT, PRE_DECREMENT$/;"	e	enum:__anon1
 POST_INCREMENT	parser.h	/^	POST_INCREMENT, POST_DECREMENT, PRE_INCREMENT, PRE_DECREMENT$/;"	e	enum:__anon1
-POST_OP	interpreter.h	90;"	d
+POST_OP	interpreter.h	106;"	d
+PREPROCESSOR_H	preprocessor.h	2;"	d
 PRE_DECREMENT	parser.h	/^	POST_INCREMENT, POST_DECREMENT, PRE_INCREMENT, PRE_DECREMENT$/;"	e	enum:__anon1
 PRE_INCREMENT	parser.h	/^	POST_INCREMENT, POST_DECREMENT, PRE_INCREMENT, PRE_DECREMENT$/;"	e	enum:__anon1
 PRE_OP	interpreter.h	68;"	d
@@ -653,6 +655,7 @@ ltrim	c_utils.c	/^char* ltrim(char* str)$/;"	f	signature:(char* str)
 ltrim	c_utils.h	/^char* ltrim(char* str);$/;"	p	signature:(char* str)
 lvalue	parser.h	/^	char* lvalue;$/;"	m	struct:statement	access:public
 main	main.c	/^int main(int argc, char** argv)$/;"	f	signature:(int argc, char** argv)
+main	tests/backslash.c	/^int main()$/;"	f
 main	tests/break_continue.c	/^int main()$/;"	f
 main	tests/declarations.c	/^int main()$/;"	f
 main	tests/dowhile.c	/^int main()$/;"	f
@@ -728,6 +731,8 @@ pre_inc_decrement_expr	parser.c	/^void pre_inc_decrement_expr(parsing_state* p, 
 pre_inc_decrement_expr	parser.h	/^void pre_inc_decrement_expr(parsing_state* p, program_state* prog, expression* e);$/;"	p	signature:(parsing_state* p, program_state* prog, expression* e)
 prepare_badcharacter_heuristic	c_utils.c	/^void prepare_badcharacter_heuristic(const byte *str, size_t str_len, int result[ALPHABET_SIZE])$/;"	f	signature:(const byte *str, size_t str_len, int result[ALPHABET_SIZE])
 prepare_goodsuffix_heuristic	c_utils.c	/^void prepare_goodsuffix_heuristic(const byte *str, size_t str_len, int result[])$/;"	f	signature:(const byte *str, size_t str_len, int result[])
+preprocess_file	preprocessor.c	/^FILE* preprocess_file(FILE* input)$/;"	f	signature:(FILE* input)
+preprocessor_state	preprocessor.h	/^typedef struct preprocessor_state$/;"	s
 prev	clist.h	/^	struct list_head* prev;$/;"	m	struct:list_head	typeref:struct:list_head::list_head	access:public
 primary_expr	parser.c	/^void primary_expr(parsing_state* p, program_state* prog, expression* e)$/;"	f	signature:(parsing_state* p, program_state* prog, expression* e)
 primary_expr	parser.h	/^void primary_expr(parsing_state* p, program_state* prog, expression* exp);$/;"	p	signature:(parsing_state* p, program_state* prog, expression* exp)
@@ -808,6 +813,7 @@ rtrim	c_utils.c	/^char* rtrim(char* str)$/;"	f	signature:(char* str)
 rtrim	c_utils.h	/^char* rtrim(char* str);$/;"	p	signature:(char* str)
 run	interpreter.c	/^void run(program_state* prog, char* start_func)$/;"	f	signature:(program_state* prog, char* start_func)
 run	interpreter.h	/^void run(program_state* prog, char* start_func);$/;"	p	signature:(program_state* prog, char* start_func)
+schar_val	parser.h	/^		signed schar_val; \/\/ <- because plain char can be signed or unsigned$/;"	m	union:var_value::__anon3	access:public
 set_capacity_TYPE	vector_template.c	/^int set_capacity_TYPE(vector_TYPE* vec, size_t size)$/;"	f	signature:(vector_TYPE* vec, size_t size)
 set_capacity_TYPE	vector_template.h	/^int set_capacity_TYPE(vector_TYPE* vec, size_t size);$/;"	p	signature:(vector_TYPE* vec, size_t size)
 set_capacity_binding	vector_binding.c	/^int set_capacity_binding(vector_binding* vec, size_t size)$/;"	f	signature:(vector_binding* vec, size_t size)
@@ -888,6 +894,7 @@ test_func_in_block	tests/experimenting.c	/^	void test_func_in_block()$/;"	f
 test_function	tests/experimenting.c	/^int* test_function()$/;"	f
 test_ret	tests/experimenting.c	/^int test_ret()$/;"	f
 testfunc	tests/types.c	/^int testfunc(int a, double b)$/;"	f	signature:(int a, double b)
+testshort	tests/types.c	/^short testshort(short a, unsigned short b)$/;"	f	signature:(short a, unsigned short b)
 thead	stats/sortable.js	/^var thead = false;$/;"	v
 tok	parser.h	/^	token_value tok;$/;"	m	struct:expression	access:public
 token_value	parser.h	/^typedef struct token_value$/;"	s
@@ -938,6 +945,7 @@ var_value::__anon3::func_loc	parser.h	/^		unsigned int func_loc; \/\/change to d
 var_value::__anon3::int_val	parser.h	/^		int int_val;$/;"	m	union:var_value::__anon3	access:public
 var_value::__anon3::long_val	parser.h	/^		long long_val;$/;"	m	union:var_value::__anon3	access:public
 var_value::__anon3::ptr	parser.h	/^		unsigned int ptr;$/;"	m	union:var_value::__anon3	access:public
+var_value::__anon3::schar_val	parser.h	/^		signed schar_val; \/\/ <- because plain char can be signed or unsigned$/;"	m	union:var_value::__anon3	access:public
 var_value::__anon3::short_val	parser.h	/^		short short_val;$/;"	m	union:var_value::__anon3	access:public
 var_value::__anon3::uchar_val	parser.h	/^		unsigned char uchar_val;$/;"	m	union:var_value::__anon3	access:public
 var_value::__anon3::uint_val	parser.h	/^		unsigned int uint_val;$/;"	m	union:var_value::__anon3	access:public

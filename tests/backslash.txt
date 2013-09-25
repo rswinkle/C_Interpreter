@@ -1,0 +1,43 @@
+
+
+int main()
+{
+
+
+	int testif = 2;
+	testif +\
+= 2;
+	testif = 10;
+	testif; /\
+/ this is a single line comment continued from the previous line ... weird
+	testif /\
+* hello this is a block comment with the tokens split across lines *\
+/ /= 2;
+
+
+	/\
+/ a single line comment\
+continued on 2 lines?
+
+	pri\
+\
+\
+nt          tes\
+tif\
+;
+
+	char mychar = '\
+a\
+';
+	print mychar;
+
+
+	double testd = 12\
+3\
+.\
+321;
+	print testd;
+
+
+	return 0;
+}

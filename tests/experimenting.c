@@ -1,5 +1,8 @@
 
-#include <stdio.h>
+/* that this works and it's supposed to work is crazy*/
+  #  incl\
+ude     <std\
+io.h>   	
 
 //float i = 5.5;
 int i = 5;
@@ -134,9 +137,43 @@ int main()
 	"hello"[0];
 
 
+	testif = 2;
+	testif +\
+= 2;
+	testif = 10;
+	testif; /\
+/ this is a single line comment continued from the previous line ... weird
+	testif /\
+* hello this is a block comment with the tokens split across lines *\
+/ /= 2;
 
 
+	pri\
+\
+\
+ntf("%d\n",          tes\
+tif)\
+;
 
+	char mychar = '\
+a\
+';
+	printf("%c\n", mychar);
+
+	char mystr[] = "blah" "blah" // testing
+		"blah"/* hello */"blah";
+	printf("%s\n", mystr);
+
+	char mystr2[] = "blah \
+blah";
+	printf("%s\n", mystr2);
+
+
+	double testd = 12\
+3\
+.\
+321;
+	printf("%f\n", testd);
 
 
 	return 0;

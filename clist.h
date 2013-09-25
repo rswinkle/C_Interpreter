@@ -78,7 +78,7 @@ static inline int list_is_singular(const list_head *head)
 #define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
 #endif
 
-#define container_of(ptr, type, member) (type*)((char*)(ptr) - offsetof(type, member))
+#define container_of(ptr, type, member) ((type*)((char*)(ptr) - offsetof(type, member)))
 
 /**
  * list_entry - get the struct for this entry
