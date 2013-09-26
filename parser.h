@@ -13,7 +13,7 @@
 
 
 #define GET_STMT(VEC, I) GET_VOID(VEC, statement, I)
-#define GET_TOKEN_VAL(VEC, I) GET_VOID((VEC), token_value, (I))
+#define GET_TOKEN_LEX(VEC, I) GET_VOID((VEC), token_lex, (I))
 #define GET_FUNCTION(VEC, I) GET_VOID(VEC, function, I)
 #define GET_SYMBOL(VEC, I) GET_VOID(VEC, symbol, I)
 #define GET_BINDING(VEC, I) GET_VOID(VEC, binding, I)
@@ -80,7 +80,7 @@ typedef struct parsing_state
 {
 	vector_void tokens;
 	unsigned int pos;
-	unsigned i;
+	unsigned i; //TODO am I using this
 } parsing_state;
 
 

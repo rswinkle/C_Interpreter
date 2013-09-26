@@ -140,14 +140,15 @@ void print_type(var_value* v)
 
 token_value* peek_token(parsing_state* p, long offset)
 {
-	return GET_TOKEN_VAL(&p->tokens, p->pos+offset);
+	return &GET_TOKEN_LEX(&p->tokens, p->pos+offset)->tok;
 }
 
 token_value* get_token(parsing_state* p)
 {
-	token_value* tok = GET_TOKEN_VAL(&p->tokens, p->pos++);
-//	print_token(tok, stdout, 0);
-//	return GET_TOKEN_VAL(&p->tokens, p->pos++);
+	token_value* tok = &GET_TOKEN_LEX(&p->tokens, p->pos++)->tok;
+//	print_token(tok, stdout, 0); putchar('\n');
+
+//	return &GET_TOKEN_LEX(&p->tokens, p->pos++)->tok;
 	return tok;
 }
 
@@ -165,30 +166,33 @@ void parse_seek(parsing_state* p, int origin, long offset)
 void parse_program(program_state* prog, FILE* file)
 {
 	parsing_state p;
-	vec_void(&p.tokens, 0, 1000, sizeof(token_value), NULL, NULL);
+	vec_void(&p.tokens, 0, 1000, sizeof(token_lex), NULL, NULL);
 
 	vec_str(&prog->string_db, 0, 100);
 	int i;
 
-	token_value tok = read_token(file);
-	while (tok.type != END && tok.type != ERROR) {
-		if (tok.type == ID) {
+	//starts on line 1
+	lexer_state lexer = { 1, 0 };
+
+	token_lex tok_lex = read_token(file, &lexer);
+	while (tok_lex.tok.type != END && tok_lex.tok.type != ERROR) {
+		if (tok_lex.tok.type == ID) {
 			for (i=0; i<prog->string_db.size; ++i) {
-				if (!strcmp(tok.v.id, prog->string_db.a[i])) {
-					free(tok.v.id);
-					tok.v.id = prog->string_db.a[i];
+				if (!strcmp(tok_lex.tok.v.id, prog->string_db.a[i])) {
+					free(tok_lex.tok.v.id);
+					tok_lex.tok.v.id = prog->string_db.a[i];
 					break;
 				}
 			}
 			if (i == prog->string_db.size) {
 				extend_str(&prog->string_db, 1);
-				prog->string_db.a[prog->string_db.size-1] = tok.v.id;
+				prog->string_db.a[prog->string_db.size-1] = tok_lex.tok.v.id;
 			}
 		}
-		push_void(&p.tokens, &tok);
-		tok = read_token(file);
+		push_void(&p.tokens, &tok_lex);
+		tok_lex = read_token(file, &lexer);
 	}
-	push_void(&p.tokens, &tok); //push END
+	push_void(&p.tokens, &tok_lex); //push END
 	fclose(file);
 
 	p.pos = 0;
@@ -423,17 +427,19 @@ void storage_specifier(parsing_state* p, program_state* prog, int match)
  */
 var_type declaration_specifier(parsing_state* p, program_state* prog, int match)
 {
-	token_value* tok = peek_token(p, 0);
+	//my array cheat prevents me from using peek_token and token_value
+	token_lex* tok = GET_TOKEN_LEX(&p->tokens, p->pos);
+
 	var_type type = UNKNOWN;
 
 	int seek = match;
 
-	switch (tok->type) {
+	switch (tok->tok.type) {
 	case CHAR:
 		type = CHAR_TYPE;
 		break;
 	case SHORT:
-		if (tok[1].type == INT)
+		if (tok[1].tok.type == INT)
 			seek++;
 		type = SHORT_TYPE;
 		break;
@@ -441,25 +447,26 @@ var_type declaration_specifier(parsing_state* p, program_state* prog, int match)
 		type = INT_TYPE;
 		break;
 	case LONG:
-		if (tok[1].type == INT)
+		if (tok[1].tok.type == INT)
 			seek++;
 		type = LONG_TYPE;
 		break;
 	case UNSIGNED:
-		switch (tok[1].type) {
+		switch (tok[1].tok.type) {
 		case CHAR:
 			type = UCHAR_TYPE;
 			seek++;
+			break;
 		case SHORT:
 			type = USHORT_TYPE;
 			seek++;
-			if (tok[2].type == INT)
+			if (tok[2].tok.type == INT)
 				seek++;
 			break;
 		case LONG:
 			type = ULONG_TYPE;
 			seek++;
-			if (tok[2].type == INT)
+			if (tok[2].tok.type == INT)
 				seek++;
 			break;
 		case INT:
@@ -471,7 +478,7 @@ var_type declaration_specifier(parsing_state* p, program_state* prog, int match)
 		break;
 
 	case SIGNED:
-		switch (tok[1].type) {
+		switch (tok[1].tok.type) {
 		case CHAR:
 			type = CHAR_TYPE; //assume plain char is signed
 			seek++;
@@ -479,13 +486,13 @@ var_type declaration_specifier(parsing_state* p, program_state* prog, int match)
 		case SHORT:
 			type = SHORT_TYPE;
 			seek++;
-			if (tok[2].type == INT)
+			if (tok[2].tok.type == INT)
 				seek++;
 			break;
 		case LONG:
 			type = LONG_TYPE;
 			seek++;
-			if (tok[2].type == INT)
+			if (tok[2].tok.type == INT)
 				seek++;
 			break;
 		case INT:
@@ -508,7 +515,7 @@ var_type declaration_specifier(parsing_state* p, program_state* prog, int match)
 
 	default:
 		if (match) {
-			parse_error(tok, "in declaration_specifier, valid type expected\n");
+			parse_error(&tok->tok, "in declaration_specifier, valid type expected\n");
 			exit(0);
 		}
 	}
@@ -1473,7 +1480,7 @@ void pre_inc_decrement_expr(parsing_state* p, program_state* prog, expression* e
 
 void logical_negation_expr(parsing_state* p, program_state* prog, expression* e)
 {
-	token_value* tok = get_token(p);
+	get_token(p); //match !
 
 	e->tok.type = LOGICAL_NEGATION;
 	e->left = make_expression(prog);
@@ -1763,7 +1770,8 @@ void parse_error(token_value* tok, char *str, ...)
 	if (tok) {
 		fprintf(stderr, "Got ");
 		print_token(tok, stderr, 0);
-		putchar('\n');
+		token_lex* lex = (token_lex*)tok;
+		fprintf(stderr, " at line %u, position %u\n", lex->line, lex->pos);
 	}
 	va_end(args);
 }

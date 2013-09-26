@@ -173,12 +173,12 @@ blah";
 3\
 .\
 321;
-	printf("%f\n", testd);
+//#	printf("%f\n", testd);
+	printf("%%%%%%%%%\n");
 
 
 	return 0;
 }
-
 
 
 int blah2 = 50;

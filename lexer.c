@@ -18,72 +18,87 @@ do { \
 			goto stray_backslash; \
 		c = getc(file); \
 	} \
+	lex_state->cur_pos++; \
 } while (0)
 
 
-token_value read_token(FILE* file)
+token_lex read_token(FILE* file, lexer_state* lex_state)
 {
 	static char token_buf[MAX_TOKEN_LEN];
 	int c, i = 0, tmp;
 
-	token_value tok;
-	memset(&tok, 0, sizeof(token_value));
+	token_lex tok_lex;
+	memset(&tok_lex, 0, sizeof(token_value));
 
 start:
 
 	do {
 		c = getc(file);
+		if (c == '\n') {
+			lex_state->cur_pos = 0;
+			lex_state->cur_line++;
+		}
+		lex_state->cur_pos++;
 	} while (isspace(c));
+
+	tok_lex.pos = lex_state->cur_pos - 1;
+	tok_lex.line = lex_state->cur_line;
 
 //	printf("getting token starting with '%c'\n", c);
 	switch (c) {
-	case ':': tok.type = COLON;     break;
-	case ',': tok.type = COMMA;     break;
-	case ';': tok.type = SEMICOLON; break;
-	case '{': tok.type = LBRACE;    break;
-	case '}': tok.type = RBRACE;    break;
-	case '(': tok.type = LPAREN;    break;
-	case ')': tok.type = RPAREN;    break;
-	case '?': tok.type = TERNARY;   break;
+	case ':': tok_lex.tok.type = COLON;     break;
+	case ',': tok_lex.tok.type = COMMA;     break;
+	case ';': tok_lex.tok.type = SEMICOLON; break;
+	case '{': tok_lex.tok.type = LBRACE;    break;
+	case '}': tok_lex.tok.type = RBRACE;    break;
+	case '(': tok_lex.tok.type = LPAREN;    break;
+	case ')': tok_lex.tok.type = RPAREN;    break;
+	case '?': tok_lex.tok.type = TERNARY;   break;
+
+	//only used in preprocessor
+	case '#': tok_lex.tok.type = POUND;	    break;
 
 	case '+':
 		HANDLE_BACKSLASH();
 		if (c == '+') {
-			tok.type = INCREMENT;
+			tok_lex.tok.type = INCREMENT;
 		} else if (c == '=') {
-			tok.type = ADDEQUAL;
+			tok_lex.tok.type = ADDEQUAL;
 		} else {
 			ungetc(c, file);
-			tok.type = ADD;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = ADD;
 		}
 		break;
 
 	case '-':
 		HANDLE_BACKSLASH();
 		if (c == '-') {
-			tok.type = DECREMENT;
+			tok_lex.tok.type = DECREMENT;
 		} else if (c == '=') {
-			tok.type = SUBEQUAL;
+			tok_lex.tok.type = SUBEQUAL;
 		} else {
 			ungetc(c, file);
-			tok.type = SUB;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = SUB;
 		}
 		break;
 		
 	case '*':
 		HANDLE_BACKSLASH();
 		if (c == '=') {
-			tok.type = MULTEQUAL;
+			tok_lex.tok.type = MULTEQUAL;
 		} else {
 			ungetc(c, file);
-			tok.type = MULT;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = MULT;
 		}
 		break;
 
 	case '/':
 		HANDLE_BACKSLASH();
 		if (c == '=') {
-			tok.type = DIVEQUAL;
+			tok_lex.tok.type = DIVEQUAL;
 		} else if (c == '/') { // it's a single line comment
 			while (1) {
 				HANDLE_BACKSLASH();
@@ -94,6 +109,7 @@ start:
 		} else if (c == '*') { /* start of block comment */
 			while (1) {
 				c = getc(file);
+				lex_state->cur_pos++;
 				if (c == '*') {
 					HANDLE_BACKSLASH();
 					if (c == '/')
@@ -102,34 +118,37 @@ start:
 			}
 		} else {
 			ungetc(c, file);
-			tok.type = DIV;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = DIV;
 		}
 		break;
 
 	case '%':
 		HANDLE_BACKSLASH();
 		if (c == '=') {
-			tok.type = MODEQUAL;
+			tok_lex.tok.type = MODEQUAL;
 		} else {
 			ungetc(c, file);
-			tok.type = MOD;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = MOD;
 		}
 		break;
 
 	case '=':
 		HANDLE_BACKSLASH();
 		if (c == '=') {
-			tok.type = EQUALEQUAL;
+			tok_lex.tok.type = EQUALEQUAL;
 		} else {
 			ungetc(c, file);
-			tok.type = EQUAL;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = EQUAL;
 		}
 		break;
 
 	case '|':
 		HANDLE_BACKSLASH();
 		if (c == '|') {
-			tok.type = LOGICAL_OR;
+			tok_lex.tok.type = LOGICAL_OR;
 		} else {
 			fprintf(stderr, "Error: BITWISE_OR not supported yet\n");
 			exit(0);
@@ -139,7 +158,7 @@ start:
 	case '&':
 		HANDLE_BACKSLASH();
 		if (c == '&') {
-			tok.type = LOGICAL_AND;
+			tok_lex.tok.type = LOGICAL_AND;
 		} else {
 			fprintf(stderr, "Error: BITWISE_AND not supported yet\n");
 			exit(0);
@@ -149,10 +168,11 @@ start:
 	case '!':
 		HANDLE_BACKSLASH();
 		if (c == '=') {
-			tok.type = NOTEQUAL;
+			tok_lex.tok.type = NOTEQUAL;
 		} else {
 			ungetc(c, file);
-			tok.type = LOGICAL_NEGATION;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = LOGICAL_NEGATION;
 		}
 		break;
 		
@@ -160,20 +180,22 @@ start:
 	case '<':
 		HANDLE_BACKSLASH();
 		if (c == '=') {
-			tok.type = LTEQ;
+			tok_lex.tok.type = LTEQ;
 		} else {
 			ungetc(c, file);
-			tok.type = LESS;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = LESS;
 		}
 		break;
 
 	case '>':
 		HANDLE_BACKSLASH();
 		if (c == '=') {
-			tok.type = GTEQ;
+			tok_lex.tok.type = GTEQ;
 		} else {
 			ungetc(c, file);
-			tok.type = GREATER;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = GREATER;
 		}
 		break;
 
@@ -185,8 +207,8 @@ start:
 			fprintf(stderr, "Error: multi-character character constant\n");
 			exit(0);
 		}
-		tok.type = INT_LITERAL;
-		tok.v.int_val = tmp;
+		tok_lex.tok.type = INT_LITERAL;
+		tok_lex.tok.v.int_val = tmp;
 		break;
 
 	default:
@@ -215,15 +237,17 @@ start:
 				}
 
 				ungetc(c, file);
+				lex_state->cur_pos--;
 				token_buf[i] = '\0';
-				tok.type = DOUBLE_LITERAL;
-				tok.v.double_val = atof(token_buf);
+				tok_lex.tok.type = DOUBLE_LITERAL;
+				tok_lex.tok.v.double_val = atof(token_buf);
 			} else {
 				ungetc(c, file);
+				lex_state->cur_pos--;
 				token_buf[i] = '\0';
 
-				tok.type = INT_LITERAL;
-				tok.v.int_val = atoi(token_buf);
+				tok_lex.tok.type = INT_LITERAL;
+				tok_lex.tok.v.int_val = atoi(token_buf);
 			}
 
 		} else if (isalpha(c)) {
@@ -235,54 +259,47 @@ start:
 					goto token_length_error;
 			}
 			ungetc(c, file);
+			lex_state->cur_pos--;
 			token_buf[i] = '\0';
 
-			if (!strcmp(token_buf, "do")) {         tok.type = DO;         break; }
-			if (!strcmp(token_buf, "while")) {      tok.type = WHILE;      break; }
-			if (!strcmp(token_buf, "for")) {        tok.type = FOR;      break; }
-			if (!strcmp(token_buf, "if")) {         tok.type = IF;         break; }
-			if (!strcmp(token_buf, "else")) {       tok.type = ELSE;       break; }
-			if (!strcmp(token_buf, "print")) {      tok.type = PRINT;      break; }
-			if (!strcmp(token_buf, "goto")) {       tok.type = GOTO;       break; }
-			if (!strcmp(token_buf, "return")) {     tok.type = RETURN;     break; }
-			if (!strcmp(token_buf, "switch")) {     tok.type = SWITCH;     break; }
-			if (!strcmp(token_buf, "break")) {      tok.type = BREAK;      break; }
+			if (!strcmp(token_buf, "do")) {         tok_lex.tok.type = DO;         break; }
+			if (!strcmp(token_buf, "while")) {      tok_lex.tok.type = WHILE;      break; }
+			if (!strcmp(token_buf, "for")) {        tok_lex.tok.type = FOR;      break; }
+			if (!strcmp(token_buf, "if")) {         tok_lex.tok.type = IF;         break; }
+			if (!strcmp(token_buf, "else")) {       tok_lex.tok.type = ELSE;       break; }
+			if (!strcmp(token_buf, "print")) {      tok_lex.tok.type = PRINT;      break; }
+			if (!strcmp(token_buf, "goto")) {       tok_lex.tok.type = GOTO;       break; }
+			if (!strcmp(token_buf, "return")) {     tok_lex.tok.type = RETURN;     break; }
+			if (!strcmp(token_buf, "switch")) {     tok_lex.tok.type = SWITCH;     break; }
+			if (!strcmp(token_buf, "break")) {      tok_lex.tok.type = BREAK;      break; }
 
-			if (!strcmp(token_buf, "case")) {       tok.type = CASE;       break; }
-			if (!strcmp(token_buf, "default")) {    tok.type = DEFAULT;    break; }
-			if (!strcmp(token_buf, "continue")) {   tok.type = CONTINUE;   break; }
+			if (!strcmp(token_buf, "case")) {       tok_lex.tok.type = CASE;       break; }
+			if (!strcmp(token_buf, "default")) {    tok_lex.tok.type = DEFAULT;    break; }
+			if (!strcmp(token_buf, "continue")) {   tok_lex.tok.type = CONTINUE;   break; }
 
-			if (!strcmp(token_buf, "char")) {       tok.type = CHAR;      break; }
-			if (!strcmp(token_buf, "short")) {      tok.type = SHORT;      break; }
-			if (!strcmp(token_buf, "int")) {        tok.type = INT;        break; }
-			if (!strcmp(token_buf, "long")) {       tok.type = LONG;        break; }
-			if (!strcmp(token_buf, "signed")) {     tok.type = SIGNED;     break; }
-			if (!strcmp(token_buf, "unsigned")) {   tok.type = UNSIGNED;   break; }
-			if (!strcmp(token_buf, "double")) {     tok.type = DOUBLE;     break; }
-			if (!strcmp(token_buf, "float")) {      tok.type = FLOAT;      break; }
-			if (!strcmp(token_buf, "void")) {       tok.type = VOID;       break; }
+			if (!strcmp(token_buf, "char")) {       tok_lex.tok.type = CHAR;      break; }
+			if (!strcmp(token_buf, "short")) {      tok_lex.tok.type = SHORT;      break; }
+			if (!strcmp(token_buf, "int")) {        tok_lex.tok.type = INT;        break; }
+			if (!strcmp(token_buf, "long")) {       tok_lex.tok.type = LONG;        break; }
+			if (!strcmp(token_buf, "signed")) {     tok_lex.tok.type = SIGNED;     break; }
+			if (!strcmp(token_buf, "unsigned")) {   tok_lex.tok.type = UNSIGNED;   break; }
+			if (!strcmp(token_buf, "double")) {     tok_lex.tok.type = DOUBLE;     break; }
+			if (!strcmp(token_buf, "float")) {      tok_lex.tok.type = FLOAT;      break; }
+			if (!strcmp(token_buf, "void")) {       tok_lex.tok.type = VOID;       break; }
 
-			/*
-			if (c == ':') {
-				getc(file);
-				return LABEL;
-			}
-			*/
-
-			tok.type = ID;
-			tok.v.id = mystrdup(token_buf);
-			assert(tok.v.id);
+			tok_lex.tok.type = ID;
+			tok_lex.tok.v.id = mystrdup(token_buf);
+			assert(tok_lex.tok.v.id);
 
 		} else if (c == EOF) {
-	//		puts("EOF");
-			tok.type = END;
+			tok_lex.tok.type = END;
 		} else {
 			perror("Scanning Error");
-			tok.type = ERROR;
+			tok_lex.tok.type = ERROR;
 		}
 	}
 
-	return tok;
+	return tok_lex;
 
 stray_backslash:
 	fprintf(stderr, "Error: stray \\ in program (perhaps you have space between it and a newline)\n");
@@ -364,7 +381,9 @@ void print_token(token_value* tok, FILE* file, int print_enum)
 			case DOUBLE_LITERAL:   fprintf(file, "DOUBLE_LITERAL = %f\n", tok->v.double_val);     break;
 			case CHAR_LITERAL:     fprintf(file, "CHAR_LITERAL");     break;
 			case STR_LITERAL:      fprintf(file, "STR_LITERAL");     break;
-			case LABEL:            fprintf(file, "LABEL");     break;
+
+
+			case POUND:            fprintf(file, "POUND");  break;
 			case EXP:              fprintf(file, "EXP");     break;
 
 			default:
@@ -405,8 +424,8 @@ void print_token(token_value* tok, FILE* file, int print_enum)
 			case RETURN:           fprintf(file, "return");         break;
 			case BREAK:            fprintf(file, "break");     break;
 			case GOTO:             fprintf(file, "goto");     break;
-			case ID:               fprintf(file, "%s\n", tok->v.id);     break;
-			case MOD:              fprintf(file, "%");     break;
+			case ID:               fprintf(file, "%s", tok->v.id);     break;
+			case MOD:              fprintf(file, "%%");     break;
 			case LPAREN:           fprintf(file, "(");     break;
 			case RPAREN:           fprintf(file, ")");     break;
 			case MULT:             fprintf(file, "*");     break;
@@ -430,13 +449,14 @@ void print_token(token_value* tok, FILE* file, int print_enum)
 			case SUBEQUAL:         fprintf(file, "-=");     break;
 			case MULTEQUAL:        fprintf(file, "*=");     break;
 			case DIVEQUAL:         fprintf(file, "/=");     break;
-			case MODEQUAL:         fprintf(file, "%=");     break;
-			case INT_LITERAL:      fprintf(file, "%d\n", tok->v.int_val);     break;
-			case FLOAT_LITERAL:    fprintf(file, "%f\n", tok->v.float_val);     break;
-			case DOUBLE_LITERAL:   fprintf(file, "%f\n", tok->v.double_val);     break;
-			case CHAR_LITERAL:     fprintf(file, "'%c'\n", tok->v.int_val);     break;
-			case STR_LITERAL:      fprintf(file, "%s\n", tok->v.id);     break;
-			case LABEL:            fprintf(file, "LABEL");     break;
+			case MODEQUAL:         fprintf(file, "%%=");     break;
+			case INT_LITERAL:      fprintf(file, "%d", tok->v.int_val);     break;
+			case FLOAT_LITERAL:    fprintf(file, "%f", tok->v.float_val);     break;
+			case DOUBLE_LITERAL:   fprintf(file, "%f", tok->v.double_val);     break;
+			case CHAR_LITERAL:     fprintf(file, "'%c'", tok->v.int_val);     break;
+			case STR_LITERAL:      fprintf(file, "%s", tok->v.id);     break;
+
+			case POUND:            fprintf(file, "#");  break;
 			case EXP:              fprintf(file, "EXP");     break;
 
 			default:

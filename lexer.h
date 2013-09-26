@@ -29,9 +29,10 @@ typedef enum {
 	/* literals aka constants */
 	INT_LITERAL, FLOAT_LITERAL, DOUBLE_LITERAL, CHAR_LITERAL, STR_LITERAL,
 
+	POUND, //only used in preprocessor
 
 	/* for internal use/hacks, not really tokens */
-	LABEL, DECLARATION, EXP, EXPR_LIST, FUNC_CALL,
+	DECLARATION, EXP, EXPR_LIST, FUNC_CALL,
 	POST_INCREMENT, POST_DECREMENT, PRE_INCREMENT, PRE_DECREMENT
 } Token;
 
@@ -46,8 +47,29 @@ typedef struct token_value
 	} v;
 } token_value;
 
+typedef struct token_lex
+{
+	token_value tok;
+	unsigned int line;
+	unsigned int pos;
+} token_lex;
 
-token_value read_token(FILE* file);
+
+
+typedef struct lexer_state
+{
+	unsigned int cur_line;
+	unsigned int cur_pos;
+
+} lexer_state;
+
+//create struct lexer
+//holds current line and position
+//add line and maybe position to token_value ?
+
+
+
+token_lex read_token(FILE* file, lexer_state* lex_state);
 
 void print_token(token_value* tok, FILE* file, int print_enum);
 
