@@ -149,8 +149,6 @@ typedef struct statement
 typedef struct symbol
 {
 	char* name;
-	//vector_void of var_values
-	// or
 	
 	int cur_parent;
 	list_head head;

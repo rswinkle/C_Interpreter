@@ -36,10 +36,13 @@ start:
 		c = getc(file);
 		if (c == '\n') {
 			lex_state->cur_pos = 0;
+			lex_state->cur_tok = 0;
 			lex_state->cur_line++;
 		}
 		lex_state->cur_pos++;
 	} while (isspace(c));
+
+	lex_state->cur_tok++;
 
 	tok_lex.pos = lex_state->cur_pos - 1;
 	tok_lex.line = lex_state->cur_line;
@@ -262,6 +265,8 @@ start:
 			lex_state->cur_pos--;
 			token_buf[i] = '\0';
 
+			//should turn these off for preprocessor ... thoughI think you deserve problems
+			//if you define macros with the same names as keywords
 			if (!strcmp(token_buf, "do")) {         tok_lex.tok.type = DO;         break; }
 			if (!strcmp(token_buf, "while")) {      tok_lex.tok.type = WHILE;      break; }
 			if (!strcmp(token_buf, "for")) {        tok_lex.tok.type = FOR;      break; }
@@ -294,7 +299,7 @@ start:
 		} else if (c == EOF) {
 			tok_lex.tok.type = END;
 		} else {
-			perror("Scanning Error");
+			fprintf(stderr, "Scanning Error");
 			tok_lex.tok.type = ERROR;
 		}
 	}
@@ -462,5 +467,83 @@ void print_token(token_value* tok, FILE* file, int print_enum)
 			default:
 				fprintf(file, "Error, unknown token\n");
 		}
+	}
+}
+
+
+int print_token_to_str(token_value* tok, char* buf, size_t size)
+{
+	switch (tok->type) {
+		case ERROR:            return snprintf(buf, size, "ERROR");
+		case END:              return snprintf(buf, size, "END");
+		case EQUALEQUAL:       return snprintf(buf, size, "==");
+		case GREATER:          return snprintf(buf, size, ">");
+		case GTEQ:             return snprintf(buf, size, ">=");
+		case LESS:             return snprintf(buf, size, "<");
+		case LTEQ:             return snprintf(buf, size, "<=");
+		case NOTEQUAL:         return snprintf(buf, size, "!=");
+		case LOGICAL_OR:       return snprintf(buf, size, "||");
+		case LOGICAL_AND:      return snprintf(buf, size, "&&");
+		case LOGICAL_NEGATION: return snprintf(buf, size, "!");
+		case INT:              return snprintf(buf, size, "int");
+		case SHORT:            return snprintf(buf, size, "short");
+		case LONG:             return snprintf(buf, size, "long");
+		case FLOAT:            return snprintf(buf, size, "float");
+		case DOUBLE:           return snprintf(buf, size, "double");
+		case CHAR:             return snprintf(buf, size, "char");
+		case VOID:             return snprintf(buf, size, "void");
+		case SIGNED:           return snprintf(buf, size, "signed");
+		case UNSIGNED:         return snprintf(buf, size, "unsigned");
+		case DO:               return snprintf(buf, size, "do");
+		case FOR:              return snprintf(buf, size, "for");
+		case WHILE:            return snprintf(buf, size, "while");
+		case PRINT:            return snprintf(buf, size, "print");
+		case IF:               return snprintf(buf, size, "if");
+		case ELSE:             return snprintf(buf, size, "else");
+		case SWITCH:           return snprintf(buf, size, "switch");
+		case CASE:             return snprintf(buf, size, "case");
+		case DEFAULT:          return snprintf(buf, size, "default");
+		case CONTINUE:         return snprintf(buf, size, "continue");
+		case RETURN:           return snprintf(buf, size, "return");
+		case BREAK:            return snprintf(buf, size, "break");
+		case GOTO:             return snprintf(buf, size, "goto");
+		case ID:               return snprintf(buf, size, "%s", tok->v.id);
+		case MOD:              return snprintf(buf, size, "%%");
+		case LPAREN:           return snprintf(buf, size, "(");
+		case RPAREN:           return snprintf(buf, size, ")");
+		case MULT:             return snprintf(buf, size, "*");
+		case ADD:              return snprintf(buf, size, "+");
+		case SUB:              return snprintf(buf, size, "-");
+		case DIV:              return snprintf(buf, size, "/");
+		case COLON:            return snprintf(buf, size, ":");
+		case SEMICOLON:        return snprintf(buf, size, ";");
+		case EQUAL:            return snprintf(buf, size, "=");
+		case COMMA:            return snprintf(buf, size, ",");
+		case LBRACKET:         return snprintf(buf, size, "[");
+		case RBRACKET:         return snprintf(buf, size, "]");
+		case LBRACE:           return snprintf(buf, size, "{");
+		case RBRACE:           return snprintf(buf, size, "}");
+		case INCREMENT:        return snprintf(buf, size, "++");
+		case DECREMENT:        return snprintf(buf, size, "--");
+		case TERNARY:          return snprintf(buf, size, "?");
+
+
+		case ADDEQUAL:         return snprintf(buf, size, "+=");
+		case SUBEQUAL:         return snprintf(buf, size, "-=");
+		case MULTEQUAL:        return snprintf(buf, size, "*=");
+		case DIVEQUAL:         return snprintf(buf, size, "/=");
+		case MODEQUAL:         return snprintf(buf, size, "%%=");
+		case INT_LITERAL:      return snprintf(buf, size, "%d", tok->v.int_val);
+		case FLOAT_LITERAL:    return snprintf(buf, size, "%f", tok->v.float_val);
+		case DOUBLE_LITERAL:   return snprintf(buf, size, "%f", tok->v.double_val);
+		case CHAR_LITERAL:     return snprintf(buf, size, "'%c'", tok->v.int_val);
+		case STR_LITERAL:      return snprintf(buf, size, "%s", tok->v.id);
+
+		case POUND:            return snprintf(buf, size, "#");
+		case EXP:              return snprintf(buf, size, "EXP");
+
+		default:
+			fprintf(stderr, "Error, unknown token\n");
+			return -1;
 	}
 }

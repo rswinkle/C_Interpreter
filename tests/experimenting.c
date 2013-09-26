@@ -13,8 +13,15 @@ int blah = 25;
 
 //int blah3 = c + i;
 
+#define HELLO
 
+#define HELLO
 
+#define GOODBYE() A
+
+#undef NONEXISTENT
+
+//#define WHATEVER(,) Ab
 
 
 //{   < --error
@@ -166,15 +173,24 @@ a\
 
 	char mystr2[] = "blah \
 blah";
-	printf("%s\n", mystr2);
 
+	/* tcc erroneously allows this as a literal newline
+ 	 * so it prints:
+ 	 * blah blah
+ 	 * bleh
+ 	 * bleh
+	char mystr3[] = "bleh
+bleh";
+
+	printf("%s\n%s\n", mystr2, mystr3);
+
+	*/
 
 	double testd = 12\
 3\
 .\
 321;
-//#	printf("%f\n", testd);
-	printf("%%%%%%%%%\n");
+	printf("%f\n", testd);
 
 
 	return 0;

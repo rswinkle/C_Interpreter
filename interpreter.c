@@ -759,7 +759,6 @@ symbol* look_up_symbol(program_state* prog, const char* var)
 
 var_value* look_up_value(program_state* prog, const char* var, int search)
 {
-	//puts("look_up_val");
 	symbol* s;
 	if (prog->func && search != ONLY_GLOBAL) {
 		for (int i=0; i<prog->func->symbols.size; ++i) {

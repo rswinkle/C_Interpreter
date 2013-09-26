@@ -63,11 +63,14 @@ GET_SYMBOL	parser.h	18;"	d
 GET_TOKEN_LEX	parser.h	16;"	d
 GET_VAR_VALUE	parser.h	72;"	d
 GET_VOID	cvector.h	135;"	d
+GOODBYE	tests/experimenting.c	20;"	d	file:
 GOTO	lexer.h	/^	DO, WHILE, FOR, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,$/;"	e	enum:__anon5
 GOTO_STMT	parser.h	/^	NULL_STMT = 0, WHILE_STMT, PRINT_STMT, EXPR_STMT, IF_STMT, GOTO_STMT,$/;"	e	enum:__anon3
 GREATER	lexer.h	/^	EQUALEQUAL, GREATER, GTEQ, LESS, LTEQ, NOTEQUAL,$/;"	e	enum:__anon5
 GTEQ	lexer.h	/^	EQUALEQUAL, GREATER, GTEQ, LESS, LTEQ, NOTEQUAL,$/;"	e	enum:__anon5
 HANDLE_BACKSLASH	lexer.c	12;"	d	file:
+HELLO	tests/experimenting.c	16;"	d	file:
+HELLO	tests/experimenting.c	18;"	d	file:
 ID	lexer.h	/^	ID,$/;"	e	enum:__anon5
 IF	lexer.h	/^	DO, WHILE, FOR, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,$/;"	e	enum:__anon5
 IF_STMT	parser.h	/^	NULL_STMT = 0, WHILE_STMT, PRINT_STMT, EXPR_STMT, IF_STMT, GOTO_STMT,$/;"	e	enum:__anon3
@@ -92,6 +95,7 @@ LONG	lexer.h	/^	INT, SHORT, LONG, FLOAT, DOUBLE, CHAR, VOID, SIGNED, UNSIGNED,$/
 LONG_TYPE	parser.h	/^	LONG_TYPE,$/;"	e	enum:__anon1
 LPAREN	lexer.h	/^	MOD='%', LPAREN='(', RPAREN=')', MULT='*', ADD='+', SUB='-', DIV='\/', COLON=':', SEMICOLON=';',$/;"	e	enum:__anon5
 LTEQ	lexer.h	/^	EQUALEQUAL, GREATER, GTEQ, LESS, LTEQ, NOTEQUAL,$/;"	e	enum:__anon5
+MAX_MACRO_LEN	preprocessor.c	8;"	d	file:
 MAX_TOKEN_LEN	lexer.h	6;"	d
 MOD	lexer.h	/^	MOD='%', LPAREN='(', RPAREN=')', MULT='*', ADD='+', SUB='-', DIV='\/', COLON=':', SEMICOLON=';',$/;"	e	enum:__anon5
 MODEQUAL	lexer.h	/^	ADDEQUAL, SUBEQUAL, MULTEQUAL, DIVEQUAL, MODEQUAL,$/;"	e	enum:__anon5
@@ -341,6 +345,7 @@ cur_line	lexer.h	/^	unsigned int cur_line;$/;"	m	struct:lexer_state	access:publi
 cur_parent	parser.h	/^	int cur_parent; \/\/<-- location of open block statement$/;"	m	struct:program_state	access:public
 cur_parent	parser.h	/^	int cur_parent;$/;"	m	struct:symbol	access:public
 cur_pos	lexer.h	/^	unsigned int cur_pos;$/;"	m	struct:lexer_state	access:public
+cur_tok	lexer.h	/^	unsigned int cur_tok;$/;"	m	struct:lexer_state	access:public
 d	tests/types.c	/^double d = 2.48;$/;"	v
 data	c_utils.h	/^	byte* data;$/;"	m	struct:c_array	access:public
 data	clist.h	/^	int data;$/;"	m	struct:int_list	access:public
@@ -424,7 +429,6 @@ extend_void	cvector.h	/^int extend_void(vector_void* vec, size_t num)$/;"	f	sign
 extend_void	cvector.h	/^int extend_void(vector_void* vec, size_t num);$/;"	p	signature:(vector_void* vec, size_t num)
 extensions	stats/files.html	/^<h2><a href="#extensions" name="extensions">Extensions<\/a><\/h2>$/;"	a
 fibbonaci	tests/functions.c	/^int fibbonaci(int n)$/;"	f	signature:(int n)
-file	preprocessor.c	/^	fclose(file);$/;"	v
 file_count_by_date	stats/files.html	/^<h2><a href="#file_count_by_date" name="file_count_by_date">File count by date<\/a><\/h2>$/;"	a
 file_open_read	c_utils.c	/^int file_open_read(const char* filename, const char* mode, c_array* out)$/;"	f	signature:(const char* filename, const char* mode, c_array* out)
 file_open_read	c_utils.h	/^int file_open_read(const char* filename, const char* mode, c_array* out);$/;"	p	signature:(const char* filename, const char* mode, c_array* out)
@@ -609,6 +613,7 @@ lexer_state	lexer.h	/^typedef struct lexer_state$/;"	s
 lexer_state	lexer.h	/^} lexer_state;$/;"	t	typeref:struct:lexer_state
 lexer_state::cur_line	lexer.h	/^	unsigned int cur_line;$/;"	m	struct:lexer_state	access:public
 lexer_state::cur_pos	lexer.h	/^	unsigned int cur_pos;$/;"	m	struct:lexer_state	access:public
+lexer_state::cur_tok	lexer.h	/^	unsigned int cur_tok;$/;"	m	struct:lexer_state	access:public
 line	lexer.h	/^	unsigned int line;$/;"	m	struct:token_lex	access:public
 lines_of_code	stats/lines.html	/^<h2><a href="#lines_of_code" name="lines_of_code">Lines of Code<\/a><\/h2>$/;"	a
 list	clist.h	/^	list_head list;$/;"	m	struct:int_list	access:public
@@ -653,6 +658,7 @@ long_val	parser.h	/^		long long_val;$/;"	m	union:var_value::__anon2	access:publi
 look_up_loc	interpreter.c	/^unsigned int look_up_loc(program_state* prog, const char* var)$/;"	f	signature:(program_state* prog, const char* var)
 look_up_loc	interpreter.h	/^unsigned int look_up_loc(program_state* prog, const char* var);$/;"	p	signature:(program_state* prog, const char* var)
 look_up_loc	parser.h	/^unsigned int look_up_loc(program_state* prog, const char* var);$/;"	p	signature:(program_state* prog, const char* var)
+look_up_macro	preprocessor.c	/^char* look_up_macro(preprocessor_state* proc, char* macro)$/;"	f	signature:(preprocessor_state* proc, char* macro)
 look_up_symbol	interpreter.c	/^symbol* look_up_symbol(program_state* prog, const char* var)$/;"	f	signature:(program_state* prog, const char* var)
 look_up_symbol	interpreter.h	/^symbol* look_up_symbol(program_state* prog, const char* var);$/;"	p	signature:(program_state* prog, const char* var)
 look_up_symbol	parser.h	/^symbol* look_up_symbol(program_state* prog, const char* var);$/;"	p	signature:(program_state* prog, const char* var)
@@ -662,6 +668,11 @@ look_up_value	parser.h	/^var_value* look_up_value(program_state* prog, const cha
 ltrim	c_utils.c	/^char* ltrim(char* str)$/;"	f	signature:(char* str)
 ltrim	c_utils.h	/^char* ltrim(char* str);$/;"	p	signature:(char* str)
 lvalue	parser.h	/^	char* lvalue;$/;"	m	struct:statement	access:public
+macro_params	preprocessor.h	/^typedef struct macro_params$/;"	s
+macro_params	preprocessor.h	/^} macro_params;$/;"	t	typeref:struct:macro_params
+macro_params::names	preprocessor.h	/^	char** names;$/;"	m	struct:macro_params	access:public
+macro_params::params	preprocessor.h	/^	int params;$/;"	m	struct:macro_params	access:public
+macros	preprocessor.h	/^	vector_str macros;$/;"	m	struct:preprocessor_state	access:public
 main	main.c	/^int main(int argc, char** argv)$/;"	f	signature:(int argc, char** argv)
 main	tests/backslash.c	/^int main()$/;"	f
 main	tests/break_continue.c	/^int main()$/;"	f
@@ -694,12 +705,15 @@ n	parser.h	/^	size_t n;$/;"	m	struct:expr_block	access:public
 n_params	parser.h	/^	int n_params;$/;"	m	struct:function	access:public
 name	parser.h	/^	char* name;$/;"	m	struct:binding	access:public
 name	parser.h	/^	char* name;$/;"	m	struct:symbol	access:public
+names	preprocessor.h	/^	char** names;$/;"	m	struct:macro_params	access:public
 next	clist.h	/^	struct list_head* next;$/;"	m	struct:list_head	typeref:struct:list_head::list_head	access:public
 offsetof	clist.h	78;"	d
 parameter_declaration	parser.c	/^void parameter_declaration(parsing_state* p, program_state* prog)$/;"	f	signature:(parsing_state* p, program_state* prog)
 parameter_declaration	parser.h	/^void parameter_declaration(parsing_state* p, program_state* prog);$/;"	p	signature:(parsing_state* p, program_state* prog)
 parameter_list	parser.c	/^void parameter_list(parsing_state* p, program_state* prog)$/;"	f	signature:(parsing_state* p, program_state* prog)
 parameter_list	parser.h	/^void parameter_list(parsing_state* p, program_state* prog);$/;"	p	signature:(parsing_state* p, program_state* prog)
+params	preprocessor.h	/^	int params;$/;"	m	struct:macro_params	access:public
+params	preprocessor.h	/^	vector_void params;$/;"	m	struct:preprocessor_state	access:public
 parent	parser.h	/^	int parent;$/;"	m	struct:active_binding	access:public
 parent	parser.h	/^	long parent;$/;"	m	struct:statement	access:public
 parse_error	parser.c	/^void parse_error(token_value* tok, char *str, ...)$/;"	f	signature:(token_value* tok, char *str, ...)
@@ -740,8 +754,11 @@ pre_inc_decrement_expr	parser.c	/^void pre_inc_decrement_expr(parsing_state* p, 
 pre_inc_decrement_expr	parser.h	/^void pre_inc_decrement_expr(parsing_state* p, program_state* prog, expression* e);$/;"	p	signature:(parsing_state* p, program_state* prog, expression* e)
 prepare_badcharacter_heuristic	c_utils.c	/^void prepare_badcharacter_heuristic(const byte *str, size_t str_len, int result[ALPHABET_SIZE])$/;"	f	signature:(const byte *str, size_t str_len, int result[ALPHABET_SIZE])
 prepare_goodsuffix_heuristic	c_utils.c	/^void prepare_goodsuffix_heuristic(const byte *str, size_t str_len, int result[])$/;"	f	signature:(const byte *str, size_t str_len, int result[])
-preprocess_file	preprocessor.c	/^FILE* preprocess_file(FILE* input)$/;"	f	signature:(FILE* input)
+preprocess_file	preprocessor.c	/^FILE* preprocess_file(FILE* input, vector_str* string_db_out)$/;"	f	signature:(FILE* input, vector_str* string_db_out)
 preprocessor_state	preprocessor.h	/^typedef struct preprocessor_state$/;"	s
+preprocessor_state::macros	preprocessor.h	/^	vector_str macros;$/;"	m	struct:preprocessor_state	access:public
+preprocessor_state::params	preprocessor.h	/^	vector_void params;$/;"	m	struct:preprocessor_state	access:public
+preprocessor_state::values	preprocessor.h	/^	vector_str values;$/;"	m	struct:preprocessor_state	access:public
 prev	clist.h	/^	struct list_head* prev;$/;"	m	struct:list_head	typeref:struct:list_head::list_head	access:public
 primary_expr	parser.c	/^void primary_expr(parsing_state* p, program_state* prog, expression* e)$/;"	f	signature:(parsing_state* p, program_state* prog, expression* e)
 primary_expr	parser.h	/^void primary_expr(parsing_state* p, program_state* prog, expression* exp);$/;"	p	signature:(parsing_state* p, program_state* prog, expression* exp)
@@ -751,6 +768,8 @@ print_stmt	parser.c	/^void print_stmt(parsing_state* p, program_state* prog)$/;"
 print_stmt	parser.h	/^void print_stmt(parsing_state* p, program_state* prog);$/;"	p	signature:(parsing_state* p, program_state* prog)
 print_token	lexer.c	/^void print_token(token_value* tok, FILE* file, int print_enum)$/;"	f	signature:(token_value* tok, FILE* file, int print_enum)
 print_token	lexer.h	/^void print_token(token_value* tok, FILE* file, int print_enum);$/;"	p	signature:(token_value* tok, FILE* file, int print_enum)
+print_token_to_str	lexer.c	/^int print_token_to_str(token_value* tok, char* buf, size_t size)$/;"	f	signature:(token_value* tok, char* buf, size_t size)
+print_token_to_str	lexer.h	/^int print_token_to_str(token_value* tok, char* buf, size_t size);$/;"	p	signature:(token_value* tok, char* buf, size_t size)
 print_type	parser.c	/^void print_type(var_value* v)$/;"	f	signature:(var_value* v)
 print_type	parser.h	/^void print_type(var_value* v);$/;"	p	signature:(var_value* v)
 program_state	parser.h	/^typedef struct program_state$/;"	s
@@ -951,6 +970,7 @@ v	lexer.h	/^	} v;$/;"	m	struct:token_value	typeref:union:token_value::__anon6	ac
 v	parser.h	/^	} v;$/;"	m	struct:var_value	typeref:union:var_value::__anon2	access:public
 val	parser.h	/^	int val;$/;"	m	struct:a_case	access:public
 val	parser.h	/^	var_value val;$/;"	m	struct:active_binding	access:public
+values	preprocessor.h	/^	vector_str values;$/;"	m	struct:preprocessor_state	access:public
 var_type	parser.h	/^} var_type;$/;"	t	typeref:enum:__anon1
 var_value	parser.h	/^typedef struct var_value$/;"	s
 var_value	parser.h	/^} var_value;$/;"	t	typeref:struct:var_value

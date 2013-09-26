@@ -172,7 +172,7 @@ void parse_program(program_state* prog, FILE* file)
 	int i;
 
 	//starts on line 1
-	lexer_state lexer = { 1, 0 };
+	lexer_state lexer = { 1, 0, 0 };
 
 	token_lex tok_lex = read_token(file, &lexer);
 	while (tok_lex.tok.type != END && tok_lex.tok.type != ERROR) {

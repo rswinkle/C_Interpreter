@@ -60,7 +60,7 @@ typedef struct lexer_state
 {
 	unsigned int cur_line;
 	unsigned int cur_pos;
-
+	unsigned int cur_tok;
 } lexer_state;
 
 //create struct lexer
@@ -72,6 +72,7 @@ typedef struct lexer_state
 token_lex read_token(FILE* file, lexer_state* lex_state);
 
 void print_token(token_value* tok, FILE* file, int print_enum);
+int print_token_to_str(token_value* tok, char* buf, size_t size);
 
 
 #endif
