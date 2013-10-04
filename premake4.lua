@@ -12,7 +12,10 @@ solution "CInterpreter"
               "interpreter.c", "interpreter.h",
               "lexer.c", "lexer.h",
               "c_utils.c", "c_utils.h", "cvector.h",
-              "clist.h"
+              "clist.h", "preprocessor.c",
+              "preprocessor.h", "vector_char.c",
+              "vector_char.h", "vector_token_lex.c",
+              "vector_token_lex.h"
             }
       --excludes { }
 --      libdirs { }

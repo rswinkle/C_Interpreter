@@ -12,6 +12,8 @@ typedef enum {
 	EQUALEQUAL, GREATER, GTEQ, LESS, LTEQ, NOTEQUAL,
 	LOGICAL_OR, LOGICAL_AND, LOGICAL_NEGATION, INCREMENT, DECREMENT,
 
+	DOT, INDIRECTION,
+
 	/* types and type qualifiers */
 	INT, SHORT, LONG, FLOAT, DOUBLE, CHAR, VOID, SIGNED, UNSIGNED,
 	
@@ -20,7 +22,7 @@ typedef enum {
 	
 	ID,
 
-	MOD='%', LPAREN='(', RPAREN=')', MULT='*', ADD='+', SUB='-', DIV='/', COLON=':', SEMICOLON=';',
+	MOD, LPAREN='(', RPAREN=')', MULT='*', ADD='+', SUB='-', DIV='/', COLON=':', SEMICOLON=';',
 	EQUAL='=', COMMA=',', LBRACKET='[', RBRACKET=']', LBRACE='{', RBRACE='}', TERNARY,
 
 	/* compound assignment operators */
@@ -41,6 +43,7 @@ typedef struct token_value
 	Token type;
 	union {
 		char* id;
+//		char* str_literal; just use id
 		int int_val;
 		float float_val;
 		double double_val;
@@ -51,9 +54,11 @@ typedef struct token_lex
 {
 	token_value tok;
 	unsigned int line;
-	unsigned int pos;
+	unsigned int pos; //pos on line
+	char* char_pos; //location in overall file string (only used in read_token_from_str)
 } token_lex;
 
+void free_token_lex(void* tok_lex);
 
 
 typedef struct lexer_state
@@ -61,15 +66,13 @@ typedef struct lexer_state
 	unsigned int cur_line;
 	unsigned int cur_pos;
 	unsigned int cur_tok;
+	unsigned int cur_char;
 } lexer_state;
 
-//create struct lexer
-//holds current line and position
-//add line and maybe position to token_value ?
 
 
-
-token_lex read_token(FILE* file, lexer_state* lex_state);
+token_lex read_token(FILE* file, lexer_state* lex_state, FILE* preprocessed);
+token_lex read_token_from_str(char* input, lexer_state* lex_state, FILE* preprocessed);
 
 void print_token(token_value* tok, FILE* file, int print_enum);
 int print_token_to_str(token_value* tok, char* buf, size_t size);

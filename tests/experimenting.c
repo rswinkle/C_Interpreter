@@ -192,6 +192,15 @@ bleh";
 321;
 	printf("%f\n", testd);
 
+	int ten = 10;
+	int five = 5;
+	printf("%*s", ten - five, "");
+	printf("hello\nhello\n");
+
+#define AOEU
+#define AOEU(a) a + b
+
+#error "testing preproc error" blah
 
 	return 0;
 }

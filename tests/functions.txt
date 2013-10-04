@@ -48,7 +48,7 @@ int fibbonaci(int n)
 	if (n < 3) {
 		return 1;
 	}
-	int a = n + 2;
+	int a = n + 2; //removing shaves off 52 seconds for n = 40
 	print a;
 	return fibbonaci(n-2) + fibbonaci(n-1);
 }

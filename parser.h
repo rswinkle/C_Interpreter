@@ -11,9 +11,10 @@
 
 #include "cvector.h"
 
+#include "vector_token_lex.h"
+
 
 #define GET_STMT(VEC, I) GET_VOID(VEC, statement, I)
-#define GET_TOKEN_LEX(VEC, I) GET_VOID((VEC), token_lex, (I))
 #define GET_FUNCTION(VEC, I) GET_VOID(VEC, function, I)
 #define GET_SYMBOL(VEC, I) GET_VOID(VEC, symbol, I)
 #define GET_BINDING(VEC, I) GET_VOID(VEC, binding, I)
@@ -78,9 +79,8 @@ void free_active_binding_list(void* l);
 
 typedef struct parsing_state
 {
-	vector_void tokens;
+	vector_token_lex tokens;
 	unsigned int pos;
-	unsigned i; //TODO am I using this
 } parsing_state;
 
 
@@ -208,7 +208,8 @@ token_value* peek_token(parsing_state* p, long offset);
 void parse_seek(parsing_state* p, int origin, long offset);
 
 
-void parse_program(program_state* prog, FILE* file);
+void parse_program_file(program_state* prog, FILE* file);
+void parse_program_string(program_state* prog, char* string);
 void translation_unit(parsing_state* p, program_state* prog);
 void top_level_declaration(parsing_state* p, program_state* prog);
 

@@ -140,15 +140,15 @@ void print_type(var_value* v)
 
 token_value* peek_token(parsing_state* p, long offset)
 {
-	return &GET_TOKEN_LEX(&p->tokens, p->pos+offset)->tok;
+	return &p->tokens.a[p->pos + offset].tok;
 }
 
 token_value* get_token(parsing_state* p)
 {
-	token_value* tok = &GET_TOKEN_LEX(&p->tokens, p->pos++)->tok;
+	token_value* tok = &p->tokens.a[p->pos++].tok;
 //	print_token(tok, stdout, 0); putchar('\n');
 
-//	return &GET_TOKEN_LEX(&p->tokens, p->pos++)->tok;
+//	return &p->tokens.a[p->pos++].tok;
 	return tok;
 }
 
@@ -162,21 +162,20 @@ void parse_seek(parsing_state* p, int origin, long offset)
 		p->pos = p->tokens.size - 1 + offset;
 }
 
-
-void parse_program(program_state* prog, FILE* file)
+void parse_program_string(program_state* prog, char* string)
 {
 	parsing_state p;
-	vec_void(&p.tokens, 0, 1000, sizeof(token_lex), NULL, NULL);
+	vec_token_lex(&p.tokens, 0, 1000, NULL, NULL);
 
 	vec_str(&prog->string_db, 0, 100);
 	int i;
 
 	//starts on line 1
-	lexer_state lexer = { 1, 0, 0 };
+	lexer_state lexer = { 1, 0, 0, 0 };
 
-	token_lex tok_lex = read_token(file, &lexer);
+	token_lex tok_lex = read_token_from_str(&string[lexer.cur_char], &lexer, NULL);
 	while (tok_lex.tok.type != END && tok_lex.tok.type != ERROR) {
-		if (tok_lex.tok.type == ID) {
+		if (tok_lex.tok.type == ID || tok_lex.tok.type == STR_LITERAL) {
 			for (i=0; i<prog->string_db.size; ++i) {
 				if (!strcmp(tok_lex.tok.v.id, prog->string_db.a[i])) {
 					free(tok_lex.tok.v.id);
@@ -189,11 +188,10 @@ void parse_program(program_state* prog, FILE* file)
 				prog->string_db.a[prog->string_db.size-1] = tok_lex.tok.v.id;
 			}
 		}
-		push_void(&p.tokens, &tok_lex);
-		tok_lex = read_token(file, &lexer);
+		push_token_lex(&p.tokens, &tok_lex);
+		tok_lex = read_token_from_str(&string[lexer.cur_char], &lexer, NULL);
 	}
-	push_void(&p.tokens, &tok_lex); //push END
-	fclose(file);
+	push_token_lex(&p.tokens, &tok_lex); //push END
 
 	p.pos = 0;
 
@@ -213,7 +211,61 @@ void parse_program(program_state* prog, FILE* file)
 
 	translation_unit(&p, prog);
 
-	free_vec_void(&p.tokens);
+	free_vec_token_lex(&p.tokens);
+}
+
+void parse_program_file(program_state* prog, FILE* file)
+{
+	parsing_state p;
+	vec_token_lex(&p.tokens, 0, 1000, NULL, NULL);
+
+	vec_str(&prog->string_db, 0, 100);
+	int i;
+
+	//starts on line 1
+	lexer_state lexer = { 1, 0, 0, 0 };
+
+	token_lex tok_lex = read_token(file, &lexer, NULL);
+	while (tok_lex.tok.type != END && tok_lex.tok.type != ERROR) {
+		if (tok_lex.tok.type == ID || tok_lex.tok.type == STR_LITERAL) {
+			for (i=0; i<prog->string_db.size; ++i) {
+				if (!strcmp(tok_lex.tok.v.id, prog->string_db.a[i])) {
+					free(tok_lex.tok.v.id);
+					tok_lex.tok.v.id = prog->string_db.a[i];
+					break;
+				}
+			}
+			if (i == prog->string_db.size) {
+				extend_str(&prog->string_db, 1);
+				prog->string_db.a[prog->string_db.size-1] = tok_lex.tok.v.id;
+			}
+		}
+		push_token_lex(&p.tokens, &tok_lex);
+		tok_lex = read_token(file, &lexer, NULL);
+	}
+	push_token_lex(&p.tokens, &tok_lex); //push END
+	fclose(file);
+
+
+	p.pos = 0;
+
+	prog->cur_parent = -1;
+	prog->cur_iter = 0;
+	prog->cur_iter_switch = 0;
+	prog->func = NULL;
+	prog->pc = NULL;
+	prog->stmt_list = NULL;
+	prog->bindings = NULL;
+	vec_void(&prog->functions, 0, 10, sizeof(function), free_function, init_function);
+	vec_str(&prog->global_variables, 0, 20);
+	vec_void(&prog->global_values, 0, 20, sizeof(var_value), free_var_value, NULL);
+
+	vec_void(&prog->expressions, 1, 1, sizeof(expr_block), free_expr_block, NULL);
+	make_expression_block(50, (expr_block*)back_void(&prog->expressions));
+
+	translation_unit(&p, prog);
+
+	free_vec_token_lex(&p.tokens);
 }
 
 
@@ -283,6 +335,8 @@ void function_declarator(parsing_state* p, program_state* prog, var_type vtype)
 {
 	//token should always be ID checked in top_level_decl
 	token_value* tok = get_token(p);
+
+	//TODO make sure it's not already defined and make sure it matches previous declarations
 
 	function a_func, *func_ptr;
 	push_void(&prog->functions, &a_func);  //initialization is done automatically init_function
@@ -428,7 +482,7 @@ void storage_specifier(parsing_state* p, program_state* prog, int match)
 var_type declaration_specifier(parsing_state* p, program_state* prog, int match)
 {
 	//my array cheat prevents me from using peek_token and token_value
-	token_lex* tok = GET_TOKEN_LEX(&p->tokens, p->pos);
+	token_lex* tok = &p->tokens.a[p->pos];
 
 	var_type type = UNKNOWN;
 

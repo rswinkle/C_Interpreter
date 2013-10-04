@@ -22,25 +22,31 @@ do { \
 } while (0)
 
 
-token_lex read_token(FILE* file, lexer_state* lex_state)
+token_lex read_token(FILE* file, lexer_state* lex_state, FILE* preprocessed)
 {
 	static char token_buf[MAX_TOKEN_LEN];
 	int c, i = 0, tmp;
 
 	token_lex tok_lex;
-	memset(&tok_lex, 0, sizeof(token_value));
+	//memset(&tok_lex, 0, sizeof(token_value));
 
 start:
 
-	do {
-		c = getc(file);
+	while (1) {
+		HANDLE_BACKSLASH();
+
 		if (c == '\n') {
-			lex_state->cur_pos = 0;
+			lex_state->cur_pos = 1;
 			lex_state->cur_tok = 0;
 			lex_state->cur_line++;
 		}
-		lex_state->cur_pos++;
-	} while (isspace(c));
+
+		if (!isspace(c))
+			break;
+
+		if (preprocessed)
+			putc(c, preprocessed);
+	}
 
 	lex_state->cur_tok++;
 
@@ -57,6 +63,7 @@ start:
 	case '(': tok_lex.tok.type = LPAREN;    break;
 	case ')': tok_lex.tok.type = RPAREN;    break;
 	case '?': tok_lex.tok.type = TERNARY;   break;
+	case '.': tok_lex.tok.type = DOT;       break;
 
 	//only used in preprocessor
 	case '#': tok_lex.tok.type = POUND;	    break;
@@ -265,7 +272,7 @@ start:
 			lex_state->cur_pos--;
 			token_buf[i] = '\0';
 
-			//should turn these off for preprocessor ... thoughI think you deserve problems
+			//should turn these off for preprocessor ... though I think you deserve problems
 			//if you define macros with the same names as keywords
 			if (!strcmp(token_buf, "do")) {         tok_lex.tok.type = DO;         break; }
 			if (!strcmp(token_buf, "while")) {      tok_lex.tok.type = WHILE;      break; }
@@ -296,13 +303,36 @@ start:
 			tok_lex.tok.v.id = mystrdup(token_buf);
 			assert(tok_lex.tok.v.id);
 
+		} else if (c == '"') {
+			HANDLE_BACKSLASH();
+			while (c != '"') {
+				token_buf[i++] = c;
+				HANDLE_BACKSLASH();
+				if (i == MAX_TOKEN_LEN -1)
+					goto token_length_error;
+			}
+			token_buf[i] = '\0';
+			
+			tok_lex.tok.type = STR_LITERAL;
+			tok_lex.tok.v.id = mystrdup(token_buf);
+			assert(tok_lex.tok.v.id);
+				
 		} else if (c == EOF) {
 			tok_lex.tok.type = END;
+			tok_lex.pos = 1;
+			tok_lex.line = lex_state->cur_line + 1;
 		} else {
 			fprintf(stderr, "Scanning Error");
 			tok_lex.tok.type = ERROR;
 		}
 	}
+
+	if (preprocessed && tok_lex.tok.type != POUND &&
+	    tok_lex.tok.type != ID && tok_lex.tok.type != END)
+		print_token(&tok_lex.tok, preprocessed, 0);
+
+//	print_token(&tok_lex.tok, stdout, 0);
+//	fflush(stdout);
 
 	return tok_lex;
 
@@ -318,6 +348,366 @@ token_length_error:
 
 
 
+#define HANDLE_BACKSLASH_STR() \
+do { \
+	++c; \
+	while (*c == '\\') { \
+		++c; \
+		if (*c != '\n') \
+			goto stray_backslash; \
+		++c; \
+	} \
+	lex_state->cur_pos++; \
+} while (0)
+
+
+token_lex read_token_from_str(char* input, lexer_state* lex_state, FILE* preprocessed)
+{
+	static char token_buf[MAX_TOKEN_LEN];
+	int i = 0, tmp;
+
+	token_lex tok_lex;
+	//memset(&tok_lex, 0, sizeof(token_value));
+
+	char* c = input - 1; //start 1 before for increment
+
+start:
+
+	while (1) {
+		HANDLE_BACKSLASH_STR();
+
+		if (*c == '\n') {
+			lex_state->cur_pos = 1;
+			lex_state->cur_tok = 0;
+			lex_state->cur_line++;
+		}
+
+		if (!isspace(*c))
+			break;
+
+		if (preprocessed)
+			putc(*c, preprocessed);
+	}
+
+	lex_state->cur_tok++;
+
+	tok_lex.pos = lex_state->cur_pos - 1;
+	tok_lex.line = lex_state->cur_line;
+	tok_lex.char_pos = c;
+
+//	printf("getting token starting with '%c'\n", c);
+	switch (*c) {
+	case ':': tok_lex.tok.type = COLON;     break;
+	case ',': tok_lex.tok.type = COMMA;     break;
+	case ';': tok_lex.tok.type = SEMICOLON; break;
+	case '{': tok_lex.tok.type = LBRACE;    break;
+	case '}': tok_lex.tok.type = RBRACE;    break;
+	case '(': tok_lex.tok.type = LPAREN;    break;
+	case ')': tok_lex.tok.type = RPAREN;    break;
+	case '?': tok_lex.tok.type = TERNARY;   break;
+	case '.': tok_lex.tok.type = DOT;       break;
+
+	//only used in preprocessor
+	case '#': tok_lex.tok.type = POUND;	    break;
+
+	case '+':
+		HANDLE_BACKSLASH_STR();
+		if (*c == '+') {
+			tok_lex.tok.type = INCREMENT;
+		} else if (*c == '=') {
+			tok_lex.tok.type = ADDEQUAL;
+		} else {
+			--c;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = ADD;
+		}
+		break;
+
+	case '-':
+		HANDLE_BACKSLASH_STR();
+		if (*c == '-') {
+			tok_lex.tok.type = DECREMENT;
+		} else if (*c == '=') {
+			tok_lex.tok.type = SUBEQUAL;
+		} else {
+			--c;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = SUB;
+		}
+		break;
+		
+	case '*':
+		HANDLE_BACKSLASH_STR();
+		if (*c == '=') {
+			tok_lex.tok.type = MULTEQUAL;
+		} else {
+			--c;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = MULT;
+		}
+		break;
+
+	case '/':
+		HANDLE_BACKSLASH_STR();
+		if (*c == '=') {
+			tok_lex.tok.type = DIVEQUAL;
+		} else if (*c == '/') { // it's a single line comment
+			while (1) {         // yes you can have escaped multi line single line comments
+				HANDLE_BACKSLASH_STR();
+				if (*c == '\n')
+					break;
+			}
+			goto start;
+		} else if (*c == '*') { /* start of block comment */
+			while (1) {
+				++c;
+				lex_state->cur_pos++;
+				if (*c == '*') {
+					HANDLE_BACKSLASH_STR();
+					if (*c == '/')
+						goto start;
+				}
+			}
+		} else {
+			--c;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = DIV;
+		}
+		break;
+
+	case '%':
+		HANDLE_BACKSLASH_STR();
+		if (*c == '=') {
+			tok_lex.tok.type = MODEQUAL;
+		} else {
+			--c;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = MOD;
+		}
+		break;
+
+	case '=':
+		HANDLE_BACKSLASH_STR();
+		if (*c == '=') {
+			tok_lex.tok.type = EQUALEQUAL;
+		} else {
+			--c;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = EQUAL;
+		}
+		break;
+
+	case '|':
+		HANDLE_BACKSLASH_STR();
+		if (*c == '|') {
+			tok_lex.tok.type = LOGICAL_OR;
+		} else {
+			fprintf(stderr, "Error: BITWISE_OR not supported yet\n");
+			exit(0);
+		}
+		break;
+		  	  
+	case '&':
+		HANDLE_BACKSLASH_STR();
+		if (*c == '&') {
+			tok_lex.tok.type = LOGICAL_AND;
+		} else {
+			fprintf(stderr, "Error: BITWISE_AND not supported yet\n");
+			exit(0);
+		}
+		break;
+
+	case '!':
+		HANDLE_BACKSLASH_STR();
+		if (*c == '=') {
+			tok_lex.tok.type = NOTEQUAL;
+		} else {
+			--c;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = LOGICAL_NEGATION;
+		}
+		break;
+		
+
+	case '<':
+		HANDLE_BACKSLASH_STR();
+		if (*c == '=') {
+			tok_lex.tok.type = LTEQ;
+		} else {
+			--c;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = LESS;
+		}
+		break;
+
+	case '>':
+		HANDLE_BACKSLASH_STR();
+		if (*c == '=') {
+			tok_lex.tok.type = GTEQ;
+		} else {
+			--c;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = GREATER;
+		}
+		break;
+
+	case '\'':
+		HANDLE_BACKSLASH_STR(); //currently precludes escape characters, TODO
+		tmp = *c; //save character
+		HANDLE_BACKSLASH_STR();
+		if (*c != '\'') {
+			fprintf(stderr, "Error: multi-character character constant\n");
+			exit(0);
+		}
+		tok_lex.tok.type = INT_LITERAL;
+		tok_lex.tok.v.int_val = tmp;
+		break;
+
+	default:
+		if (isdigit(*c)) {
+			while (isdigit(*c)) {
+				token_buf[i++] = *c;
+				HANDLE_BACKSLASH_STR();
+
+				if (i == MAX_TOKEN_LEN-1)
+					goto token_length_error;
+			}
+
+			if (*c == '.') {
+				if (i == MAX_TOKEN_LEN-1)
+					goto token_length_error;
+
+				token_buf[i++] = *c;
+				HANDLE_BACKSLASH_STR();
+				
+				while (isdigit(*c)) {
+					token_buf[i++] = *c;
+					HANDLE_BACKSLASH_STR();
+
+					if (i == MAX_TOKEN_LEN-1)
+						goto token_length_error;
+				}
+
+				--c;
+				lex_state->cur_pos--;
+				token_buf[i] = '\0';
+				tok_lex.tok.type = DOUBLE_LITERAL;
+				tok_lex.tok.v.double_val = atof(token_buf);
+			} else {
+				--c;
+				lex_state->cur_pos--;
+				token_buf[i] = '\0';
+
+				tok_lex.tok.type = INT_LITERAL;
+				tok_lex.tok.v.int_val = atoi(token_buf);
+			}
+
+		} else if (isalpha(*c)) {
+			while (isalnum(*c) || *c == '_') {
+				token_buf[i++] = *c;
+				HANDLE_BACKSLASH_STR();
+
+				if (i == MAX_TOKEN_LEN-1)
+					goto token_length_error;
+			}
+			--c;
+			lex_state->cur_pos--;
+			token_buf[i] = '\0';
+
+			//should turn these off for preprocessor ... though I think you deserve problems
+			//if you define macros with the same names as keywords
+			if (!strcmp(token_buf, "do")) {         tok_lex.tok.type = DO;         break; }
+			if (!strcmp(token_buf, "while")) {      tok_lex.tok.type = WHILE;      break; }
+			if (!strcmp(token_buf, "for")) {        tok_lex.tok.type = FOR;      break; }
+			if (!strcmp(token_buf, "if")) {         tok_lex.tok.type = IF;         break; }
+			if (!strcmp(token_buf, "else")) {       tok_lex.tok.type = ELSE;       break; }
+			if (!strcmp(token_buf, "print")) {      tok_lex.tok.type = PRINT;      break; }
+			if (!strcmp(token_buf, "goto")) {       tok_lex.tok.type = GOTO;       break; }
+			if (!strcmp(token_buf, "return")) {     tok_lex.tok.type = RETURN;     break; }
+			if (!strcmp(token_buf, "switch")) {     tok_lex.tok.type = SWITCH;     break; }
+			if (!strcmp(token_buf, "break")) {      tok_lex.tok.type = BREAK;      break; }
+
+			if (!strcmp(token_buf, "case")) {       tok_lex.tok.type = CASE;       break; }
+			if (!strcmp(token_buf, "default")) {    tok_lex.tok.type = DEFAULT;    break; }
+			if (!strcmp(token_buf, "continue")) {   tok_lex.tok.type = CONTINUE;   break; }
+
+			if (!strcmp(token_buf, "char")) {       tok_lex.tok.type = CHAR;      break; }
+			if (!strcmp(token_buf, "short")) {      tok_lex.tok.type = SHORT;      break; }
+			if (!strcmp(token_buf, "int")) {        tok_lex.tok.type = INT;        break; }
+			if (!strcmp(token_buf, "long")) {       tok_lex.tok.type = LONG;        break; }
+			if (!strcmp(token_buf, "signed")) {     tok_lex.tok.type = SIGNED;     break; }
+			if (!strcmp(token_buf, "unsigned")) {   tok_lex.tok.type = UNSIGNED;   break; }
+			if (!strcmp(token_buf, "double")) {     tok_lex.tok.type = DOUBLE;     break; }
+			if (!strcmp(token_buf, "float")) {      tok_lex.tok.type = FLOAT;      break; }
+			if (!strcmp(token_buf, "void")) {       tok_lex.tok.type = VOID;       break; }
+
+			tok_lex.tok.type = ID;
+			tok_lex.tok.v.id = mystrdup(token_buf);
+			assert(tok_lex.tok.v.id);
+
+		} else if (*c == '"') {
+			HANDLE_BACKSLASH_STR();
+			while (*c != '"') {
+				token_buf[i++] = *c;
+				HANDLE_BACKSLASH_STR();
+				if (i == MAX_TOKEN_LEN -1)
+					goto token_length_error;
+			}
+			token_buf[i] = '\0';
+			
+			tok_lex.tok.type = STR_LITERAL;
+			tok_lex.tok.v.id = mystrdup(token_buf);
+			assert(tok_lex.tok.v.id);
+				
+		} else if (*c == '\0') {
+			tok_lex.tok.type = END;
+			tok_lex.pos = 1;
+			tok_lex.line = lex_state->cur_line + 1;
+		} else {
+			fprintf(stderr, "Scanning Error");
+			tok_lex.tok.type = ERROR;
+		}
+	}
+
+	if (preprocessed && tok_lex.tok.type != POUND &&
+	    tok_lex.tok.type != ID && tok_lex.tok.type != END)
+		print_token(&tok_lex.tok, preprocessed, 0);
+
+//	print_token(&tok_lex.tok, stdout, 0);
+//	fflush(stdout);
+
+	//so caller knows the index to start with for next call
+	lex_state->cur_char += c - input + 1;
+
+	return tok_lex;
+
+stray_backslash:
+	fprintf(stderr, "Error: stray \\ in program (perhaps you have space between it and a newline)\n");
+	exit(0);
+
+token_length_error:
+	fprintf(stderr, "Error: Token length is too long, max token length is %d\n", MAX_TOKEN_LEN);
+	exit(0);
+}
+
+
+
+
+
+
+
+
+
+
+
+void free_token_lex(void* tok_lex)
+{
+	token_lex* t = tok_lex;
+	if (t->tok.type == ID || t->tok.type == STR_LITERAL)
+		free(t->tok.v.id);
+}
+
+
 void print_token(token_value* tok, FILE* file, int print_enum)
 {
 	if (print_enum) { 
@@ -329,6 +719,7 @@ void print_token(token_value* tok, FILE* file, int print_enum)
 			case GTEQ:             fprintf(file, "GTEQ");     break;
 			case LESS:             fprintf(file, "LESS");     break;
 			case LTEQ:             fprintf(file, "LTEQ");     break;
+			case DOT:              fprintf(file, "DOT");     break;
 			case NOTEQUAL:         fprintf(file, "NOTEQUAL");     break;
 			case LOGICAL_OR:       fprintf(file, "LOGICAL_OR");     break;
 			case LOGICAL_AND:      fprintf(file, "LOGICAL_AND");     break;
@@ -403,6 +794,7 @@ void print_token(token_value* tok, FILE* file, int print_enum)
 			case GTEQ:             fprintf(file, ">=");     break;
 			case LESS:             fprintf(file, "<");     break;
 			case LTEQ:             fprintf(file, "<=");     break;
+			case DOT:              fprintf(file, ".");     break;
 			case NOTEQUAL:         fprintf(file, "!=");     break;
 			case LOGICAL_OR:       fprintf(file, "||");     break;
 			case LOGICAL_AND:      fprintf(file, "&&");     break;
@@ -481,6 +873,7 @@ int print_token_to_str(token_value* tok, char* buf, size_t size)
 		case GTEQ:             return snprintf(buf, size, ">=");
 		case LESS:             return snprintf(buf, size, "<");
 		case LTEQ:             return snprintf(buf, size, "<=");
+		case DOT:              return snprintf(buf, size, ".");
 		case NOTEQUAL:         return snprintf(buf, size, "!=");
 		case LOGICAL_OR:       return snprintf(buf, size, "||");
 		case LOGICAL_AND:      return snprintf(buf, size, "&&");

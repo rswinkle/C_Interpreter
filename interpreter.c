@@ -208,7 +208,6 @@ var_value execute_expr(program_state* prog, expression* e)
 	function* old_func, *func;
 	vector_void* old_stmt_list;
 	size_t* old_pc;
-	int tmp;
 
 	var_value result, left, right;
 	var_value *left_ptr = &left, *right_ptr = &right;

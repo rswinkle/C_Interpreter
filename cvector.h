@@ -130,7 +130,7 @@ typedef struct vector_void
 	void (*elem_free)(void*);
 } vector_void;
 
-extern size_t VEC_START_SZ;
+extern size_t VEC_VOID_START_SZ;
 
 #define GET_VOID(VEC, TYPE, I) ((TYPE*)&(VEC)->a[(I)*(VEC)->elem_size])
 
@@ -986,7 +986,7 @@ void free_vec_str(void* vec)
 	tmp->capacity = 0;
 }
 
-size_t VEC_START_SZ = 20;
+size_t VEC_VOID_START_SZ = 20;
 
 #define VEC_VOID_ALLOCATOR(x) ((x) * 2)
 
@@ -999,7 +999,7 @@ vector_void* vec_void_heap(size_t size, size_t capacity, size_t elem_sz, void(*e
 	}
 
 	vec->size = (size > 0) ? size : 0;
-	vec->capacity = (capacity > vec->size || (vec->size && capacity == vec->size)) ? capacity : vec->size + VEC_START_SZ;
+	vec->capacity = (capacity > vec->size || (vec->size && capacity == vec->size)) ? capacity : vec->size + VEC_VOID_START_SZ;
 
 	vec->elem_size = elem_sz;
 	
@@ -1028,7 +1028,7 @@ vector_void* init_vec_void_heap(void* vals, size_t num, size_t elem_sz, void(*el
 
 	vec->elem_size = elem_sz;
 
-	vec->capacity = num + VEC_START_SZ;
+	vec->capacity = num + VEC_VOID_START_SZ;
 	vec->size = num;
 	if (!(vec->a = malloc(vec->capacity*elem_sz))) {
 		assert(vec->a != NULL);
@@ -1053,7 +1053,7 @@ vector_void* init_vec_void_heap(void* vals, size_t num, size_t elem_sz, void(*el
 int vec_void(vector_void* vec, size_t size, size_t capacity, size_t elem_sz, void(*elem_free)(void*), void(*elem_init)(void*, void*))
 {
 	vec->size = (size > 0) ? size : 0;
-	vec->capacity = (capacity > vec->size || (vec->size && capacity == vec->size)) ? capacity : vec->size + VEC_START_SZ;
+	vec->capacity = (capacity > vec->size || (vec->size && capacity == vec->size)) ? capacity : vec->size + VEC_VOID_START_SZ;
 
 	vec->elem_size = elem_sz;
 	
@@ -1075,7 +1075,7 @@ int init_vec_void(vector_void* vec, void* vals, size_t num, size_t elem_sz, void
 	
 	vec->elem_size = elem_sz;
 
-	vec->capacity = num + VEC_START_SZ;
+	vec->capacity = num + VEC_VOID_START_SZ;
 	vec->size = num;
 	if (!(vec->a = malloc(vec->capacity*elem_sz))) {
 		assert(vec->a != NULL);
@@ -1181,7 +1181,7 @@ int extend_void(vector_void* vec, size_t num)
 	void* tmp;
 	size_t tmp_sz;
 	if (vec->capacity < vec->size + num) {
-		tmp_sz = vec->capacity + num + VEC_START_SZ;
+		tmp_sz = vec->capacity + num + VEC_VOID_START_SZ;
 		if (!(tmp = realloc(vec->a, vec->elem_size*tmp_sz))) {
 			assert(tmp != NULL);
 			return 0;
@@ -1239,7 +1239,7 @@ int insert_array_void(vector_void* vec, size_t i, void* a, size_t num)
 	void* tmp;
 	size_t tmp_sz, j;
 	if (vec->capacity < vec->size + num) {
-		tmp_sz = vec->capacity + num + VEC_START_SZ;
+		tmp_sz = vec->capacity + num + VEC_VOID_START_SZ;
 		if (!(tmp = realloc(vec->a, vec->elem_size*tmp_sz))) {
 			assert(tmp != NULL);
 			return 0;
@@ -1277,12 +1277,12 @@ int reserve_void(vector_void* vec, size_t size)
 {
 	void* tmp;
 	if (vec->capacity < size) {
-		if (!(tmp = realloc(vec->a, vec->elem_size*(size+VEC_START_SZ)))) {
+		if (!(tmp = realloc(vec->a, vec->elem_size*(size+VEC_VOID_START_SZ)))) {
 			assert(tmp != NULL);
 			return 0;
 		}
 		vec->a = tmp;
-		vec->capacity = size + VEC_START_SZ;
+		vec->capacity = size + VEC_VOID_START_SZ;
 	}
 	return 1;
 }

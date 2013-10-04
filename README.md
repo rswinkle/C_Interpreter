@@ -1,7 +1,6 @@
 C_Interpreter
 =============
 
-
 This started as C port of an old college assignment
 in C++.  You can see that in the first commit though I
 might have made some minor changes/improvements during
@@ -10,6 +9,11 @@ port.
 Now my goal is to make something approaching scriptable
 C.  I'll consider it done when it can run itself ...
 so it'll probably never be completely done.
+
+If you're looking for something more professional there's
+Cling (http://root.cern.ch/drupal/content/cling)
+Ch (http://www.softintegration.com/)
+
 
 I've kept the old tests around (updating them so they
 keep working) but I've been adding new tests for
@@ -22,11 +26,21 @@ complete C grammar/syntax in the appendix.
 
 The grammar below is the current status more or less.
 It'll be interesting to see how it grows and which
-parts converge with full syntax first. 
+parts converge with full syntax first.
 
 I've also added a BNF spec for C I found online just
 to have something for reference in the repository.
 
+I've now added a preprocessor which currently supports
+the following (and of course actually using the macros):
+```
+#include "relative path based on current directory"
+#define name
+#define name sequence_of_tokens
+#define name ( identifier-list ) sequence_of_tokens
+#undef name
+# (null directive)
+```
 
 Current Grammar (work in progress)
 ==================================
