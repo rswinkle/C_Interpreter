@@ -14,6 +14,12 @@ If you're looking for something more professional there's
 Cling (http://root.cern.ch/drupal/content/cling)
 Ch (http://www.softintegration.com/)
 
+and a compiler that's so fast and self contained
+they have a command line switch -run to immediately
+run it after compiling so you can use C as a JIT
+scripting language
+tcc (http://en.wikipedia.org/wiki/Tiny_C_Compiler)
+
 
 I've kept the old tests around (updating them so they
 keep working) but I've been adding new tests for
@@ -90,6 +96,7 @@ decl_or_stmt              -> declaration
 
 statement                 -> expr_stmt
                              while_stmt
+                             for_stmt
                              do_stmt
                              if_stmt
                              print_stmt
@@ -100,6 +107,9 @@ statement                 -> expr_stmt
                              break_or_continue_stmt
                              switch_stmt
                              case_or_default_stmt
+                             null_stmt
+
+null_stmt                 -> ';'
 
 switch_stmt               -> switch '(' expr ')' statement
 
@@ -128,7 +138,7 @@ if_stmt                   -> if '(' expr ')' statement
 
 print_stmt                -> print expr ';'
 
-goto_stmt                 -> goto expr ';'
+goto_stmt                 -> goto identifier ';'
 
 expr_stmt                 -> expr ';'
 

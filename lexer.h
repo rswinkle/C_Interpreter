@@ -2,8 +2,9 @@
 #define LEXER_H
 
 #include <stdio.h>
+#include <stdarg.h>
 
-#define MAX_TOKEN_LEN 256
+#define MAX_TOKEN_LEN 257
 
 //tokens pg 20
 typedef enum {
@@ -70,6 +71,7 @@ typedef struct lexer_state
 } lexer_state;
 
 
+void lex_error(lexer_state* lex, char *str, ...);
 
 token_lex read_token(FILE* file, lexer_state* lex_state, FILE* preprocessed);
 token_lex read_token_from_str(char* input, lexer_state* lex_state, FILE* preprocessed);

@@ -259,7 +259,6 @@ void handle_define(FILE* input, preprocessor_state* preproc, lexer_state* lexer)
 
 	while (tok_lex[0].line == lexer->cur_line) {
 		push_token_lex(&tlex, &tok_lex[2]);
-		print_token(&tok_lex[2].tok, stdout, 0);
 		save_lex = *lexer;
 		fpos = ftell(input);
 		//don't free id bceause vector will do it

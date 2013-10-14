@@ -274,6 +274,7 @@ start:
 
 			//should turn these off for preprocessor ... though I think you deserve problems
 			//if you define macros with the same names as keywords
+			//could also optimize this, check length, turn into a mini state machine etc.
 			if (!strcmp(token_buf, "do")) {         tok_lex.tok.type = DO;         break; }
 			if (!strcmp(token_buf, "while")) {      tok_lex.tok.type = WHILE;      break; }
 			if (!strcmp(token_buf, "for")) {        tok_lex.tok.type = FOR;      break; }
@@ -322,8 +323,7 @@ start:
 			tok_lex.pos = 1;
 			tok_lex.line = lex_state->cur_line + 1;
 		} else {
-			fprintf(stderr, "Scanning Error");
-			tok_lex.tok.type = ERROR;
+			lex_error(lex_state, "Unrecognized token \"%c\"", c);
 		}
 	}
 
@@ -337,15 +337,23 @@ start:
 	return tok_lex;
 
 stray_backslash:
-	fprintf(stderr, "Error: stray \\ in program (perhaps you have space between it and a newline)\n");
-	exit(0);
+	lex_error(lex_state, "stray \\ in program (perhaps you have a space between it and a newline)");
 
 token_length_error:
-	fprintf(stderr, "Error: Token length is too long, max token length is %d\n", MAX_TOKEN_LEN);
-	exit(0);
+	lex_error(lex_state, "Token length is too long, max token length is %d,", MAX_TOKEN_LEN-1);
 }
 
+void lex_error(lexer_state* lex, char *str, ...)
+{
+	va_list args;
+	va_start(args, str);
+	fprintf(stderr, "Lexer Error: ");
+	vfprintf(stderr, str, args);
 
+	fprintf(stderr, " at line %u, position %u\n", lex->cur_line, lex->cur_pos);
+
+	va_end(args);
+}
 
 
 #define HANDLE_BACKSLASH_STR() \
@@ -664,8 +672,7 @@ start:
 			tok_lex.pos = 1;
 			tok_lex.line = lex_state->cur_line + 1;
 		} else {
-			fprintf(stderr, "Scanning Error");
-			tok_lex.tok.type = ERROR;
+			lex_error(lex_state, "Unrecognized token \"%c\"", c);
 		}
 	}
 
@@ -682,12 +689,10 @@ start:
 	return tok_lex;
 
 stray_backslash:
-	fprintf(stderr, "Error: stray \\ in program (perhaps you have space between it and a newline)\n");
-	exit(0);
+	lex_error(lex_state, "stray \\ in program (perhaps you have a space between it and a newline)");
 
 token_length_error:
-	fprintf(stderr, "Error: Token length is too long, max token length is %d\n", MAX_TOKEN_LEN);
-	exit(0);
+	lex_error(lex_state, "Token length is too long, max token length is %d,", MAX_TOKEN_LEN - 1);
 }
 
 
