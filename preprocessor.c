@@ -22,39 +22,48 @@ void free_macro_params(void* param)
 }
 
 
-FILE* run_preprocessor(FILE* input)
+FILE* run_preprocessor(FILE* input, char* filename)
 {
 	assert(input);
 	
-	FILE* output = tmpfile();
-	assert(output);
-
 	preprocessor_state preproc;
+
+	preproc.input = input;
+
+	preproc.output = tmpfile();
+	assert(preproc.output);
+
 	vec_str(&preproc.macros, 0, 15);
 	vec_str(&preproc.values, 0, 15);
 	vec_void(&preproc.params, 0, 15, sizeof(macro_params), free_macro_params, NULL);
+	vec_token_lex(&preproc.if_stack, 0, 10, free_token_lex, NULL);
 	
-	preprocess_file(input, &preproc, output, NULL);
+	preproc.lexer = (lexer_state){ filename, 1, 0, 0 }; //TODO
+	preprocess_file(&preproc);
 
 	free_vec_str(&preproc.macros);
 	free_vec_str(&preproc.values);
 	free_vec_void(&preproc.params);
+	free_vec_token_lex(&preproc.if_stack);
 	fclose(input);
 
-	rewind(output);
-	return output;
+	rewind(preproc.output);
+	return preproc.output;
 }
 
-void preprocess_file(FILE* input, preprocessor_state* preproc, FILE* output, lexer_state* lexer)
+void preprocess_file(preprocessor_state* preproc)
 {
-	lexer_state save_lexer;
+	lexer_state save_lexer, *lexer = &preproc->lexer;
 	long fpos;
+	int c;
 
 	token_lex tlex[10]; 
 
-	lexer_state lexer_ = { 1, 0, 0 };
-	if (!lexer)
-		lexer = &lexer_;
+	FILE* input = preproc->input;
+	FILE* output = preproc->output;
+
+	// if not -P
+	fprintf(output, "# 0 \"%s\"\n", lexer->cur_file);
 
 	tlex[0] = read_token(input, lexer, output);
 	for ( ; tlex[0].tok.type != END; tlex[0] = read_token(input, lexer, output)) {
@@ -85,7 +94,7 @@ void preprocess_file(FILE* input, preprocessor_state* preproc, FILE* output, lex
 					fseek(input, fpos, SEEK_SET);
 				}
 
-				handle_macro(input, preproc, lexer, output, is_macro);
+				handle_macro(preproc, is_macro);
 			} else {
 				print_token(&tlex[0].tok, output, 0);
 			}
@@ -94,7 +103,7 @@ void preprocess_file(FILE* input, preprocessor_state* preproc, FILE* output, lex
 		} else if (tlex[0].tok.type == POUND) {
 			//has to be the first token
 			if (lexer->cur_tok != 1) {
-				preprocessor_error(NULL, "Error: stray # in program at line %u, position %u\n", tlex[0].line, tlex[0].pos);
+				preprocessor_error(NULL, lexer, "Error: stray # in program\n");
 			}
 
 			save_lexer = *lexer;
@@ -114,14 +123,14 @@ void preprocess_file(FILE* input, preprocessor_state* preproc, FILE* output, lex
 
 			
 			if (tlex[1].tok.type != ID) {
-				preprocessor_error(&tlex[1].tok, "expected ID as macro name\n");
+				preprocessor_error(&tlex[1], lexer, "expected ID as macro name,");
 			}
 			
 			if (!strcmp(tlex[1].tok.v.id, "define")) {
 				free(tlex[1].tok.v.id);
 
-				handle_define(input, preproc, lexer);
-				continue;
+				handle_define(preproc);
+				goto eat_newline;
 			}
 
 			if (!strcmp(tlex[1].tok.v.id, "undef")) {
@@ -130,11 +139,11 @@ void preprocess_file(FILE* input, preprocessor_state* preproc, FILE* output, lex
 				fpos = ftell(input);
 				tlex[1] = read_token(input, lexer, NULL);
 				if (tlex[1].line != tlex[0].line) {
-					preprocessor_error(NULL, "macro name missing in undef directive\n");
+					preprocessor_error(NULL, lexer, "macro name missing in undef directive\n");
 				}
 
 				if (tlex[1].tok.type != ID) {
-					preprocessor_error(&tlex[1].tok, "ID expected in undef directive\n");
+					preprocessor_error(&tlex[1], lexer, "ID expected in undef directive,");
 				}
 			
 				int exists = look_up_macro_loc(preproc, tlex[0].tok.v.id);
@@ -144,44 +153,79 @@ void preprocess_file(FILE* input, preprocessor_state* preproc, FILE* output, lex
 					erase_void(&preproc->params, exists, exists);
 				}
 				free(tlex[1].tok.v.id);
-				continue;
+
+				goto eat_newline;
 			}
 
 			if (!strcmp(tlex[1].tok.v.id, "include")) {
 				free(tlex[1].tok.v.id);
-				handle_include(input, preproc, output, lexer);
-				continue;
+				handle_include(preproc);
+				goto eat_newline;
 			}
 			if (!strcmp(tlex[1].tok.v.id, "if")) {
+				free(tlex[1].tok.v.id);
 			}
 
 			if (!strcmp(tlex[1].tok.v.id, "ifdef")) {
 				free(tlex[1].tok.v.id);
-			//	handle_ifdef()
+				handle_ifdef(preproc);
+				goto eat_newline;
+			}
 
-			}
 			if (!strcmp(tlex[1].tok.v.id, "ifndef")) {
+				free(tlex[1].tok.v.id);
 			}
+
 			if (!strcmp(tlex[1].tok.v.id, "else")) {
 			}
 			if (!strcmp(tlex[1].tok.v.id, "endif")) {
 			}
 			if (!strcmp(tlex[1].tok.v.id, "elif")) {
 			}
+
 			if (!strcmp(tlex[1].tok.v.id, "defined")) {
 			}
 			if (!strcmp(tlex[1].tok.v.id, "pragma")) {
 			}
 
 			if (!strcmp(tlex[1].tok.v.id, "error")) {
+				//check for string
+				//preprocessor_error(NULL, 
 
 			}
+
+eat_newline:
+			//the newline should reset the position
+			//but since the line of a directive should be
+			//invisible to the final program it shouldn't affect line count
+			do {
+				c = getc(preproc->input);
+				if (!isspace(c))
+					;//TODO ERROR
+			} while (c != '\n');
+			lexer->cur_pos = 1;
+			lexer->cur_tok = 0;
 		}
 	}
 }
 	
-void handle_define(FILE* input, preprocessor_state* preproc, lexer_state* lexer)
+
+void handle_ifdef(preprocessor_state* preproc)
 {
+	token_lex tok_lex = read_token(preproc->input, &preproc->lexer, NULL);
+	if (tok_lex.tok.type != ID)
+		preprocessor_error(&tok_lex, &preproc->lexer, "expected ID following #ifdef,");
+
+
+
+
+}
+
+void handle_define(preprocessor_state* preproc)
+{
+	FILE* input = preproc->input;
+	lexer_state* lexer = &preproc->lexer;
+
 	vector_token_lex tlex;
 	vec_token_lex(&tlex, 0, 10, free_token_lex, NULL);
 	
@@ -189,7 +233,7 @@ void handle_define(FILE* input, preprocessor_state* preproc, lexer_state* lexer)
 	tok_lex[0] = read_token(input, lexer, NULL);
 
 	if (tok_lex[0].tok.type != ID) {
-		preprocessor_error(&tok_lex[0].tok, "expected ID for macro name\n");
+		preprocessor_error(&tok_lex[0], lexer, "expected ID for macro name,");
 	}
 	
 	macro_params p = { -1, NULL };
@@ -204,7 +248,7 @@ void handle_define(FILE* input, preprocessor_state* preproc, lexer_state* lexer)
 		fseek(input, fpos, SEEK_SET);
 
 		if (check_val && strcmp(check_val, "")) {
-			preprocessor_error(NULL, "redefinition of %s\n", tok_lex[0].tok.v.id);
+			preprocessor_error(NULL, lexer, "redefinition of %s\n", tok_lex[0].tok.v.id);
 		}
 		if (!check_val) {
 			push_str(&preproc->macros, tok_lex[0].tok.v.id);
@@ -228,11 +272,12 @@ void handle_define(FILE* input, preprocessor_state* preproc, lexer_state* lexer)
 			tok_lex[2] = read_token(input, lexer, NULL);
 		}
 
+		//TODO better way to express error logic?
 		if (tok_lex[2].tok.type != ID) {
  		   	if (n != 0 || n == 0 && tok_lex[2].tok.type != RPAREN)
-				preprocessor_error(NULL, "improperly formed function style macro on line %d\n", lexer->cur_line);
+				preprocessor_error(NULL, lexer, "improperly formed function style macro\n");
 		} else if (tok_lex[3].tok.type != RPAREN) {
-			preprocessor_error(NULL, "improperly formed function style macro on line %d\n", lexer->cur_line);
+			preprocessor_error(NULL, lexer, "improperly formed function style macro\n");
 		}
 
 		p.num_params = n;
@@ -278,7 +323,7 @@ void handle_define(FILE* input, preprocessor_state* preproc, lexer_state* lexer)
 		res = print_token_to_str(&tlex.a[i].tok, &macro_buf[buf_pos], MAX_MACRO_LEN-buf_pos);
 
 		if (res < 0 || res >= MAX_MACRO_LEN - buf_pos) {
-			preprocessor_error(NULL, "macro is too long or output error\n");
+			preprocessor_error(NULL, lexer, "macro is too long or output error\n");
 		}
 		len = res;
 		buf_pos += res;
@@ -289,7 +334,7 @@ void handle_define(FILE* input, preprocessor_state* preproc, lexer_state* lexer)
 			res = snprintf(&macro_buf[buf_pos], MAX_MACRO_LEN-buf_pos, "%*s", tlex.a[i+1].pos - (tlex.a[i].pos + len), ""); 
 
 			if (res < 0 || res >= MAX_MACRO_LEN - buf_pos) {
-				preprocessor_error(NULL, "macro is too long or output error\n");
+				preprocessor_error(NULL, lexer, "macro is too long or output error\n");
 			}
 			buf_pos += res;
 		}
@@ -297,7 +342,7 @@ void handle_define(FILE* input, preprocessor_state* preproc, lexer_state* lexer)
 
 	//benign redefinitions are allowed (ie the definitions are the same)
 	if (check_val && strcmp(check_val, macro_buf)) {
-		preprocessor_error(NULL, "redefinition of macro %s\n", tlex.a[0].tok.v.id);
+		preprocessor_error(NULL, lexer, "redefinition of macro %s\n", tlex.a[0].tok.v.id);
 	}
 
 	//push new macro
@@ -318,16 +363,15 @@ exit:
 
 
 
-void handle_include(FILE* input, preprocessor_state* preproc, FILE* output, lexer_state* lexer)
+void handle_include(preprocessor_state* preproc)
 {
-	//TODO make sure it's on the same line
-	int line = lexer->cur_line;
-	token_lex tok_lex = read_token(input, lexer, NULL);
+	int line = preproc->lexer.cur_line;
+	token_lex tok_lex = read_token(preproc->input, &preproc->lexer, NULL);
 	if (tok_lex.line != line)
-		preprocessor_error(NULL, "include directive arguments should all be on the same line\n");
+		preprocessor_error(NULL, &preproc->lexer, "include directive arguments should all be on the same line\n");
 	
 	if (tok_lex.tok.type != LESS && tok_lex.tok.type != STR_LITERAL) {
-		preprocessor_error(&tok_lex.tok, "expected < or \" for include\n");
+		preprocessor_error(&tok_lex, &preproc->lexer, "expected < or \" for include,");
 	}
 	
 	lexer_state save_lexer;
@@ -336,35 +380,44 @@ void handle_include(FILE* input, preprocessor_state* preproc, FILE* output, lexe
 	if (tok_lex.tok.type == LESS) {
 		//just clear the line
 		while (1) {
-			save_lexer = *lexer;
-			fpos = ftell(input);
-			tok_lex = read_token(input, lexer, NULL);
+			save_lexer = preproc->lexer;
+			fpos = ftell(preproc->input);
+			tok_lex = read_token(preproc->input, &preproc->lexer, NULL);
 			if (tok_lex.line != line) {
 				if (tok_lex.tok.type == ID || tok_lex.tok.type == STR_LITERAL)
 					free(tok_lex.tok.v.id);
-				*lexer = save_lexer;
-				fseek(input, fpos, SEEK_SET);
+				preproc->lexer = save_lexer;
+				fseek(preproc->input, fpos, SEEK_SET);
 				return;
 			}
 			if (tok_lex.tok.type == ID || tok_lex.tok.type == STR_LITERAL)
 				free(tok_lex.tok.v.id);
 		}
-		//preprocessor_error(NULL, "I don't support < > style includes yet\n");
 	}
 
 	FILE* file = fopen(tok_lex.tok.v.id, "r");
 	if (!file) {
-		preprocessor_error(NULL, "error opening file %s on line %d\n", tok_lex.tok.v.id, lexer->cur_line);
+		preprocessor_error(NULL, &preproc->lexer, "error opening file %s\n", tok_lex.tok.v.id);
 	}
 
-	preprocess_file(file, preproc, output, NULL);
+	save_lexer = preproc->lexer;
+	FILE* save_input = preproc->input;
+	preproc->lexer = (lexer_state){ tok_lex.tok.v.id, 1, 0, 0 };
+	preproc->input = file;
+	
+	preprocess_file(preproc);
+
+	preproc->lexer = save_lexer;
+	preproc->input = save_input;
+
+	fprintf(preproc->output, "# %u \"%s\"\n", save_lexer.cur_line, save_lexer.cur_file);
 
 	free(tok_lex.tok.v.id);
 	fclose(file);
 }
 
 
-void parse_params(FILE* input, preprocessor_state* preproc, lexer_state* lexer, int macro, vector_char* expansion)
+void parse_params(preprocessor_state* preproc, int macro, vector_char* expansion)
 {
 	macro_params* p = GET_PARAM(&preproc->params, macro);
 	token_lex t;
@@ -374,7 +427,7 @@ void parse_params(FILE* input, preprocessor_state* preproc, lexer_state* lexer, 
 //	init_vec_char(&scratch, expansion->a, expansion->size);
 
 	//read (
-	read_token(input, lexer, NULL);
+	read_token(preproc->input, &preproc->lexer, NULL);
 
 	int param_len, val_len, parens, loc;
 	char* search, *found;
@@ -386,7 +439,7 @@ void parse_params(FILE* input, preprocessor_state* preproc, lexer_state* lexer, 
 	for (int i=0; i < p->num_params; ++i) {
 		val_len = 0;
 
-		t = read_token(input, lexer, NULL);
+		t = read_token(preproc->input, &preproc->lexer, NULL);
 		if (t.tok.type == LPAREN)
 			parens++;
 		do {
@@ -395,14 +448,14 @@ void parse_params(FILE* input, preprocessor_state* preproc, lexer_state* lexer, 
 			if (t.tok.type == ID || t.tok.type == STR_LITERAL)
 				free(t.tok.v.id);
 
-			t = read_token(input, lexer, NULL);
+			t = read_token(preproc->input, &preproc->lexer, NULL);
 			if (t.tok.type == LPAREN) {
 				parens++;
 			} else if (t.tok.type == RPAREN) {
 				parens--;
 				if (parens == -1) {
 					if (i != p->num_params-1)
-						preprocessor_error(&t.tok, "more arguments expected for macro\n");
+						preprocessor_error(&t, &preproc->lexer, "more arguments expected for macro,");
 					break;
 				}
 			}
@@ -430,7 +483,7 @@ void parse_params(FILE* input, preprocessor_state* preproc, lexer_state* lexer, 
 			//overwrite replacement in scratch with a character not allowed in identifiers
 			//so that replacement of a subsequent parameter won't replace within an expansion
 			//ie #define MYMACRO(a, b) a + b;
-			//called as MYMACRO(b, a) would wrongly go to b + b -> a + a
+			//called as MYMACRO(b, a) would wrongly go to b + b -> a + a instead of b + a
 			for (int j=loc; j < loc+arg_expansion.size-1; ++j)
 				scratch.a[j] = '*';
 
@@ -445,9 +498,9 @@ void parse_params(FILE* input, preprocessor_state* preproc, lexer_state* lexer, 
 
 	//read ) for 0 params, others get read in loop
 	if (!p->num_params) {
-		token_lex t = read_token(input, lexer, NULL);
+		token_lex t = read_token(preproc->input, &preproc->lexer, NULL);
 		if (t.tok.type != RPAREN)
-			preprocessor_error(&t.tok, "expected ) in function style macro with 0 arguments\n");
+			preprocessor_error(&t, &preproc->lexer, "expected ) in function style macro with 0 arguments,");
 	}
 
 	free_vec_char(&arg_expansion);
@@ -494,7 +547,7 @@ unsigned int macro_expansion(preprocessor_state* preproc, vector_char* expansion
 				parens--;
 				if (parens == -1) {
 					if (i != p->num_params-1)
-						preprocessor_error(NULL, "more arguments expected for macro\n");
+						preprocessor_error(NULL, &preproc->lexer, "more arguments expected for macro\n");
 					break;
 				}
 			}
@@ -524,9 +577,10 @@ unsigned int macro_expansion(preprocessor_state* preproc, vector_char* expansion
 		arg_expansion.size = 0;
 	}
 	
-	if (!p->num_params) // increment for ) becalue it didn't get it in loop
+	if (!p->num_params) // increment for ) because it didn't get it in loop
 		++c;
 
+	//TODO test without this
 	if (p->num_params == -1)
 		--c;
 
@@ -694,8 +748,12 @@ void rescan_expansion(preprocessor_state* preproc, vector_char* expansion, vecto
 }
 
 
-void handle_macro(FILE* input, preprocessor_state* preproc, lexer_state* lexer, FILE* output, int macro)
+void handle_macro(preprocessor_state* preproc, int macro)
 {
+	FILE* input = preproc->input;
+	FILE* output = preproc->output;
+	lexer_state* lexer = &preproc->lexer;
+
 	vector_char expansion;
 	init_vec_char(&expansion, preproc->values.a[macro], strlen(preproc->values.a[macro])+1); //+1 for the '\0'
 
@@ -703,7 +761,7 @@ void handle_macro(FILE* input, preprocessor_state* preproc, lexer_state* lexer, 
 	
 	//do initial argument expansion
 	if (p->num_params >= 0)
-		parse_params(input, preproc, lexer, macro, &expansion);
+		parse_params(preproc, macro, &expansion);
 
 	vector_i valid_macros;
 	vec_i(&valid_macros, preproc->macros.size, preproc->macros.size);
@@ -755,7 +813,7 @@ void handle_macro(FILE* input, preprocessor_state* preproc, lexer_state* lexer, 
 				if (p->num_params != -1) {
 					*found = 0; //cut off matched macro
 					fprintf(output, "%s", expansion.a);
-					handle_macro(input, preproc, lexer, output, i);
+					handle_macro(preproc, i);
 
 					goto exit;
 				}
@@ -776,18 +834,21 @@ exit:
 }
 
 
-void preprocessor_error(token_value* tok, char* str, ...)
+void preprocessor_error(token_lex* tok, lexer_state* lexer, char* str, ...)
 {
 	va_list args;
 	va_start(args, str);
-	fprintf(stderr, "Preprocessor Error: ");
-	vfprintf(stderr, str, args);
+
 	if (tok) {
-		fprintf(stderr, "Got ");
-		print_token(tok, stderr, 0);
-		token_lex* lex = (token_lex*)tok;
-		fprintf(stderr, " at line %u, position %u\n", lex->line, lex->pos);
+		fprintf(stderr, "%s:%u:%u: Preprocessor Error: ", lexer->cur_file, tok->line, tok->pos);
+		vfprintf(stderr, str, args);
+		fprintf(stderr, " got ");
+		print_token(&tok->tok, stderr, 0);
+	} else {
+		fprintf(stderr, "%s:%u:%u: Preprocessor Error: ", lexer->cur_file, lexer->cur_line, lexer->cur_pos-1);
+		vfprintf(stderr, str, args);
 	}
+
 	va_end(args);
 	exit(0);
 }

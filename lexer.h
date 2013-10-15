@@ -5,10 +5,11 @@
 #include <stdarg.h>
 
 #define MAX_TOKEN_LEN 257
+#define PARSING (FILE*)1
 
 //tokens pg 20
-typedef enum {
-	ERROR, END,
+typedef enum Token{
+	END,
 	
 	EQUALEQUAL, GREATER, GTEQ, LESS, LTEQ, NOTEQUAL,
 	LOGICAL_OR, LOGICAL_AND, LOGICAL_NEGATION, INCREMENT, DECREMENT,
@@ -64,6 +65,7 @@ void free_token_lex(void* tok_lex);
 
 typedef struct lexer_state
 {
+	char* cur_file;
 	unsigned int cur_line;
 	unsigned int cur_pos;
 	unsigned int cur_tok;

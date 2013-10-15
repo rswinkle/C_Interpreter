@@ -1,0 +1,84 @@
+# 2 "include.c"
+# 1 "../tests/inc_test1.c" 1
+
+
+int a = 1;
+# 1 "../tests/../tests/inc_test2.c" 1
+
+void func1(void)
+{
+	print a;
+	int a = 2;
+	print a;
+	int local = 10 * a;
+	print local;
+}
+# 6 "../tests/inc_test1.c" 2
+
+void func2(int a, int b, int c)
+{
+	print a;
+	print b;
+	print c;
+
+	int d = 12;
+	{
+		print d;
+		print a;
+		int a = 15;
+		print a;
+		{
+			print d;
+			print a;
+			print b;
+
+			int b = 100;
+			print b;
+			print c;
+			{
+				print c;
+			}
+
+		}
+		int c = 5;
+		print c;
+
+	}
+}
+
+
+
+
+int fibbonaci(int n)
+{
+	print n;
+	if (n < 3) {
+		return 1;
+	}
+	int a = n + 2;
+	print a;
+	return fibbonaci(n-2) + fibbonaci(n-1);
+}
+# 4 "include.c" 2
+a
+
+
+
+
+ 
+
+
+int main()
+{
+	int local = 54
+	print local;
+	func1();
+	print a;
+	func2(10, local /= 3, local - a*20);
+	print local;
+
+	local = fibbonaci(4);
+	print local;
+
+	return 0;
+}

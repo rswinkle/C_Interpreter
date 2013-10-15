@@ -22,6 +22,8 @@ do { \
 } while (0)
 
 
+//preprocessed is either NULL or a valid output file for preprocessing output
+//or it's the macro PARSING (1 currently but could be any invalid non-NULL pointer) which means we're parsing
 token_lex read_token(FILE* file, lexer_state* lex_state, FILE* preprocessed)
 {
 	static char token_buf[MAX_TOKEN_LEN];
@@ -44,7 +46,7 @@ start:
 		if (!isspace(c))
 			break;
 
-		if (preprocessed)
+		if (preprocessed && preprocessed != PARSING) //could do 1 bit operation
 			putc(c, preprocessed);
 	}
 
@@ -53,7 +55,7 @@ start:
 	tok_lex.pos = lex_state->cur_pos - 1;
 	tok_lex.line = lex_state->cur_line;
 
-//	printf("getting token starting with '%c'\n", c);
+	//printf("getting token starting with '%c'\n", c);
 	switch (c) {
 	case ':': tok_lex.tok.type = COLON;     break;
 	case ',': tok_lex.tok.type = COMMA;     break;
@@ -65,8 +67,27 @@ start:
 	case '?': tok_lex.tok.type = TERNARY;   break;
 	case '.': tok_lex.tok.type = DOT;       break;
 
-	//only used in preprocessor
-	case '#': tok_lex.tok.type = POUND;	    break;
+	//not really a valid token but used in preprocessor and for having correct
+	//file and line numbers in error messages
+	case '#':
+		tok_lex.tok.type = POUND;
+		if (preprocessed == PARSING) { //only used during parsing
+			tok_lex = read_token(file, lex_state, NULL);
+			if (tok_lex.tok.type != INT_LITERAL)
+				lex_error(lex_state, "invalid token\n");
+
+			lex_state->cur_line = tok_lex.tok.v.int_val;
+
+			tok_lex = read_token(file, lex_state, NULL);
+			if (tok_lex.tok.type != STR_LITERAL)
+				lex_error(lex_state, "invalid token\n");
+
+			free(lex_state->cur_file);
+			lex_state->cur_file = mystrdup(tok_lex.tok.v.id); //think about when to free this;
+			free(tok_lex.tok.v.id);
+			goto start;
+		}
+		break;
 
 	case '+':
 		HANDLE_BACKSLASH();
@@ -112,8 +133,11 @@ start:
 		} else if (c == '/') { // it's a single line comment
 			while (1) {
 				HANDLE_BACKSLASH();
-				if (c == '\n')
+				if (c == '\n') {
+					ungetc(c, file);
+					lex_state->cur_pos--;
 					break;
+				}
 			}
 			goto start;
 		} else if (c == '*') { /* start of block comment */
@@ -214,8 +238,7 @@ start:
 		tmp = c; //save character
 		HANDLE_BACKSLASH();
 		if (c != '\'') {
-			fprintf(stderr, "Error: multi-character character constant\n");
-			exit(0);
+			lex_error(lex_state, "multi-character character constant\n");
 		}
 		tok_lex.tok.type = INT_LITERAL;
 		tok_lex.tok.v.int_val = tmp;
@@ -327,7 +350,7 @@ start:
 		}
 	}
 
-	if (preprocessed && tok_lex.tok.type != POUND &&
+	if (preprocessed && preprocessed != PARSING && tok_lex.tok.type != POUND &&
 	    tok_lex.tok.type != ID && tok_lex.tok.type != END)
 		print_token(&tok_lex.tok, preprocessed, 0);
 
@@ -347,12 +370,13 @@ void lex_error(lexer_state* lex, char *str, ...)
 {
 	va_list args;
 	va_start(args, str);
-	fprintf(stderr, "Lexer Error: ");
+	
+	fprintf(stderr, "%s:%u:%u: Lexer Error: ", lex->cur_file, lex->cur_line, lex->cur_pos);
 	vfprintf(stderr, str, args);
 
-	fprintf(stderr, " at line %u, position %u\n", lex->cur_line, lex->cur_pos);
-
 	va_end(args);
+
+	exit(0);
 }
 
 
@@ -369,6 +393,7 @@ do { \
 } while (0)
 
 
+
 token_lex read_token_from_str(char* input, lexer_state* lex_state, FILE* preprocessed)
 {
 	static char token_buf[MAX_TOKEN_LEN];
@@ -377,7 +402,7 @@ token_lex read_token_from_str(char* input, lexer_state* lex_state, FILE* preproc
 	token_lex tok_lex;
 	//memset(&tok_lex, 0, sizeof(token_value));
 
-	char* c = input - 1; //start 1 before for increment
+	char* c = &input[lex_state->cur_char - 1]; //start 1 before for increment
 
 start:
 
@@ -393,7 +418,7 @@ start:
 		if (!isspace(*c))
 			break;
 
-		if (preprocessed)
+		if (preprocessed && preprocessed != PARSING) //could do 1 bit operation
 			putc(*c, preprocessed);
 	}
 
@@ -415,8 +440,29 @@ start:
 	case '?': tok_lex.tok.type = TERNARY;   break;
 	case '.': tok_lex.tok.type = DOT;       break;
 
-	//only used in preprocessor
-	case '#': tok_lex.tok.type = POUND;	    break;
+	//not really a valid token but used in preprocessor and for having correct
+	//file and line numbers in error messages
+	case '#':
+		tok_lex.tok.type = POUND;
+		if (preprocessed == PARSING) {
+			lex_state->cur_char += c - input + 1;
+
+			tok_lex = read_token_from_str(input, lex_state, NULL);
+			if (tok_lex.tok.type != INT_LITERAL)
+				lex_error(lex_state, "invalid token");
+
+			lex_state->cur_line = tok_lex.tok.v.int_val;
+
+			tok_lex = read_token_from_str(input, lex_state, NULL);
+			if (tok_lex.tok.type != STR_LITERAL)
+				lex_error(lex_state, "invalid token");
+
+			free(lex_state->cur_file);
+			lex_state->cur_file = mystrdup(tok_lex.tok.v.id); //think about when to free this;
+			free(tok_lex.tok.v.id);
+			goto start;
+		}
+		break;
 
 	case '+':
 		HANDLE_BACKSLASH_STR();
@@ -462,8 +508,11 @@ start:
 		} else if (*c == '/') { // it's a single line comment
 			while (1) {         // yes you can have escaped multi line single line comments
 				HANDLE_BACKSLASH_STR();
-				if (*c == '\n')
+				if (*c == '\n') {
+					--c;
+					lex_state->cur_pos--;
 					break;
+				}
 			}
 			goto start;
 		} else if (*c == '*') { /* start of block comment */
@@ -564,8 +613,7 @@ start:
 		tmp = *c; //save character
 		HANDLE_BACKSLASH_STR();
 		if (*c != '\'') {
-			fprintf(stderr, "Error: multi-character character constant\n");
-			exit(0);
+			lex_error(lex_state, "multi-character character constant\n");
 		}
 		tok_lex.tok.type = INT_LITERAL;
 		tok_lex.tok.v.int_val = tmp;
@@ -676,14 +724,14 @@ start:
 		}
 	}
 
-	if (preprocessed && tok_lex.tok.type != POUND &&
+	if (preprocessed && preprocessed != PARSING && tok_lex.tok.type != POUND &&
 	    tok_lex.tok.type != ID && tok_lex.tok.type != END)
 		print_token(&tok_lex.tok, preprocessed, 0);
 
 //	print_token(&tok_lex.tok, stdout, 0);
 //	fflush(stdout);
 
-	//so caller knows the index to start with for next call
+	//so we know the index to start with for next call
 	lex_state->cur_char += c - input + 1;
 
 	return tok_lex;
@@ -717,7 +765,6 @@ void print_token(token_value* tok, FILE* file, int print_enum)
 {
 	if (print_enum) { 
 		switch (tok->type) {
-			case ERROR:            fprintf(file, "ERROR");     break;
 			case END:              fprintf(file, "END");     break;
 			case EQUALEQUAL:       fprintf(file, "EQUALEQUAL");     break;
 			case GREATER:          fprintf(file, "GREATER");     break;
@@ -792,7 +839,6 @@ void print_token(token_value* tok, FILE* file, int print_enum)
 		}
 	} else {
 		switch (tok->type) {
-			case ERROR:            fprintf(file, "ERROR");     break;
 			case END:              fprintf(file, "END");     break;
 			case EQUALEQUAL:       fprintf(file, "==");     break;
 			case GREATER:          fprintf(file, ">");     break;
@@ -871,7 +917,6 @@ void print_token(token_value* tok, FILE* file, int print_enum)
 int print_token_to_str(token_value* tok, char* buf, size_t size)
 {
 	switch (tok->type) {
-		case ERROR:            return snprintf(buf, size, "ERROR");
 		case END:              return snprintf(buf, size, "END");
 		case EQUALEQUAL:       return snprintf(buf, size, "==");
 		case GREATER:          return snprintf(buf, size, ">");

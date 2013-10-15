@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 	}
 
 	program_state program;
-	FILE* preprocessed = run_preprocessor(file);
+	FILE* preprocessed = run_preprocessor(file, filename);
 
 	if (argc == 3 && !strcmp(argv[1], "-E")) {
 		c_array preproc_out;

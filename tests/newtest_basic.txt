@@ -1,6 +1,0 @@
-int i;
-int main(void)
-{
-	i = 10;
-	print i;
-}

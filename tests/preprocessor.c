@@ -36,6 +36,12 @@
 #define AAAA BBBB
 #define BBBB AAAA
 
+#define BBB 345
+#define CCC BBB
+#define AA BBB + CCC
+
+AA
+
 AAAA
 BBBB
 

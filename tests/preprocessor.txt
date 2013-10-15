@@ -1,8 +1,6 @@
 
 #include <stdio.h>
 
-#include "../tests/functions.txt"
-
 #define MULT(a, b) a * b
 #define SUB(a, b) a - b
 
@@ -53,7 +51,7 @@ RECURSION2(RECURSION2, a, b)
 RECURSION3()()()()() ()
 
 #define IFB(VAL) \
-if (b == VAL) { \
+if (b == VAL) {\
 	print b; \
 }
 

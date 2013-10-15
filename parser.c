@@ -168,13 +168,14 @@ void parse_program_string(program_state* prog, char* string)
 	vec_token_lex(&p.tokens, 0, 1000, NULL, NULL);
 
 	vec_str(&prog->string_db, 0, 100);
-	int i;
+	int i, line;
 
 	//starts on line 1
-	lexer_state lexer = { 1, 0, 0, 0 };
+	lexer_state lexer = { NULL, 1, 0, 0, 0 };
 
-	token_lex tok_lex = read_token_from_str(&string[lexer.cur_char], &lexer, NULL);
-	while (tok_lex.tok.type != END && tok_lex.tok.type != ERROR) {
+	token_lex tok_lex, tlex[2];
+	tok_lex = read_token_from_str(string, &lexer, PARSING);
+	while (tok_lex.tok.type != END) {
 		if (tok_lex.tok.type == ID || tok_lex.tok.type == STR_LITERAL) {
 			for (i=0; i<prog->string_db.size; ++i) {
 				if (!strcmp(tok_lex.tok.v.id, prog->string_db.a[i])) {
@@ -187,11 +188,27 @@ void parse_program_string(program_state* prog, char* string)
 				extend_str(&prog->string_db, 1);
 				prog->string_db.a[prog->string_db.size-1] = tok_lex.tok.v.id;
 			}
-		}
+		} /* else if (tok_lex.tok.type == POUND) {
+			line = lexer.cur_line;
+
+			tlex[0] = read_token_from_str(string, &lexer, NULL);
+			tlex[1] = read_token_from_str(string, &lexer, NULL);
+			if (tlex[0].tok.type == INT_LITERAL && tlex[1].tok.type == STR_LITERAL && lexer.cur_line == line) {
+				lexer.cur_line = tlex[0].tok.v.int_val;
+				lexer.cur_file = tlex[1].tok.v.id;
+				tok_lex = read_token_from_str(&string[lexer.cur_char], &lexer, NULL);
+				continue;
+			} else {
+				//this will give incorrect line/pos based on where tlex[1] is not #
+				lex_error(&lexer, "invalid token #\n");
+			}
+		} */
+
 		push_token_lex(&p.tokens, &tok_lex);
-		tok_lex = read_token_from_str(&string[lexer.cur_char], &lexer, NULL);
+		tok_lex = read_token_from_str(string, &lexer, PARSING);
 	}
 	push_token_lex(&p.tokens, &tok_lex); //push END
+	free(lexer.cur_file);
 
 	p.pos = 0;
 
@@ -220,13 +237,13 @@ void parse_program_file(program_state* prog, FILE* file)
 	vec_token_lex(&p.tokens, 0, 1000, NULL, NULL);
 
 	vec_str(&prog->string_db, 0, 100);
-	int i;
+	int i, line;
 
 	//starts on line 1
-	lexer_state lexer = { 1, 0, 0, 0 };
+	lexer_state lexer = { NULL, 1, 0, 0, 0 };
 
-	token_lex tok_lex = read_token(file, &lexer, NULL);
-	while (tok_lex.tok.type != END && tok_lex.tok.type != ERROR) {
+	token_lex tok_lex = read_token(file, &lexer, PARSING);
+	while (tok_lex.tok.type != END) {
 		if (tok_lex.tok.type == ID || tok_lex.tok.type == STR_LITERAL) {
 			for (i=0; i<prog->string_db.size; ++i) {
 				if (!strcmp(tok_lex.tok.v.id, prog->string_db.a[i])) {
@@ -239,11 +256,27 @@ void parse_program_file(program_state* prog, FILE* file)
 				extend_str(&prog->string_db, 1);
 				prog->string_db.a[prog->string_db.size-1] = tok_lex.tok.v.id;
 			}
-		}
+		} /* else if (tok_lex.tok.type == POUND) {
+			line = lexer.cur_line;
+
+			tlex[0] = read_token(file, &lexer, NULL);
+			tlex[1] = read_token(file, &lexer, NULL);
+			if (tlex[0].tok.type == INT_LITERAL && tlex[1].tok.type == STR_LITERAL && lexer.cur_line == line) {
+				lexer.cur_line = tlex[0].tok.v.int_val;
+				lexer.cur_file = tlex[1].tok.v.id;
+				tok_lex = read_token(file, &lexer, NULL);
+				continue;
+			} else {
+				//this will give incorrect line/pos based on where tlex[1] is not #
+				lex_error(&lexer, "invalid token #\n");
+			}
+		} */
+
 		push_token_lex(&p.tokens, &tok_lex);
-		tok_lex = read_token(file, &lexer, NULL);
+		tok_lex = read_token(file, &lexer, PARSING);
 	}
 	push_token_lex(&p.tokens, &tok_lex); //push END
+	free(lexer.cur_file);
 	fclose(file);
 
 
@@ -291,7 +324,6 @@ void top_level_declaration(parsing_state* p, program_state* prog)
 		else
 			function_definition(p, prog);
 	} else {
-		//TODO
 		parse_error(peek_token(p, 0), "Error parsing top_level_declaration, declaration_specifier expected\n");
 		exit(0);
 	}
