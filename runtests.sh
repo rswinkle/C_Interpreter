@@ -4,7 +4,7 @@
 #new tests
 test_array[0]=../tests/backslash.txt
 test_array[1]=../tests/break_continue.txt
-
+test_array[2]=../tests/problem6.txt
 test_array[3]=../tests/declarations.txt
 test_array[4]=../tests/dowhile.txt
 test_array[5]=../tests/for_stmt.txt

@@ -221,7 +221,7 @@ void parameter_declaration(parsing_state* p, program_state* prog);
 
 //void declaration_list(parsing_state* p, program_state* prog);
 void declaration(parsing_state* p, program_state* prog);
-var_type declaration_specifier(parsing_state* p, program_state* prog, int match);
+var_type declaration_specifier(parsing_state* p, program_state* prog, int match, int* tokens);
 void initialized_declarator_list(parsing_state* p, program_state* prog, var_type v_type);
 void initialized_declarator(parsing_state* p, program_state* prog, var_type v_type);
 

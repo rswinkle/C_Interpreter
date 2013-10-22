@@ -201,7 +201,7 @@ eat_newline:
 			do {
 				c = getc(preproc->input);
 				if (!isspace(c))
-					;//TODO ERROR
+					preprocessor_error(NULL, lexer, "extra tokens in directive\n");
 			} while (c != '\n');
 			lexer->cur_pos = 1;
 			lexer->cur_tok = 0;

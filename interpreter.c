@@ -50,7 +50,6 @@ void execute(program_state* prog)
 			break;
 
 		case PRINT_STMT:
-			//TODO print expression
 			execute_print(execute_expr(prog, stmt->exp));
 			break;
 

@@ -188,22 +188,7 @@ void parse_program_string(program_state* prog, char* string)
 				extend_str(&prog->string_db, 1);
 				prog->string_db.a[prog->string_db.size-1] = tok_lex.tok.v.id;
 			}
-		} /* else if (tok_lex.tok.type == POUND) {
-			line = lexer.cur_line;
-
-			tlex[0] = read_token_from_str(string, &lexer, NULL);
-			tlex[1] = read_token_from_str(string, &lexer, NULL);
-			if (tlex[0].tok.type == INT_LITERAL && tlex[1].tok.type == STR_LITERAL && lexer.cur_line == line) {
-				lexer.cur_line = tlex[0].tok.v.int_val;
-				lexer.cur_file = tlex[1].tok.v.id;
-				tok_lex = read_token_from_str(&string[lexer.cur_char], &lexer, NULL);
-				continue;
-			} else {
-				//this will give incorrect line/pos based on where tlex[1] is not #
-				lex_error(&lexer, "invalid token #\n");
-			}
-		} */
-
+		}
 		push_token_lex(&p.tokens, &tok_lex);
 		tok_lex = read_token_from_str(string, &lexer, PARSING);
 	}
@@ -256,22 +241,7 @@ void parse_program_file(program_state* prog, FILE* file)
 				extend_str(&prog->string_db, 1);
 				prog->string_db.a[prog->string_db.size-1] = tok_lex.tok.v.id;
 			}
-		} /* else if (tok_lex.tok.type == POUND) {
-			line = lexer.cur_line;
-
-			tlex[0] = read_token(file, &lexer, NULL);
-			tlex[1] = read_token(file, &lexer, NULL);
-			if (tlex[0].tok.type == INT_LITERAL && tlex[1].tok.type == STR_LITERAL && lexer.cur_line == line) {
-				lexer.cur_line = tlex[0].tok.v.int_val;
-				lexer.cur_file = tlex[1].tok.v.id;
-				tok_lex = read_token(file, &lexer, NULL);
-				continue;
-			} else {
-				//this will give incorrect line/pos based on where tlex[1] is not #
-				lex_error(&lexer, "invalid token #\n");
-			}
-		} */
-
+		}
 		push_token_lex(&p.tokens, &tok_lex);
 		tok_lex = read_token(file, &lexer, PARSING);
 	}
@@ -315,11 +285,11 @@ void translation_unit(parsing_state* p, program_state* prog)
 
 void top_level_declaration(parsing_state* p, program_state* prog)
 {
-	var_type vtype = declaration_specifier(p, prog, 0);
-	//will have to change peek(1 to account for more complex (longer than
-	//one token) decl_specifiers in future
-	if (vtype != UNKNOWN && peek_token(p, 1)->type == ID) {
-		if (peek_token(p, 2)->type != LPAREN)
+	int n_tokens;
+	var_type vtype = declaration_specifier(p, prog, 0, &n_tokens);
+
+	if (vtype != UNKNOWN && peek_token(p, n_tokens)->type == ID) {
+		if (peek_token(p, n_tokens+1)->type != LPAREN)
 			declaration(p, prog);
 		else
 			function_definition(p, prog);
@@ -333,7 +303,7 @@ void top_level_declaration(parsing_state* p, program_state* prog)
 
 void function_definition(parsing_state* p, program_state* prog)
 {
-	var_type vtype = declaration_specifier(p, prog, 1);
+	var_type vtype = declaration_specifier(p, prog, 1, NULL);
 
 	function_declarator(p, prog, vtype);
 
@@ -426,7 +396,7 @@ void parameter_list(parsing_state* p, program_state* prog)
 /* parameter_declaration -> decl_spec ID */
 void parameter_declaration(parsing_state* p, program_state* prog)
 {
-	var_type vtype = declaration_specifier(p, prog, 1);
+	var_type vtype = declaration_specifier(p, prog, 1, NULL);
 
 	token_value* tok = get_token(p);
 	if (tok->type != ID) {
@@ -461,7 +431,7 @@ void parameter_declaration(parsing_state* p, program_state* prog)
 /* declaration -> declaration_specifier initialized_declarator_list ';' */
 void declaration(parsing_state* p, program_state* prog)
 {
-	var_type vtype = declaration_specifier(p, prog, 1);  //should never be UNKNOWN because already validated
+	var_type vtype = declaration_specifier(p, prog, 1, NULL);  //should never be UNKNOWN because already validated
 
 	initialized_declarator_list(p, prog, vtype);
 
@@ -511,14 +481,14 @@ void storage_specifier(parsing_state* p, program_state* prog, int match)
  * unsigned, unsigned int
  * unsigned long, unsigned long int
  */
-var_type declaration_specifier(parsing_state* p, program_state* prog, int match)
+var_type declaration_specifier(parsing_state* p, program_state* prog, int match, int* tokens)
 {
 	//my array cheat prevents me from using peek_token and token_value
 	token_lex* tok = &p->tokens.a[p->pos];
 
 	var_type type = UNKNOWN;
 
-	int seek = match;
+	int seek = 1;
 
 	switch (tok->tok.type) {
 	case CHAR:
@@ -610,6 +580,8 @@ var_type declaration_specifier(parsing_state* p, program_state* prog, int match)
 		for (int i=0; i<seek; ++i)
 			get_token(p); //makes it easier to debug otherwise I'd just seek
 	}
+	if (tokens)
+		*tokens = seek;
 
 	return type;
 }
@@ -790,7 +762,7 @@ void declaration_or_statement_list(parsing_state* p, program_state* prog)
 
 void declaration_or_statement(parsing_state* p, program_state* prog)
 {
-	var_type vtype = declaration_specifier(p, prog, 0);
+	var_type vtype = declaration_specifier(p, prog, 0, NULL);
 	if (vtype != UNKNOWN) {
 		declaration(p, prog);
 	} else {
@@ -1106,7 +1078,7 @@ void for_stmt(parsing_state* p, program_state* prog)
 
 	//initial clause
 	if (peek_token(p, 0)->type != SEMICOLON) {
-		var_type vtype = declaration_specifier(p, prog, 0);
+		var_type vtype = declaration_specifier(p, prog, 0, NULL);
 		if (vtype != UNKNOWN) {
 			declaration(p, prog);
 			parse_seek(p, SEEK_CUR, -1); //declaration ate ';' so back up one
