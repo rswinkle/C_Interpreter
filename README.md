@@ -11,13 +11,13 @@ C.  I'll consider it done when it can run itself ...
 so it'll probably never be completely done.
 
 If you're looking for something more professional there's
-Cling (http://root.cern.ch/drupal/content/cling)
-Ch (http://www.softintegration.com/)
+* Cling (http://root.cern.ch/drupal/content/cling)
+* Ch (http://www.softintegration.com/)
 
-and a compiler that's so fast and self contained
+* and a compiler that's so fast and self contained
 they have a command line switch -run to immediately
 run it after compiling so you can use C as a JIT
-scripting language
+scripting language,
 tcc (http://en.wikipedia.org/wiki/Tiny_C_Compiler)
 
 
