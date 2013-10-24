@@ -57,15 +57,16 @@ start:
 
 	//printf("getting token starting with '%c'\n", c);
 	switch (c) {
-	case ':': tok_lex.tok.type = COLON;     break;
-	case ',': tok_lex.tok.type = COMMA;     break;
-	case ';': tok_lex.tok.type = SEMICOLON; break;
-	case '{': tok_lex.tok.type = LBRACE;    break;
-	case '}': tok_lex.tok.type = RBRACE;    break;
-	case '(': tok_lex.tok.type = LPAREN;    break;
-	case ')': tok_lex.tok.type = RPAREN;    break;
-	case '?': tok_lex.tok.type = TERNARY;   break;
-	case '.': tok_lex.tok.type = DOT;       break;
+	case ':': tok_lex.tok.type = COLON;         break;
+	case ',': tok_lex.tok.type = COMMA;         break;
+	case ';': tok_lex.tok.type = SEMICOLON;     break;
+	case '{': tok_lex.tok.type = LBRACE;        break;
+	case '}': tok_lex.tok.type = RBRACE;        break;
+	case '(': tok_lex.tok.type = LPAREN;        break;
+	case ')': tok_lex.tok.type = RPAREN;        break;
+	case '?': tok_lex.tok.type = TERNARY;       break;
+	case '.': tok_lex.tok.type = DOT;           break;
+	case '~': tok_lex.tok.type = BIT_NEGATION;  break;
 
 	//not really a valid token but used in preprocessor and for having correct
 	//file and line numbers in error messages
@@ -83,7 +84,7 @@ start:
 				lex_error(lex_state, "invalid token\n");
 
 			free(lex_state->cur_file);
-			lex_state->cur_file = mystrdup(tok_lex.tok.v.id); //think about when to free this;
+			lex_state->cur_file = mystrdup(tok_lex.tok.v.id);
 			free(tok_lex.tok.v.id);
 			goto start;
 		}
@@ -183,9 +184,12 @@ start:
 		HANDLE_BACKSLASH();
 		if (c == '|') {
 			tok_lex.tok.type = LOGICAL_OR;
+		} else if (c == '=') {
+			tok_lex.tok.type = BIT_OR_EQUAL;
 		} else {
-			fprintf(stderr, "Error: BITWISE_OR not supported yet\n");
-			exit(0);
+			ungetc(c, file);
+			lex_state->cur_pos--;
+			tok_lex.tok.type = BIT_OR;
 		}
 		break;
 		  	  
@@ -193,9 +197,23 @@ start:
 		HANDLE_BACKSLASH();
 		if (c == '&') {
 			tok_lex.tok.type = LOGICAL_AND;
+		} else if (c == '=') {
+			tok_lex.tok.type = BIT_AND_EQUAL;
 		} else {
-			fprintf(stderr, "Error: BITWISE_AND not supported yet\n");
-			exit(0);
+			ungetc(c, file);
+			lex_state->cur_pos--;
+			tok_lex.tok.type = BIT_AND;
+		}
+		break;
+
+	case '^':
+		HANDLE_BACKSLASH();
+		if (c == '=') {
+			tok_lex.tok.type = BIT_XOR_EQUAL;
+		} else {
+			ungetc(c, file);
+			lex_state->cur_pos--;
+			tok_lex.tok.type = BIT_XOR;
 		}
 		break;
 
@@ -215,6 +233,15 @@ start:
 		HANDLE_BACKSLASH();
 		if (c == '=') {
 			tok_lex.tok.type = LTEQ;
+		} else if (c == '<') {
+			HANDLE_BACKSLASH();
+			if (c == '=') {
+				tok_lex.tok.type = LSHIFT_EQUAL;
+			} else {
+				ungetc(c, file);
+				lex_state->cur_pos--;
+				tok_lex.tok.type = LEFT_SHIFT;
+			}
 		} else {
 			ungetc(c, file);
 			lex_state->cur_pos--;
@@ -226,6 +253,15 @@ start:
 		HANDLE_BACKSLASH();
 		if (c == '=') {
 			tok_lex.tok.type = GTEQ;
+		} else if (c == '>') {
+			HANDLE_BACKSLASH();
+			if (c == '=') {
+				tok_lex.tok.type = RSHIFT_EQUAL;
+			} else {
+				ungetc(c, file);
+				lex_state->cur_pos--;
+				tok_lex.tok.type = RIGHT_SHIFT;
+			}
 		} else {
 			ungetc(c, file);
 			lex_state->cur_pos--;
@@ -245,6 +281,10 @@ start:
 		break;
 
 	default:
+		
+		//TODO should +532 and -12321 be handled
+		//as literals or unary +/- and 2 positive literals?
+		//and what about hex and oct literals?  crap
 		if (isdigit(c)) {
 			while (isdigit(c)) {
 				token_buf[i++] = c;
@@ -430,15 +470,16 @@ start:
 
 //	printf("getting token starting with '%c'\n", c);
 	switch (*c) {
-	case ':': tok_lex.tok.type = COLON;     break;
-	case ',': tok_lex.tok.type = COMMA;     break;
-	case ';': tok_lex.tok.type = SEMICOLON; break;
-	case '{': tok_lex.tok.type = LBRACE;    break;
-	case '}': tok_lex.tok.type = RBRACE;    break;
-	case '(': tok_lex.tok.type = LPAREN;    break;
-	case ')': tok_lex.tok.type = RPAREN;    break;
-	case '?': tok_lex.tok.type = TERNARY;   break;
-	case '.': tok_lex.tok.type = DOT;       break;
+	case ':': tok_lex.tok.type = COLON;         break;
+	case ',': tok_lex.tok.type = COMMA;         break;
+	case ';': tok_lex.tok.type = SEMICOLON;     break;
+	case '{': tok_lex.tok.type = LBRACE;        break;
+	case '}': tok_lex.tok.type = RBRACE;        break;
+	case '(': tok_lex.tok.type = LPAREN;        break;
+	case ')': tok_lex.tok.type = RPAREN;        break;
+	case '?': tok_lex.tok.type = TERNARY;       break;
+	case '.': tok_lex.tok.type = DOT;           break;
+	case '~': tok_lex.tok.type = BIT_NEGATION;  break;
 
 	//not really a valid token but used in preprocessor and for having correct
 	//file and line numbers in error messages
@@ -558,9 +599,12 @@ start:
 		HANDLE_BACKSLASH_STR();
 		if (*c == '|') {
 			tok_lex.tok.type = LOGICAL_OR;
+		} else if (*c == '=') {
+			tok_lex.tok.type = BIT_OR_EQUAL;
 		} else {
-			fprintf(stderr, "Error: BITWISE_OR not supported yet\n");
-			exit(0);
+			--c;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = BIT_OR;
 		}
 		break;
 		  	  
@@ -568,9 +612,23 @@ start:
 		HANDLE_BACKSLASH_STR();
 		if (*c == '&') {
 			tok_lex.tok.type = LOGICAL_AND;
+		} else if (*c == '=') {
+			tok_lex.tok.type = BIT_AND_EQUAL;
 		} else {
-			fprintf(stderr, "Error: BITWISE_AND not supported yet\n");
-			exit(0);
+			--c;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = BIT_AND;
+		}
+		break;
+
+	case '^':
+		HANDLE_BACKSLASH_STR();
+		if (*c == '=') {
+			tok_lex.tok.type = BIT_XOR_EQUAL;
+		} else {
+			--c;
+			lex_state->cur_pos--;
+			tok_lex.tok.type = BIT_XOR;
 		}
 		break;
 
@@ -590,6 +648,15 @@ start:
 		HANDLE_BACKSLASH_STR();
 		if (*c == '=') {
 			tok_lex.tok.type = LTEQ;
+		} else if (*c == '<') {
+			HANDLE_BACKSLASH_STR();
+			if (*c == '=') {
+				tok_lex.tok.type = LSHIFT_EQUAL;
+			} else {
+				--c;
+				lex_state->cur_pos--;
+				tok_lex.tok.type = LEFT_SHIFT;
+			}
 		} else {
 			--c;
 			lex_state->cur_pos--;
@@ -601,6 +668,15 @@ start:
 		HANDLE_BACKSLASH_STR();
 		if (*c == '=') {
 			tok_lex.tok.type = GTEQ;
+		} else if (*c == '>') {
+			HANDLE_BACKSLASH_STR();
+			if (*c == '=') {
+				tok_lex.tok.type = RSHIFT_EQUAL;
+			} else {
+				--c;
+				lex_state->cur_pos--;
+				tok_lex.tok.type = RIGHT_SHIFT;
+			}
 		} else {
 			--c;
 			lex_state->cur_pos--;
@@ -816,14 +892,28 @@ void print_token(token_value* tok, FILE* file, int print_enum)
 			case RBRACE:           fprintf(file, "RBRACE");     break;
 			case INCREMENT:        fprintf(file, "INCREMENT");     break;
 			case DECREMENT:        fprintf(file, "DECREMENT");     break;
-			case TERNARY:          fprintf(file, "TERNARY");     break;
 
+			case LEFT_SHIFT:       fprintf(file, "LEFT_SHIFT");    break;
+			case RIGHT_SHIFT:      fprintf(file, "RIGHT_SHIFT");    break;
+			case BIT_AND:          fprintf(file, "BIT_AND");     break;
+			case BIT_OR:           fprintf(file, "BIT_OR");     break;
+			case BIT_XOR:          fprintf(file, "BIT_XOR");     break;
+			case BIT_NEGATION:     fprintf(file, "BIT_NEGATION");     break;
+
+			case TERNARY:          fprintf(file, "TERNARY");     break;
 
 			case ADDEQUAL:         fprintf(file, "ADDEQUAL");     break;
 			case SUBEQUAL:         fprintf(file, "SUBEQUAL");     break;
 			case MULTEQUAL:        fprintf(file, "MULTEQUAL");     break;
 			case DIVEQUAL:         fprintf(file, "DIVEQUAL");     break;
 			case MODEQUAL:         fprintf(file, "MODEQUAL");     break;
+			case LSHIFT_EQUAL:     fprintf(file, "LSHIFT_EQUAL");     break;
+			case RSHIFT_EQUAL:     fprintf(file, "RSHIFT_EQUAL");     break;
+			case BIT_AND_EQUAL:    fprintf(file, "BIT_AND_EQUAL");     break;
+			case BIT_OR_EQUAL:     fprintf(file, "BIT_OR_EQUAL");     break;
+			case BIT_XOR_EQUAL:    fprintf(file, "BIT_XOR_EQUAL");     break;
+
+
 			case INT_LITERAL:      fprintf(file, "INT_LITERAL = %d\n", tok->v.int_val);     break;
 			case FLOAT_LITERAL:    fprintf(file, "FLOAT_LITERAL = %f\n", tok->v.float_val);     break;
 			case DOUBLE_LITERAL:   fprintf(file, "DOUBLE_LITERAL = %f\n", tok->v.double_val);     break;
@@ -888,8 +978,16 @@ void print_token(token_value* tok, FILE* file, int print_enum)
 			case RBRACKET:         fprintf(file, "]");     break;
 			case LBRACE:           fprintf(file, "{");     break;
 			case RBRACE:           fprintf(file, "}");     break;
-			case INCREMENT:        fprintf(file, "++");     break;
-			case DECREMENT:        fprintf(file, "--");     break;
+			case INCREMENT:        fprintf(file, "++");    break;
+			case DECREMENT:        fprintf(file, "--");    break;
+
+			case LEFT_SHIFT:       fprintf(file, "<<");    break;
+			case RIGHT_SHIFT:      fprintf(file, ">>");    break;
+			case BIT_AND:          fprintf(file, "&");     break;
+			case BIT_OR:           fprintf(file, "|");     break;
+			case BIT_XOR:          fprintf(file, "^");     break;
+			case BIT_NEGATION:     fprintf(file, "~");     break;
+
 			case TERNARY:          fprintf(file, "?");     break;
 
 
@@ -897,7 +995,13 @@ void print_token(token_value* tok, FILE* file, int print_enum)
 			case SUBEQUAL:         fprintf(file, "-=");     break;
 			case MULTEQUAL:        fprintf(file, "*=");     break;
 			case DIVEQUAL:         fprintf(file, "/=");     break;
-			case MODEQUAL:         fprintf(file, "%%=");     break;
+			case MODEQUAL:         fprintf(file, "%%=");    break;
+			case LSHIFT_EQUAL:     fprintf(file, "<<=");    break;
+			case RSHIFT_EQUAL:     fprintf(file, ">>=");    break;
+			case BIT_AND_EQUAL:    fprintf(file, "&=");     break;
+			case BIT_OR_EQUAL:     fprintf(file, "|=");     break;
+			case BIT_XOR_EQUAL:    fprintf(file, "^=");     break;
+
 			case INT_LITERAL:      fprintf(file, "%d", tok->v.int_val);     break;
 			case FLOAT_LITERAL:    fprintf(file, "%f", tok->v.float_val);     break;
 			case DOUBLE_LITERAL:   fprintf(file, "%f", tok->v.double_val);     break;
@@ -968,6 +1072,13 @@ int print_token_to_str(token_value* tok, char* buf, size_t size)
 		case RBRACE:           return snprintf(buf, size, "}");
 		case INCREMENT:        return snprintf(buf, size, "++");
 		case DECREMENT:        return snprintf(buf, size, "--");
+		case LEFT_SHIFT:       return snprintf(buf, size, "<<");
+		case RIGHT_SHIFT:      return snprintf(buf, size, ">>");
+		case BIT_AND:          return snprintf(buf, size, "&");
+		case BIT_OR:           return snprintf(buf, size, "|");
+		case BIT_XOR:          return snprintf(buf, size, "^");
+		case BIT_NEGATION:     return snprintf(buf, size, "~");
+
 		case TERNARY:          return snprintf(buf, size, "?");
 
 
@@ -976,6 +1087,12 @@ int print_token_to_str(token_value* tok, char* buf, size_t size)
 		case MULTEQUAL:        return snprintf(buf, size, "*=");
 		case DIVEQUAL:         return snprintf(buf, size, "/=");
 		case MODEQUAL:         return snprintf(buf, size, "%%=");
+		case LSHIFT_EQUAL:     return snprintf(buf, size, "<<=");
+		case RSHIFT_EQUAL:     return snprintf(buf, size, ">>=");
+		case BIT_AND_EQUAL:    return snprintf(buf, size, "&=");
+		case BIT_OR_EQUAL:     return snprintf(buf, size, "|=");
+		case BIT_XOR_EQUAL:    return snprintf(buf, size, "^=");
+
 		case INT_LITERAL:      return snprintf(buf, size, "%d", tok->v.int_val);
 		case FLOAT_LITERAL:    return snprintf(buf, size, "%f", tok->v.float_val);
 		case DOUBLE_LITERAL:   return snprintf(buf, size, "%f", tok->v.double_val);

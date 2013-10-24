@@ -76,13 +76,15 @@ initialized_declarator    -> identifier
                           -> identifier '=' assign_expr
 
 declaration_specifier     -> char, signed char
-                             unsigned char
-                             short, short int, signed short int
-                             unsigned short, unsigned short int
+                             short, short int, signed short, signed short int
                              int, signed int, signed
+                             long, long int, signed long, signed long int
+
+                             unsigned char
+                             unsigned short, unsigned short int
                              unsigned, unsigned int
-                             long, long int, signed long int
                              unsigned long, unsigned long int
+
                              float
                              double
 
@@ -158,22 +160,34 @@ cond_expr                 -> logical_or_expr
 logical_or_expr           -> logical_and_expr
                              logical_or_expr '||' logical_and_expr
 
-logical_and_expr          -> equality_expr
-                             logical_and_expr '&&' equality_expr
+logical_and_expr          -> bit_or_expr
+                             logical_and_expr '&&' bit_or_expr
+
+bit_or_expr               -> bit_xor_expr
+                             bit_or_expr '|' bit_xor_expr
+
+bit_xor_expr              -> bit_and_expr
+                          -> bit_xor_expr '^' bit_and_expr
+
+bit_and_expr              -> equality_expr
+                          -> bit_and_expr '&' equality_expr
 
 equality_expr             -> relational_expr
                              equality_expr '==' relational_expr
                              equality_expr '!=' relational_expr
 
-relational_expr           -> add_expr
-                             relational_expr relational_op add_expr
+relational_expr           -> shift_expr
+                             relational_expr relational_op shift_expr
 
 relational_op             -> one of '<' '>' '<=' '>='
 
-add_expr                  -> mult_expr
-                             add_expr add_op mult_expr
+shift_expr                -> add_expr
+                             shift_expr '<<' add_expr
+                             shift_expr '>>' add_expr
 
-add_op                    -> one of '+' '-'
+add_expr                  -> mult_expr
+                             add_expr '+' mult_expr
+                             add_expr '-' mult_expr
 
 mult_expr                 -> unary_expr
                              mult_expr mult_op unary_expr
@@ -181,6 +195,7 @@ mult_expr                 -> unary_expr
 mult_op                   -> one of '*' '/' '%'
 
 unary_expr                -> postfix_expr
+                             bit_negation_expr
                              logical_negation_expr
                              preincrement_expr
                              predecrement_expr
@@ -190,6 +205,7 @@ predecrement_expr         -> '--' unary_expr
 
 logical_negation_expr     -> '!' unary_expr
 
+bit_negation_expr         -> '~' unary_expr
 
 postfix_expr              -> function_call
                              primary_expr

@@ -214,40 +214,60 @@ var_value execute_expr(program_state* prog, expression* e)
 	switch (e->tok.type) {
 	case EXP:          return execute_expr(prog, e->left);
 
-//binary operations
-	case ADD:
-	case SUB:
+//operations in highest to lowest precedence groups
+
+	case FUNC_CALL:
+		break;
+
+	case POST_INCREMENT:
+	case POST_DECREMENT:
+
+
+	case PRE_INCREMENT:
+	case PRE_DECREMENT:
+		var = look_up_value(prog, e->left->tok.v.id, BOTH);
+		break;
+
+	case LOGICAL_NEGATION:
+	case BIT_NEGATION:
+		left = execute_expr(prog, e->left);
+		break;
+	
+
 	case MULT:
 	case DIV:
 	case MOD:
+
+	case ADD:
+	case SUB:
+	
+	case LEFT_SHIFT:
+	case RIGHT_SHIFT:
 
 	case GREATER:
 	case LESS:
 	case GTEQ:
 	case LTEQ:
+
 	case NOTEQUAL:
 	case EQUALEQUAL:
-	case LOGICAL_OR:
-	case LOGICAL_AND:
-	case COMMA:
 
+	case BIT_AND:
+	
+	case BIT_XOR:
+	
+	case BIT_OR:
+
+	case LOGICAL_AND:
+
+	case LOGICAL_OR:
 		left = execute_expr(prog, e->left);
 		right = execute_expr(prog, e->right);
-
 		break;
-
 
 	case TERNARY:
 		left = execute_expr(prog, e->right->left);
 		right = execute_expr(prog, e->right->right);
-		break;
-
-
-	case PRE_INCREMENT:
-	case PRE_DECREMENT:
-	case POST_INCREMENT:
-	case POST_DECREMENT:
-		var = look_up_value(prog, e->left->tok.v.id, BOTH);
 		break;
 
 	case EQUAL:
@@ -256,17 +276,23 @@ var_value execute_expr(program_state* prog, expression* e)
 	case MULTEQUAL:
 	case DIVEQUAL:
 	case MODEQUAL:
+	case BIT_AND_EQUAL:
+	case BIT_OR_EQUAL:
+	case BIT_XOR_EQUAL:
+	case LSHIFT_EQUAL:
+	case RSHIFT_EQUAL:
 		right = execute_expr(prog, e->right);
 		var = look_up_value(prog, e->left->tok.v.id, BOTH);
 		break;
 
-	case LOGICAL_NEGATION:
+	case COMMA:
 		left = execute_expr(prog, e->left);
+		right = execute_expr(prog, e->right);
 		break;
 
-	case FUNC_CALL:
-		break;
-
+		//bottom of precedence stack
+		//you could argue ID's and literals are the top
+		//of the stack but whatever, they're not operators
 
 	case ID:
 		var = look_up_value(prog, e->tok.v.id, BOTH);
@@ -311,6 +337,11 @@ var_value execute_expr(program_state* prog, expression* e)
 	case LTEQ:            BINARY_OP(left_ptr, <=, right_ptr);    break;
 	case NOTEQUAL:        BINARY_OP(left_ptr, !=, right_ptr);    break;
 	case EQUALEQUAL:      BINARY_OP(left_ptr, ==, right_ptr);    break;
+
+	case BIT_AND:         INTEGRAL_BINARY_OP(left_ptr, &, right_ptr);    break;
+	case BIT_XOR:         INTEGRAL_BINARY_OP(left_ptr, ^, right_ptr);    break;
+	case BIT_OR:          INTEGRAL_BINARY_OP(left_ptr, |, right_ptr);    break;
+
 	case LOGICAL_OR:      BINARY_OP(left_ptr, ||, right_ptr);    break;
 	case LOGICAL_AND:     BINARY_OP(left_ptr, &&, right_ptr);    break;
 
@@ -332,10 +363,18 @@ var_value execute_expr(program_state* prog, expression* e)
 	case SUBEQUAL:           BINARY_OP(var, -=, right_ptr);   break;
 	case MULTEQUAL:          BINARY_OP(var, *=, right_ptr);   break;
 	case DIVEQUAL:           BINARY_OP(var, /=, right_ptr);   break;
+
+	case BIT_AND_EQUAL:      INTEGRAL_BINARY_OP(var, &=, right_ptr);   break;
+	case BIT_OR_EQUAL:       INTEGRAL_BINARY_OP(var, |=, right_ptr);   break;
+	case BIT_XOR_EQUAL:      INTEGRAL_BINARY_OP(var, ^=, right_ptr);   break;
+	case LSHIFT_EQUAL:       INTEGRAL_BINARY_OP(var, <<=, right_ptr);   break;
+	case RSHIFT_EQUAL:       INTEGRAL_BINARY_OP(var, >>=, right_ptr);   break;
+
 	case MODEQUAL:           INTEGRAL_BINARY_OP(var, %=, right_ptr);   break;
 	
 
 	case LOGICAL_NEGATION:   PRE_OP(!, left_ptr);   break;
+	case BIT_NEGATION:       PRE_OP(~, left_ptr);   break;
 
 
 	case FUNC_CALL:

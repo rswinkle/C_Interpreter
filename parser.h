@@ -243,8 +243,12 @@ void assign_expr(parsing_state* p, program_state* prog, expression* e);
 void cond_expr(parsing_state* p, program_state* prog, expression* e);
 void logical_or_expr(parsing_state* p, program_state* prog, expression* e);
 void logical_and_expr(parsing_state* p, program_state* prog, expression* e);
+void bitwise_or_expr(parsing_state* p, program_state* prog, expression* e);
+void bitwise_xor_expr(parsing_state* p, program_state* prog, expression* e);
+void bitwise_and_expr(parsing_state* p, program_state* prog, expression* e);
 void equality_expr(parsing_state* p, program_state* prog, expression* e);
 void relational_expr(parsing_state* p, program_state* prog, expression* e);
+void shift_expr(parsing_state* p, program_state* prog, expression* e);
 
 void add_expr(parsing_state* p, program_state* prog, expression* exp);
 void mult_expr(parsing_state* p, program_state* prog, expression* exp);

@@ -294,18 +294,29 @@ void top_level_declaration(parsing_state* p, program_state* prog)
 		else
 			function_definition(p, prog);
 	} else {
-		parse_error(peek_token(p, 0), "Error parsing top_level_declaration, declaration_specifier expected\n");
+		parse_error(peek_token(p, 0), "Error parsing top_level_declaration, declaration_specifier expected,");
 		exit(0);
 	}
 }
 
 
-
+/* function_definition -> function_declarator ';'  <- function declaration/prototype
+ *                        function_declarator compound_statement
+ */
 void function_definition(parsing_state* p, program_state* prog)
 {
 	var_type vtype = declaration_specifier(p, prog, 1, NULL);
 
 	function_declarator(p, prog, vtype);
+
+	token_value* tok = peek_token(p, 0);
+	if (tok->type == SEMICOLON) {
+		get_token(p);
+		return;
+	} else if (tok->type != LBRACE) {
+		parse_error(tok, "expected ; or { for function declaration or definition, ");
+		exit(0);
+	}
 
 	vec_str(&prog->func->labels, 0, 10);
 	vec_i(&prog->func->label_locs, 0, 10);
@@ -385,6 +396,7 @@ void parameter_list(parsing_state* p, program_state* prog)
 	}
 	
 	parameter_declaration(p, prog);
+
 	tok = peek_token(p, 0);
 	while (tok->type == COMMA) {
 		get_token(p);
@@ -469,17 +481,23 @@ void storage_specifier(parsing_state* p, program_state* prog, int match)
 }
 */
 
-/* equivalenct names (and only names accepted, no mixing the order):
+/* equivalent names (and only names accepted, no mixing the order):
  *
  * char, signed char
  * short, short int, signed short, signed short int
  * int, signed int, signed
  * long, long int, signed long, signed long int
+ * long long, long long int, signed long long, signed long long int //TODO
  *
  * unsigned char
  * unsigned short, unsigned short int
  * unsigned, unsigned int
  * unsigned long, unsigned long int
+ * unsigned long long, unsigned long long int //TODO
+ *
+ * float
+ * double
+ * long double //TODO
  */
 var_type declaration_specifier(parsing_state* p, program_state* prog, int match, int* tokens)
 {
@@ -1285,7 +1303,9 @@ void comma_expr(parsing_state* p, program_state* prog, expression* e)
 int assignment_operator(Token tok)
 {
 	return (tok == EQUAL || tok == ADDEQUAL || tok == SUBEQUAL ||
-	        tok == MULTEQUAL || tok == DIVEQUAL || tok == MODEQUAL);
+	        tok == MULTEQUAL || tok == DIVEQUAL || tok == MODEQUAL ||
+			tok == BIT_AND_EQUAL || tok == BIT_OR_EQUAL ||
+			tok == BIT_XOR_EQUAL || tok == LSHIFT_EQUAL || tok == RSHIFT_EQUAL);
 }
 
 /* assign_expr -> cond_expr | identifer assign_op assign_expr */
@@ -1372,7 +1392,7 @@ void cond_expr(parsing_state* p, program_state* prog, expression* e)
 		e->right->left = make_expression(prog);
 		expr(p, prog, e->right->left);
 		if (peek_token(p, 0)->type != COLON) {
-			parse_error(peek_token(p, 0), "in ternary expression expected COLON\n");
+			parse_error(peek_token(p, 0), "in ternary expression expected :");
 			exit(0);
 		}
 		get_token(p);
@@ -1400,19 +1420,68 @@ void logical_or_expr(parsing_state* p, program_state* prog, expression* e)
 }
 
 
-/* logical_and_expr -> bitwise_or_expr
- *                     logical_and_expr '&&' bitwise_or_expr
- * logical_and_expr -> equality_expr { '&&' equality_expr }
- */
+/* logical_and_expr -> bitwise_or_expr { '&&' bitwise_or_expr } */
 void logical_and_expr(parsing_state* p, program_state* prog, expression* e)
 {
-	equality_expr(p, prog, e);
+	bitwise_or_expr(p, prog, e);
 
 	while (peek_token(p, 0)->type == LOGICAL_AND) {
 		get_token(p);
 
 		e->left = copy_expr(prog, e);
 		e->tok.type = LOGICAL_AND;
+
+		e->right = make_expression(prog);
+		
+		bitwise_or_expr(p, prog, e->right);
+	}
+}
+
+
+/* bitwise_or_expr -> bitwise_xor_expr { '|' bitwise_xor_expr } */
+void bitwise_or_expr(parsing_state* p, program_state* prog, expression* e)
+{
+	bitwise_xor_expr(p, prog, e);
+
+	while (peek_token(p, 0)->type == BIT_OR) {
+		get_token(p);
+
+		e->left = copy_expr(prog, e);
+		e->tok.type = BIT_OR;
+
+		e->right = make_expression(prog);
+		
+		bitwise_xor_expr(p, prog, e->right);
+	}
+}
+
+/* bitwise_xor_expr -> bitwise_and_expr { '^' bitwise_and_expr } */
+void bitwise_xor_expr(parsing_state* p, program_state* prog, expression* e)
+{
+	bitwise_and_expr(p, prog, e);
+
+	while (peek_token(p, 0)->type == BIT_XOR) {
+		get_token(p);
+
+		e->left = copy_expr(prog, e);
+		e->tok.type = BIT_XOR;
+
+		e->right = make_expression(prog);
+		
+		bitwise_and_expr(p, prog, e->right);
+	}
+}
+
+/* bitwise_and_expr -> equality_expr { '&' equality_expr } */
+void bitwise_and_expr(parsing_state* p, program_state* prog, expression* e)
+{
+	equality_expr(p, prog, e);
+
+	while (peek_token(p, 0)->type == BIT_AND) {
+		get_token(p);
+
+		e->left = copy_expr(prog, e);
+		e->tok.type = BIT_AND;
 
 		e->right = make_expression(prog);
 		
@@ -1438,15 +1507,31 @@ void equality_expr(parsing_state* p, program_state* prog, expression* e)
 	}
 }
 
-
+/* relational_expr -> shift_expr { relational_op shift_expr } */
 void relational_expr(parsing_state* p, program_state* prog, expression* e)
 {
-	//skiping shift operators would be shift_expr() here
-	//
-	add_expr(p, prog, e);
+	shift_expr(p, prog, e);
 
 	token_value* tok = peek_token(p, 0);
 	while (tok->type == GREATER || tok->type == GTEQ || tok->type == LESS || tok->type == LTEQ) {
+		get_token(p);
+		e->left = copy_expr(prog, e);
+		e->tok.type = tok->type;
+
+		e->right = make_expression(prog);
+		shift_expr(p, prog, e->right);
+		
+		tok = peek_token(p, 0);
+	}
+}
+
+/* shift_expr -> add_expr { shift_op add_expr } */
+void shift_expr(parsing_state* p, program_state* prog, expression* e)
+{
+	add_expr(p, prog, e);
+
+	token_value* tok = peek_token(p, 0);
+	while (tok->type == LEFT_SHIFT || tok->type == RIGHT_SHIFT) {
 		get_token(p);
 		e->left = copy_expr(prog, e);
 		e->tok.type = tok->type;
@@ -1503,14 +1588,32 @@ void mult_expr(parsing_state* p, program_state* prog, expression* e)
 void unary_expr(parsing_state* p, program_state* prog, expression* e)
 {
 	switch (peek_token(p, 0)->type) {
+	case ADD:   //unary +, -
+	case SUB:
+	case LOGICAL_NEGATION:
+	case BIT_NEGATION:
+		e->tok.type = get_token(p)->type; //match
+		e->left = make_expression(prog);
+
+		unary_expr(p, prog, e->left);
+		break;
+
+		/*
 	case LOGICAL_NEGATION:
 		logical_negation_expr(p, prog, e);
 		break;
+		
+
+	case BIT_NEGATION:
+		bit_negation_expr(p, prog, e);
+		break;
+		*/
 
 	case INCREMENT:
 	case DECREMENT:
 		pre_inc_decrement_expr(p, prog, e);
 		break;
+
 
 	default:
 		postfix_expr(p, prog, e);
@@ -1826,7 +1929,7 @@ void parse_error(token_value* tok, char *str, ...)
 	fprintf(stderr, "Parse Error: ");
 	vfprintf(stderr, str, args);
 	if (tok) {
-		fprintf(stderr, "Got ");
+		fprintf(stderr, ", got ");
 		print_token(tok, stderr, 0);
 		token_lex* lex = (token_lex*)tok;
 		fprintf(stderr, " at line %u, position %u\n", lex->line, lex->pos);
