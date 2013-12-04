@@ -53,7 +53,7 @@ typedef struct var_value
 	var_type type;
 	union {
 		char char_val;
-		signed schar_val; // <- because plain char can be signed or unsigned
+		signed char schar_val; // <- because plain char can be signed or unsigned
 		unsigned char uchar_val;
 		short short_val;
 		unsigned short ushort_val;
@@ -67,7 +67,6 @@ typedef struct var_value
 		unsigned int func_loc; //change to direct pointer?
 		unsigned int ptr;
 	} v;
-//	list_head list;
 } var_value;
 	
 #define GET_VAR_VALUE(VEC, I) GET_VOID(VEC, var_value, I)

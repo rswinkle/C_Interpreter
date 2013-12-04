@@ -55,6 +55,12 @@ int main()
 		//
 		//as long as there are only integer literals in the chain I think
 		//it should be accempted even though technically comma_expr allows assign_expr
+		//
+		//Update, according to pg 251 of C: A Reference Manual
+		//"No constant expression may contain assignment, increment, decrement, function call,
+		//or comma expressions unless they are contained within the operand of a sizeof operator."
+		//
+		//oh well I'm leaving it in
 		case (2, 3, 12):
 			printf("%d\n", 12);
 			break;

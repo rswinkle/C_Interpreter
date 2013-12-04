@@ -500,6 +500,7 @@ var_value execute_constant_expr(program_state* prog, expression* e)
 	case LOGICAL_OR:      BINARY_OP(left_ptr, ||, right_ptr);    break;
 	case LOGICAL_AND:     BINARY_OP(left_ptr, &&, right_ptr);    break;
 
+	//according to pg 251 this shouldn't be here, see ./tests/switch.c
 #define MYCOMMA ,
 	case COMMA:           BINARY_OP(left_ptr, MYCOMMA, right_ptr);    break;
 #undef MYCOMMA
