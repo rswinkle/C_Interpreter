@@ -5,6 +5,9 @@
 #define CVECTOR_IMPLEMENTATION
 #include "cvector.h"
 
+#define VECTOR_token_lex_IMPLEMENTATION
+#include "vector_token_lex.h"
+
 #include <stdio.h>
 
 

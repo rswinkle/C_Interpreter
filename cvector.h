@@ -8,6 +8,10 @@
 #include <stdio.h>
 #include <assert.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** Data structure for int vector. */
 typedef struct vector_i
 {
@@ -161,6 +165,10 @@ void clear_void(vector_void* vec);
 void free_vec_void_heap(void* vec);
 void free_vec_void(void* vec);
 
+#ifdef __cplusplus
+}
+#endif
+
 /* header ends */
 #endif 
 
@@ -174,7 +182,7 @@ size_t VEC_I_START_SZ = 50;
 vector_i* vec_i_heap(size_t size, size_t capacity)
 {
 	vector_i* vec;
-	if (!(vec = malloc(sizeof(vector_i)))) {
+	if (!(vec = (vector_i*)malloc(sizeof(vector_i)))) {
 		assert(vec != NULL);
 		return NULL;
 	}
@@ -182,7 +190,7 @@ vector_i* vec_i_heap(size_t size, size_t capacity)
 	vec->size = (size > 0) ? size : 0;
 	vec->capacity = (capacity > vec->size || (vec->size && capacity == vec->size)) ? capacity : vec->size + VEC_I_START_SZ;
 
-	if (!(vec->a = malloc(vec->capacity*sizeof(int)))) {
+	if (!(vec->a = (int*)malloc(vec->capacity*sizeof(int)))) {
 		assert(vec->a != NULL);
 		free(vec);
 		return NULL;
@@ -195,14 +203,14 @@ vector_i* init_vec_i_heap(int* vals, size_t num)
 {
 	vector_i* vec;
 	
-	if (!(vec = malloc(sizeof(vector_i)))) {
+	if (!(vec = (vector_i*)malloc(sizeof(vector_i)))) {
 		assert(vec != NULL);
 		return NULL;
 	}
 
 	vec->capacity = num + VEC_I_START_SZ;
 	vec->size = num;
-	if (!(vec->a = malloc(vec->capacity*sizeof(int)))) {
+	if (!(vec->a = (int*)malloc(vec->capacity*sizeof(int)))) {
 		assert(vec->a != NULL);
 		free(vec);
 		return NULL;
@@ -218,7 +226,7 @@ int vec_i(vector_i* vec, size_t size, size_t capacity)
 	vec->size = (size > 0) ? size : 0;
 	vec->capacity = (capacity > vec->size || (vec->size && capacity == vec->size)) ? capacity : vec->size + VEC_I_START_SZ;
 
-	if (!(vec->a = malloc(vec->capacity*sizeof(int)))) {
+	if (!(vec->a = (int*)malloc(vec->capacity*sizeof(int)))) {
 		assert(vec->a != NULL);
 		vec->size = vec->capacity = 0;
 		return 0;
@@ -231,7 +239,7 @@ int init_vec_i(vector_i* vec, int* vals, size_t num)
 {
 	vec->capacity = num + VEC_I_START_SZ;
 	vec->size = num;
-	if (!(vec->a = malloc(vec->capacity*sizeof(int)))) {
+	if (!(vec->a = (int*)malloc(vec->capacity*sizeof(int)))) {
 		assert(vec->a != NULL);
 		vec->size = vec->capacity = 0;
 		return 0;
@@ -244,14 +252,14 @@ int init_vec_i(vector_i* vec, int* vals, size_t num)
 
 void vec_i_copy(void* dest, void* src)
 {
-	vector_i* vec1 = dest;
-	vector_i* vec2 = src;
+	vector_i* vec1 = (vector_i*)dest;
+	vector_i* vec2 = (vector_i*)src;
 	
 	vec1->size = 0;
 	vec1->capacity = 0;
 	
 	
-	if (!(vec1->a = malloc(vec2->capacity*sizeof(int)))) {
+	if (!(vec1->a = (int*)malloc(vec2->capacity*sizeof(int)))) {
 		assert(vec1->a != NULL);
 		return;
 	}
@@ -263,11 +271,11 @@ void vec_i_copy(void* dest, void* src)
 
 int push_i(vector_i* vec, int a)
 {
-	void* tmp;
+	int* tmp;
 	size_t tmp_sz;
 	if (vec->capacity == vec->size) {
 		tmp_sz = VEC_I_ALLOCATOR(vec->capacity);
-		if (!(tmp = realloc(vec->a, sizeof(int)*tmp_sz))) {
+		if (!(tmp = (int*)realloc(vec->a, sizeof(int)*tmp_sz))) {
 			assert(tmp != NULL);
 			return 0;
 		}
@@ -291,11 +299,11 @@ int* back_i(vector_i* vec)
 
 int extend_i(vector_i* vec, size_t num)
 {
-	void* tmp;
+	int* tmp;
 	size_t tmp_sz;
 	if (vec->capacity < vec->size + num) {
 		tmp_sz = vec->capacity + num + VEC_I_START_SZ;
-		if (!(tmp = realloc(vec->a, sizeof(int)*tmp_sz))) {
+		if (!(tmp = (int*)realloc(vec->a, sizeof(int)*tmp_sz))) {
 			assert(tmp != NULL);
 			return 0;
 		}
@@ -309,11 +317,11 @@ int extend_i(vector_i* vec, size_t num)
 
 int insert_i(vector_i* vec, size_t i, int a)
 {
-	void* tmp;
+	int* tmp;
 	size_t tmp_sz;
 	if (vec->capacity == vec->size) {
 		tmp_sz = VEC_I_ALLOCATOR(vec->capacity);
-		if (!(tmp = realloc(vec->a, sizeof(int)*tmp_sz))) {
+		if (!(tmp = (int*)realloc(vec->a, sizeof(int)*tmp_sz))) {
 			assert(tmp != NULL);
 			return 0;
 		}
@@ -329,11 +337,11 @@ int insert_i(vector_i* vec, size_t i, int a)
 
 int insert_array_i(vector_i* vec, size_t i, int* a, size_t num)
 {
-	void* tmp;
+	int* tmp;
 	size_t tmp_sz;
 	if (vec->capacity < vec->size + num) {
 		tmp_sz = vec->capacity + num + VEC_I_START_SZ;
-		if (!(tmp = realloc(vec->a, sizeof(int)*tmp_sz))) {
+		if (!(tmp = (int*)realloc(vec->a, sizeof(int)*tmp_sz))) {
 			assert(tmp != NULL);
 			return 0;
 		}
@@ -356,9 +364,9 @@ void erase_i(vector_i* vec, size_t start, size_t end)
 
 int reserve_i(vector_i* vec, size_t size)
 {
-	void* tmp;
+	int* tmp;
 	if (vec->capacity < size) {
-		if (!(tmp = realloc(vec->a, sizeof(int)*(size+VEC_I_START_SZ)))) {
+		if (!(tmp = (int*)realloc(vec->a, sizeof(int)*(size+VEC_I_START_SZ)))) {
 			assert(tmp != NULL);
 			return 0;
 		}
@@ -370,12 +378,12 @@ int reserve_i(vector_i* vec, size_t size)
 
 int set_capacity_i(vector_i* vec, size_t size)
 {
-	void* tmp;
+	int* tmp;
 	if (size < vec->size) {
 		vec->size = size;
 	}
 
-	if (!(tmp = realloc(vec->a, sizeof(int)*size))) {
+	if (!(tmp = (int*)realloc(vec->a, sizeof(int)*size))) {
 		assert(tmp != NULL);
 		return 0;
 	}
@@ -404,14 +412,14 @@ void clear_i(vector_i* vec) { vec->size = 0; }
 
 void free_vec_i_heap(void* vec)
 {
-	vector_i* tmp = vec;
+	vector_i* tmp = (vector_i*)vec;
 	free(tmp->a);
 	free(tmp);
 }
 
 void free_vec_i(void* vec)
 {
-	vector_i* tmp = vec;
+	vector_i* tmp = (vector_i*)vec;
 	free(tmp->a);
 	tmp->size = 0;
 	tmp->capacity = 0;
@@ -425,7 +433,7 @@ vector_d* vec_d_heap(size_t size, size_t capacity)
 {
 	vector_d* vec;
 	
-	if (!(vec = malloc(sizeof(vector_d)))) {
+	if (!(vec = (vector_d*)malloc(sizeof(vector_d)))) {
 		assert(vec != NULL);
 		return NULL;
 	}
@@ -433,7 +441,7 @@ vector_d* vec_d_heap(size_t size, size_t capacity)
 	vec->size = (size > 0) ? size : 0;
 	vec->capacity = (capacity > vec->size || (vec->size && capacity == vec->size)) ? capacity : vec->size + VEC_D_START_SZ;
 
-	if (!(vec->a = malloc(vec->capacity*sizeof(double)))) {
+	if (!(vec->a = (double*)malloc(vec->capacity*sizeof(double)))) {
 		assert(vec->a != NULL);
 		free(vec);
 		return NULL;
@@ -446,14 +454,14 @@ vector_d* init_vec_d_heap(double* vals, size_t num)
 {
 	vector_d* vec;
 	
-	if (!(vec = malloc(sizeof(vector_d)))) {
+	if (!(vec = (vector_d*)malloc(sizeof(vector_d)))) {
 		assert(vec != NULL);
 		return NULL;
 	}
 
 	vec->capacity = num + VEC_D_START_SZ;
 	vec->size = num;
-	if (!(vec->a = malloc(vec->capacity*sizeof(double)))) {
+	if (!(vec->a = (double*)malloc(vec->capacity*sizeof(double)))) {
 		assert(vec->a != NULL);
 		free(vec);
 		return NULL;
@@ -469,7 +477,7 @@ int vec_d(vector_d* vec, size_t size, size_t capacity)
 	vec->size = (size > 0) ? size : 0;
 	vec->capacity = (capacity > vec->size || (vec->size && capacity == vec->size)) ? capacity : vec->size + VEC_D_START_SZ;
 
-	if (!(vec->a = malloc(vec->capacity*sizeof(double)))) {
+	if (!(vec->a = (double*)malloc(vec->capacity*sizeof(double)))) {
 		assert(vec->a != NULL);
 		vec->size = vec->capacity = 0;
 		return 0;
@@ -482,7 +490,7 @@ int init_vec_d(vector_d* vec, double* vals, size_t num)
 {
 	vec->capacity = num + VEC_D_START_SZ;
 	vec->size = num;
-	if (!(vec->a = malloc(vec->capacity*sizeof(double)))) {
+	if (!(vec->a = (double*)malloc(vec->capacity*sizeof(double)))) {
 		assert(vec->a != NULL);
 		vec->size = vec->capacity = 0;
 		return 0;
@@ -495,14 +503,14 @@ int init_vec_d(vector_d* vec, double* vals, size_t num)
 
 void vec_d_copy(void* dest, void* src)
 {
-	vector_d* vec1 = dest;
-	vector_d* vec2 = src;
+	vector_d* vec1 = (vector_d*)dest;
+	vector_d* vec2 = (vector_d*)src;
 	
 	vec1->size = 0;
 	vec1->capacity = 0;
 	
 	
-	if (!(vec1->a = malloc(vec2->capacity*sizeof(double)))) {
+	if (!(vec1->a = (double*)malloc(vec2->capacity*sizeof(double)))) {
 		assert(vec1->a != NULL);
 		return;
 	}
@@ -514,11 +522,11 @@ void vec_d_copy(void* dest, void* src)
 
 int push_d(vector_d* vec, double a)
 {
-	void* tmp;
+	double* tmp;
 	size_t tmp_sz;
 	if (vec->capacity == vec->size) {
 		tmp_sz = VEC_D_ALLOCATOR(vec->capacity);
-		if (!(tmp = realloc(vec->a, sizeof(double)*tmp_sz))) {
+		if (!(tmp = (double*)realloc(vec->a, sizeof(double)*tmp_sz))) {
 			assert(tmp != NULL);
 			return 0;
 		}
@@ -541,11 +549,11 @@ double* back_d(vector_d* vec)
 
 int extend_d(vector_d* vec, size_t num)
 {
-	void* tmp;
+	double* tmp;
 	size_t tmp_sz;
 	if (vec->capacity < vec->size + num) {
 		tmp_sz = vec->capacity + num + VEC_D_START_SZ;
-		if (!(tmp = realloc(vec->a, sizeof(double)*tmp_sz))) {
+		if (!(tmp = (double*)realloc(vec->a, sizeof(double)*tmp_sz))) {
 			assert(tmp != NULL);
 			return 0;
 		}
@@ -559,11 +567,11 @@ int extend_d(vector_d* vec, size_t num)
 
 int insert_d(vector_d* vec, size_t i, double a)
 {
-	void* tmp;
+	double* tmp;
 	size_t tmp_sz;
 	if (vec->capacity == vec->size) {
 		tmp_sz = VEC_D_ALLOCATOR(vec->capacity);
-		if (!(tmp = realloc(vec->a, sizeof(double)*tmp_sz))) {
+		if (!(tmp = (double*)realloc(vec->a, sizeof(double)*tmp_sz))) {
 			assert(tmp != NULL);
 			return 0;
 		}
@@ -579,11 +587,11 @@ int insert_d(vector_d* vec, size_t i, double a)
 
 int insert_array_d(vector_d* vec, size_t i, double* a, size_t num)
 {
-	void* tmp;
+	double* tmp;
 	size_t tmp_sz;
 	if (vec->capacity < vec->size + num) {
 		tmp_sz = vec->capacity + num + VEC_D_START_SZ;
-		if (!(tmp = realloc(vec->a, sizeof(double)*tmp_sz))) {
+		if (!(tmp = (double*)realloc(vec->a, sizeof(double)*tmp_sz))) {
 			assert(tmp != NULL);
 			return 0;
 		}
@@ -606,9 +614,9 @@ void erase_d(vector_d* vec, size_t start, size_t end)
 
 int reserve_d(vector_d* vec, size_t size)
 {
-	void* tmp;
+	double* tmp;
 	if (vec->capacity < size) {
-		if (!(tmp = realloc(vec->a, sizeof(double)*(size+VEC_D_START_SZ)))) {
+		if (!(tmp = (double*)realloc(vec->a, sizeof(double)*(size+VEC_D_START_SZ)))) {
 			assert(tmp != NULL);
 			return 0;
 		}
@@ -620,11 +628,11 @@ int reserve_d(vector_d* vec, size_t size)
 
 int set_capacity_d(vector_d* vec, size_t size)
 {
-	void* tmp;
+	double* tmp;
 	if (size < vec->size)
 		vec->size = size;
 
-	if (!(tmp = realloc(vec->a, sizeof(double)*size))) {
+	if (!(tmp = (double*)realloc(vec->a, sizeof(double)*size))) {
 		assert(tmp != NULL);
 		return 0;
 	}
@@ -653,14 +661,14 @@ void clear_d(vector_d* vec) { vec->size = 0; }
 
 void free_vec_d_heap(void* vec)
 {
-	vector_d* tmp = vec;
+	vector_d* tmp = (vector_d*)vec;
 	free(tmp->a);
 	free(tmp);
 }
 
 void free_vec_d(void* vec)
 {
-	vector_d* tmp = vec;
+	vector_d* tmp = (vector_d*)vec;
 	free(tmp->a);
 	tmp->size = 0;
 	tmp->capacity = 0;
@@ -674,20 +682,20 @@ char* mystrdup(const char* str)
 {
 	
 	size_t len = strlen(str);
-	char* temp = calloc(len+1, sizeof(char));
+	char* temp = (char*)calloc(len+1, sizeof(char));
 	if (!temp) {
 		assert(temp != NULL);
 		return NULL;
 	}
 	
-	return memcpy(temp, str, len);  
+	return (char*)memcpy(temp, str, len);  
 }
 */
 
 vector_str* vec_str_heap(size_t size, size_t capacity)
 {
 	vector_str* vec;
-	if (!(vec = malloc(sizeof(vector_str)))) {
+	if (!(vec = (vector_str*)malloc(sizeof(vector_str)))) {
 		assert(vec != NULL);
 		return NULL;
 	}
@@ -696,7 +704,7 @@ vector_str* vec_str_heap(size_t size, size_t capacity)
 	vec->capacity = (capacity > vec->size || (vec->size && capacity == vec->size)) ? capacity : vec->size + VEC_STR_START_SZ;
 
 	
-	if (!(vec->a = calloc(vec->capacity, sizeof(char*)))) {
+	if (!(vec->a = (char**)calloc(vec->capacity, sizeof(char*)))) {
 		assert(vec->a != NULL);
 		free(vec);
 		return NULL;
@@ -710,14 +718,14 @@ vector_str* init_vec_str_heap(char** vals, size_t num)
 	vector_str* vec;
 	size_t i;
 	
-	if (!(vec = malloc(sizeof(vector_str)))) {
+	if (!(vec = (vector_str*)malloc(sizeof(vector_str)))) {
 		assert(vec != NULL);
 		return NULL;
 	}
 
 	vec->capacity = num + VEC_STR_START_SZ;
 	vec->size = num;
-	if (!(vec->a = malloc(vec->capacity*sizeof(char*)))) {
+	if (!(vec->a = (char**)malloc(vec->capacity*sizeof(char*)))) {
 		assert(vec->a != NULL);
 		free(vec);
 		return NULL;
@@ -736,7 +744,7 @@ int vec_str(vector_str* vec, size_t size, size_t capacity)
 	vec->capacity = (capacity > vec->size || (vec->size && capacity == vec->size)) ? capacity : vec->size + VEC_STR_START_SZ;
 
 	
-	if (!(vec->a = calloc(vec->capacity, sizeof(char*)))) {
+	if (!(vec->a = (char**)calloc(vec->capacity, sizeof(char*)))) {
 		assert(vec->a != NULL);
 		vec->size = vec->capacity = 0;
 		return 0;
@@ -751,7 +759,7 @@ int init_vec_str(vector_str* vec, char** vals, size_t num)
 	
 	vec->capacity = num + VEC_STR_START_SZ;
 	vec->size = num;
-	if (!(vec->a = malloc(vec->capacity*sizeof(char*)))) {
+	if (!(vec->a = (char**)malloc(vec->capacity*sizeof(char*)))) {
 		assert(vec->a != NULL);
 		vec->size = vec->capacity = 0;
 		return 0;
@@ -767,14 +775,14 @@ int init_vec_str(vector_str* vec, char** vals, size_t num)
 void vec_str_copy(void* dest, void* src)
 {
 	size_t i;
-	vector_str* vec1 = dest;
-	vector_str* vec2 = src;
+	vector_str* vec1 = (vector_str*)dest;
+	vector_str* vec2 = (vector_str*)src;
 	
 	vec1->size = 0;
 	vec1->capacity = 0;
 	
 	
-	if (!(vec1->a = malloc(vec2->capacity*sizeof(char*)))) {
+	if (!(vec1->a = (char**)malloc(vec2->capacity*sizeof(char*)))) {
 		assert(vec1->a != NULL);
 		return;
 	}
@@ -789,11 +797,11 @@ void vec_str_copy(void* dest, void* src)
 
 int push_str(vector_str* vec, char* a)
 {
-	void* tmp;
+	char** tmp;
 	size_t tmp_sz;
 	if (vec->capacity == vec->size) {
 		tmp_sz = VEC_STR_ALLOCATOR(vec->capacity);
-		if (!(tmp = realloc(vec->a, sizeof(char*)*tmp_sz))) {
+		if (!(tmp = (char**)realloc(vec->a, sizeof(char*)*tmp_sz))) {
 			assert(tmp != NULL);
 			return 0;
 		}
@@ -820,11 +828,11 @@ char** back_str(vector_str* vec)
 
 int extend_str(vector_str* vec, size_t num)
 {
-	void* tmp;
+	char** tmp;
 	size_t tmp_sz;
 	if (vec->capacity < vec->size + num) {
 		tmp_sz = vec->capacity + num + VEC_STR_START_SZ;
-		if (!(tmp = realloc(vec->a, sizeof(char*)*tmp_sz))) {
+		if (!(tmp = (char**)realloc(vec->a, sizeof(char*)*tmp_sz))) {
 			assert(tmp != NULL);
 			return 0;
 		}
@@ -839,11 +847,11 @@ int extend_str(vector_str* vec, size_t num)
 
 int insert_str(vector_str* vec, size_t i, char* a)
 {
-	void* tmp;
+	char** tmp;
 	size_t tmp_sz;
 	if (vec->capacity == vec->size) {
 		tmp_sz = VEC_STR_ALLOCATOR(vec->capacity);
-		if (!(tmp = realloc(vec->a, sizeof(char*)*tmp_sz))) {
+		if (!(tmp = (char**)realloc(vec->a, sizeof(char*)*tmp_sz))) {
 			assert(tmp != NULL);
 			return 0;
 		}
@@ -859,11 +867,11 @@ int insert_str(vector_str* vec, size_t i, char* a)
 
 int insert_array_str(vector_str* vec, size_t i, char** a, size_t num)
 {
-	void* tmp;
+	char** tmp;
 	size_t tmp_sz, j;
 	if (vec->capacity < vec->size + num) {
 		tmp_sz = vec->capacity + num + VEC_STR_START_SZ;
-		if (!(tmp = realloc(vec->a, sizeof(char*)*tmp_sz))) {
+		if (!(tmp = (char**)realloc(vec->a, sizeof(char*)*tmp_sz))) {
 			assert(tmp != NULL);
 			return 0;
 		}
@@ -894,9 +902,9 @@ void erase_str(vector_str* vec, size_t start, size_t end)
 
 int reserve_str(vector_str* vec, size_t size)
 {
-	void* tmp;
+	char** tmp;
 	if (vec->capacity < size) {
-		if (!(tmp = realloc(vec->a, sizeof(char*)*(size+VEC_STR_START_SZ)))) {
+		if (!(tmp = (char**)realloc(vec->a, sizeof(char*)*(size+VEC_STR_START_SZ)))) {
 			assert(tmp != NULL);
 			return 0;
 		}
@@ -909,7 +917,7 @@ int reserve_str(vector_str* vec, size_t size)
 int set_capacity_str(vector_str* vec, size_t size)
 {
 	size_t i;
-	void* tmp;
+	char** tmp;
 	if (size < vec->size) {
 		for(i=vec->size-1; i>size-1; i--) {
 			free(vec->a[i]);
@@ -918,7 +926,7 @@ int set_capacity_str(vector_str* vec, size_t size)
 		vec->size = size;
 	}
 
-	if (!(tmp = realloc(vec->a, sizeof(char*)*size))) {
+	if (!(tmp = (char**)realloc(vec->a, sizeof(char*)*size))) {
 		assert(tmp != NULL);
 		return 0;
 	}
@@ -964,7 +972,7 @@ void clear_str(vector_str* vec)
 void free_vec_str_heap(void* vec)
 {
 	size_t i;
-	vector_str* tmp = vec;
+	vector_str* tmp = (vector_str*)vec;
 	for (i=0; i<tmp->size; i++) {
 		free(tmp->a[i]);
 	}
@@ -976,7 +984,7 @@ void free_vec_str_heap(void* vec)
 void free_vec_str(void* vec)
 {
 	size_t i;
-	vector_str* tmp = vec;
+	vector_str* tmp = (vector_str*)vec;
 	for (i=0; i<tmp->size; i++) {
 		free(tmp->a[i]);
 	}
@@ -993,7 +1001,7 @@ size_t VEC_VOID_START_SZ = 20;
 vector_void* vec_void_heap(size_t size, size_t capacity, size_t elem_sz, void(*elem_free)(void*), void(*elem_init)(void*, void*))
 {
 	vector_void* vec;
-	if (!(vec = malloc(sizeof(vector_void)))) {
+	if (!(vec = (vector_void*)malloc(sizeof(vector_void)))) {
 		assert(vec != NULL);
 		return NULL;
 	}
@@ -1004,7 +1012,7 @@ vector_void* vec_void_heap(size_t size, size_t capacity, size_t elem_sz, void(*e
 	vec->elem_size = elem_sz;
 	
 	
-	if (!(vec->a = malloc(vec->capacity*elem_sz))) {
+	if (!(vec->a = (byte*)malloc(vec->capacity*elem_sz))) {
 		assert(vec->a != NULL);
 		free(vec);
 		return NULL;
@@ -1021,7 +1029,7 @@ vector_void* init_vec_void_heap(void* vals, size_t num, size_t elem_sz, void(*el
 	vector_void* vec;
 	size_t i;
 	
-	if (!(vec = malloc(sizeof(vector_void)))) {
+	if (!(vec = (vector_void*)malloc(sizeof(vector_void)))) {
 		assert(vec != NULL);
 		return NULL;
 	}
@@ -1030,7 +1038,7 @@ vector_void* init_vec_void_heap(void* vals, size_t num, size_t elem_sz, void(*el
 
 	vec->capacity = num + VEC_VOID_START_SZ;
 	vec->size = num;
-	if (!(vec->a = malloc(vec->capacity*elem_sz))) {
+	if (!(vec->a = (byte*)malloc(vec->capacity*elem_sz))) {
 		assert(vec->a != NULL);
 		free(vec);
 		return NULL;
@@ -1038,7 +1046,7 @@ vector_void* init_vec_void_heap(void* vals, size_t num, size_t elem_sz, void(*el
 
 	if (elem_init) {
 		for (i=0; i<num; ++i) {
-			elem_init(&vec->a[i*elem_sz], &((u8*)vals)[i*elem_sz]);
+			elem_init(&vec->a[i*elem_sz], &((byte*)vals)[i*elem_sz]);
 		}
 	} else {
 		memcpy(vec->a, vals, elem_sz*num);
@@ -1057,7 +1065,7 @@ int vec_void(vector_void* vec, size_t size, size_t capacity, size_t elem_sz, voi
 
 	vec->elem_size = elem_sz;
 	
-	if (!(vec->a = malloc(vec->capacity*elem_sz))) {
+	if (!(vec->a = (byte*)malloc(vec->capacity*elem_sz))) {
 		assert(vec->a != NULL);
 		vec->size = vec->capacity = 0;
 		return 0;
@@ -1077,7 +1085,7 @@ int init_vec_void(vector_void* vec, void* vals, size_t num, size_t elem_sz, void
 
 	vec->capacity = num + VEC_VOID_START_SZ;
 	vec->size = num;
-	if (!(vec->a = malloc(vec->capacity*elem_sz))) {
+	if (!(vec->a = (byte*)malloc(vec->capacity*elem_sz))) {
 		assert(vec->a != NULL);
 		vec->size = vec->capacity = 0;
 		return 0;
@@ -1085,7 +1093,7 @@ int init_vec_void(vector_void* vec, void* vals, size_t num, size_t elem_sz, void
 
 	if (elem_init) {
 		for (i=0; i<num; ++i) {
-			elem_init(&vec->a[i*elem_sz], &((u8*)vals)[i*elem_sz]);
+			elem_init(&vec->a[i*elem_sz], &((byte*)vals)[i*elem_sz]);
 		}
 	} else {
 		memcpy(vec->a, vals, elem_sz*num);
@@ -1100,14 +1108,14 @@ int init_vec_void(vector_void* vec, void* vals, size_t num, size_t elem_sz, void
 void vec_void_copy(void* dest, void* src)
 {
 	size_t i;
-	vector_void* vec1 = dest;
-	vector_void* vec2 = src;
+	vector_void* vec1 = (vector_void*)dest;
+	vector_void* vec2 = (vector_void*)src;
 	
 	vec1->size = 0;
 	vec1->capacity = 0;
 	
 	
-	if (!(vec1->a = malloc(vec2->capacity*vec2->elem_size))) {
+	if (!(vec1->a = (byte*)malloc(vec2->capacity*vec2->elem_size))) {
 		assert(vec1->a != NULL);
 		return;
 	}
@@ -1129,7 +1137,7 @@ void vec_void_copy(void* dest, void* src)
 
 int push_void(vector_void* vec, void* a)
 {
-	void* tmp;
+	byte* tmp;
 	size_t tmp_sz;
 	if (vec->capacity > vec->size) {
 		if (vec->elem_init) {
@@ -1139,7 +1147,7 @@ int push_void(vector_void* vec, void* a)
 		}
 	} else {
 		tmp_sz = VEC_VOID_ALLOCATOR(vec->capacity);
-		if (!(tmp = realloc(vec->a, vec->elem_size*tmp_sz))) {
+		if (!(tmp = (byte*)realloc(vec->a, vec->elem_size*tmp_sz))) {
 			assert(tmp != NULL);
 			return 0;
 		}
@@ -1178,11 +1186,11 @@ void* back_void(vector_void* vec)
 
 int extend_void(vector_void* vec, size_t num)
 {
-	void* tmp;
+	byte* tmp;
 	size_t tmp_sz;
 	if (vec->capacity < vec->size + num) {
 		tmp_sz = vec->capacity + num + VEC_VOID_START_SZ;
-		if (!(tmp = realloc(vec->a, vec->elem_size*tmp_sz))) {
+		if (!(tmp = (byte*)realloc(vec->a, vec->elem_size*tmp_sz))) {
 			assert(tmp != NULL);
 			return 0;
 		}
@@ -1201,7 +1209,7 @@ void* vec_void_get(vector_void* vec, size_t i)
 
 int insert_void(vector_void* vec, size_t i, void* a)
 {
-	void* tmp;
+	byte* tmp;
 	size_t tmp_sz;
 	if (vec->capacity > vec->size) {
 		memmove(&vec->a[(i+1)*vec->elem_size], &vec->a[i*vec->elem_size], (vec->size-i)*vec->elem_size);
@@ -1213,7 +1221,7 @@ int insert_void(vector_void* vec, size_t i, void* a)
 		}
 	} else {
 		tmp_sz = VEC_VOID_ALLOCATOR(vec->capacity);
-		if (!(tmp = realloc(vec->a, vec->elem_size*tmp_sz))) {
+		if (!(tmp = (byte*)realloc(vec->a, vec->elem_size*tmp_sz))) {
 			assert(tmp != NULL);
 			return 0;
 		}
@@ -1236,11 +1244,11 @@ int insert_void(vector_void* vec, size_t i, void* a)
 
 int insert_array_void(vector_void* vec, size_t i, void* a, size_t num)
 {
-	void* tmp;
+	byte* tmp;
 	size_t tmp_sz, j;
 	if (vec->capacity < vec->size + num) {
 		tmp_sz = vec->capacity + num + VEC_VOID_START_SZ;
-		if (!(tmp = realloc(vec->a, vec->elem_size*tmp_sz))) {
+		if (!(tmp = (byte*)realloc(vec->a, vec->elem_size*tmp_sz))) {
 			assert(tmp != NULL);
 			return 0;
 		}
@@ -1251,7 +1259,7 @@ int insert_array_void(vector_void* vec, size_t i, void* a, size_t num)
 	memmove(&vec->a[(i+num)*vec->elem_size], &vec->a[i*vec->elem_size], (vec->size-i)*vec->elem_size);
 	if (vec->elem_init) {
 		for (j=0; j<num; ++j) {
-			vec->elem_init(&vec->a[(j+i)*vec->elem_size], &((u8*)a)[j*vec->elem_size]);
+			vec->elem_init(&vec->a[(j+i)*vec->elem_size], &((byte*)a)[j*vec->elem_size]);
 		}
 	} else {
 		memcpy(&vec->a[i*vec->elem_size], a, num*vec->elem_size);
@@ -1275,9 +1283,9 @@ void erase_void(vector_void* vec, size_t start, size_t end)
 
 int reserve_void(vector_void* vec, size_t size)
 {
-	void* tmp;
+	byte* tmp;
 	if (vec->capacity < size) {
-		if (!(tmp = realloc(vec->a, vec->elem_size*(size+VEC_VOID_START_SZ)))) {
+		if (!(tmp = (byte*)realloc(vec->a, vec->elem_size*(size+VEC_VOID_START_SZ)))) {
 			assert(tmp != NULL);
 			return 0;
 		}
@@ -1290,7 +1298,7 @@ int reserve_void(vector_void* vec, size_t size)
 int set_capacity_void(vector_void* vec, size_t size)
 {
 	size_t i;
-	void* tmp;
+	byte* tmp;
 	if (size < vec->size) {
 		if (vec->elem_free) {
 			for (i=vec->size-1; i>=size; i--) {
@@ -1302,7 +1310,7 @@ int set_capacity_void(vector_void* vec, size_t size)
 
 	vec->capacity = size;
 
-	if (!(tmp = realloc(vec->a, vec->elem_size*size))) {
+	if (!(tmp = (byte*)realloc(vec->a, vec->elem_size*size))) {
 		assert(tmp != NULL);
 		return 0;
 	}
@@ -1366,7 +1374,7 @@ void clear_void(vector_void* vec)
 void free_vec_void_heap(void* vec)
 {
 	size_t i;
-	vector_void* tmp = vec;
+	vector_void* tmp = (vector_void*)vec;
 	if (!tmp)
 		return;
 
@@ -1382,7 +1390,7 @@ void free_vec_void_heap(void* vec)
 void free_vec_void(void* vec)
 {
 	size_t i;
-	vector_void* tmp = vec;
+	vector_void* tmp = (vector_void*)vec;
 	if (tmp->elem_free) {
 		for (i=0; i<tmp->size; i++) {
 			tmp->elem_free(&tmp->a[i*tmp->elem_size]);

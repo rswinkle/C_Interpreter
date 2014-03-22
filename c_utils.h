@@ -3,6 +3,9 @@
 
 #include "basic_types.h"
 #include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <ctype.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -104,11 +107,16 @@ int is_any(c_array* array, const void* the_one, int (*are_equal)(const void*, co
 void map(c_array* array, void (*func)(const void*));
 
 
-void boyermoore_search(c_array haystack_array, c_array needle_array);
-void basic_search(c_array haystack, c_array needle);
+unsigned int find(c_array haystack, c_array needle);
 
 
+#define INT_MAX_LEN sizeof(int)*CHAR_BIT
 
+char* int_to_str(int num, int base);
+char* long_to_str(long num, int base);
+
+float rand_float(float min, float max);
+double rand_double(double min, double max);
 
 
 #ifdef __cplusplus

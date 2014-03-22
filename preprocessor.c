@@ -1,9 +1,9 @@
 
 #include "preprocessor.h"
-#include "lexer.h"
 
+#define VECTOR_char_IMPLEMENTATION
 #include "vector_char.h"
-#include "vector_token_lex.h"
+
 
 #include "c_utils.h"
 

@@ -444,6 +444,10 @@ char* read_string(FILE* file, char* skip_chars, int delim, size_t max_len)
 }
 
 
+/* fills out.data with c_array's whose data members point at the split
+ * out strings in array.data, iow you don't free anything in out.
+ * see example usage in main.c ... for now I don't NULL out delimiter
+ * so you can't just print ((*c_array)&out.data[i])->data as a string */
 int split(c_array* array, byte* delim, size_t delim_len, c_array* out)
 {
 	size_t pos = 0, max_len = 1000;
@@ -523,195 +527,35 @@ char* trim(char* str)
 }
 
 
-#define ALPHABET_SIZE 256
-
-/* helper function for DFA, KMP, and Boyer-Moore algorithms */
-unsigned int * compute_prefix_func(byte *p, size_t len)
-{
-	unsigned int *pi = malloc(len*sizeof(unsigned int)); assert(pi);
-	unsigned int k = 0;
-	pi[0] = k;
-
-	for (int q=1; q<len; q++) {
-		while (k > 0 && p[k] != p[q])
-			k = pi[k-1];
-		if (p[k] == p[q])
-			k++;
-		pi[q] = k;
-	}
-	for (int i=0; i<len; ++i)
-		printf("%u ", pi[i]);
-	printf(" ---\n");
-	return pi;
-}
-
-void prepare_badcharacter_heuristic(const byte *str, size_t str_len, int result[ALPHABET_SIZE])
-{
-	size_t i;
-
-	for (i = 0; i < ALPHABET_SIZE; ++i)
-		result[i] = -1;
-
-	for (i = 0; i < str_len; ++i)
-		result[str[i]] = i;
-}
-
-/* result is array of size size+1 */
-void prepare_goodsuffix_heuristic(const byte *str, size_t str_len, int result[])
-{
-	byte *reversed;
-	size_t i,j;
-	char test;
-
-	reversed = (byte*) malloc(str_len);  assert(reversed);
-
-	/* reverse string */
-	for (i=0; i<str_len; ++i)
-		reversed[i] = str[str_len-1-i];
-
-	//int prefix_normal[size];
-	unsigned int *prefix_reversed = compute_prefix_func(reversed, str_len);
-	free(reversed);
-
-	//compute_prefix(normal, size, prefix_normal);
-	//compute_prefix(reversed, size, prefix_reversed);
-
-	/* can't figure out how to handle position 0 with the rest
-	it's algorithm is slightly different */
-	i = 1;
-	result[str_len] = 1;
-	while (i<str_len && prefix_reversed[i++]) {
-		printf("i= %lu\n", i);
-		result[str_len]++;
-	}
-
-	for (i=1; i<str_len; ++i) {
-		/*max = 0; */
-		test = 0;
-		for (j=i; j<str_len-1; ++j) {
-			/*if (!test && prefix_reversed[j] == i) */
-
-			if (prefix_reversed[j] == i) {
-				test = 1;
-				if (prefix_reversed[j+1] == 0) {
-					test = 2;
-					break;
-				}
-			}
-			/* if (prefix_reversed[j] > max) max++; */
-		}
-
-		if (test == 1)	/*j == str_len-1 && test) */
-			result[str_len-i] = str_len;
-		else if (test == 2)
-			result[str_len-i] = j+1 - i;
-		else
-			result[str_len-i] = str_len - prefix_reversed[str_len-1];
-
-		printf("i= %u test = %d result[str_len-i] = %d\n", (unsigned int)i, test, result[str_len-i]);
-	}
-
-	//result of 0 will only be accessed when we find a match
-	//so it stores the good suffix skip of the first character
-	//(last in reverse calculation)
-	result[0] = str_len - prefix_reversed[str_len-1];
-	//The last value in the prefix calculation is always
-	//the same for a string in both directions
-
-	free(prefix_reversed);
-}
-/*
- * Boyer-Moore search algorithm
- */
-void boyermoore_search(c_array haystack_array, c_array needle_array)
-{
-	/* Calc string sizes */
-	size_t needle_len, haystack_len;
-	needle_len = needle_array.len;
-	haystack_len = haystack_array.len;
-
-	byte* haystack = haystack_array.data;
-	byte* needle = needle_array.data;
-
-	printf("needle length = %lu\n", needle_len);
-	for (int i=0; i<needle_len; ++i)
-		printf("%d ", needle[i]);
-	printf("\n\n");
-
-	/** Simple checks */
-	if(haystack_len == 0)
-		return;
-	if(needle_len == 0)
-		return;
-	if(needle_len > haystack_len)
-		return;
-
-	printf("boyer_moore search\n");
-	/** Initialize heuristics */
-	int badcharacter[ALPHABET_SIZE];
-	int* goodsuffix = malloc((needle_len+1)*sizeof(int)); assert(goodsuffix);
-
-	prepare_badcharacter_heuristic(needle, needle_len, badcharacter);
-	prepare_goodsuffix_heuristic(needle, needle_len, goodsuffix);
-
-	/** Boyer-Moore search */
-	size_t s = 0, j = 0;
-	while (s <= (haystack_len - needle_len)) {
-		j = needle_len;
-		if (s > 6250 && s < 6260) {
-			while (j > 0 && needle[j-1] == haystack[s+j-1]) {
-				printf("%lu: %d %d\n",s+j-1, needle[j-1], haystack[s+j-1]);
-				j--;
-			}
-			printf("=%lu: %d %d\n", s+j-1,  needle[j-1], haystack[s+j-1]);
-
-		} else {
-			while (j > 0 && needle[j-1] == haystack[s+j-1])
-				j--;
-		}
-
-		if (j > 0) {
-			int k = badcharacter[haystack[s+j-1]];
-			int m;
-			if (s > 6250 && s < 6260)
-				printf("badcharacter = %d\n", k);
-			if (k < (int)j && (m = j-k-1) > goodsuffix[j]) {
-				s += m;
-				if (s > 6250 && s < 6260) {
-					printf("badcharacter = %d\n", k);
-					printf("adding m = %d\n", m);
-				}
-			} else {
-				s += goodsuffix[j];
-				if (s > 6250 && s < 6260)
-					printf("adding goodsuffix[%lu] = %d\n", j, goodsuffix[j]);
-			}
-		} else {
-			printf("Pattern found at %lu\n", s);
-			s += goodsuffix[0];
-		}
-	}
-
-	free(goodsuffix);
-}
-
-
-
-
-void basic_search(c_array haystack, c_array needle)
+unsigned int find(c_array haystack, c_array needle)
 {
 	byte* result = haystack.data;
 	byte* end = haystack.data + haystack.len*haystack.elem_size;
 	while(result = memchr(result, needle.data[0], end-result)) {
 		if (!memcmp(result, needle.data, needle.len*needle.elem_size)) {
-			printf("Pattern found at %lu\n", result-haystack.data);
-			result += needle.len*needle.elem_size;
+			return result - haystack.data;
 		} else {
 			++result;
 		}
 	}
 }
 
+/*
+
+void find_all(c_array haystack, c_array needle, vector_int* vec)
+{
+	byte* result = haystack.data;
+	byte* end = haystack.data + haystack.len*haystack.elem_size;
+	while(result = memchr(result, needle.data[0], end-result)) {
+		if (!memcmp(result, needle.data, needle.len*needle.elem_size)) {
+			push_i(vec, result - haystack.data);
+			result += needle.len * needle.elem_size;
+		} else {
+			++result;
+		}
+	}
+}
+*/
 
 void* mybsearch(const void *key, const void *buf, size_t num, size_t size, int (*compare)(const void *, const void *))
 {
@@ -970,5 +814,43 @@ void map(c_array* array, void (*func)(const void*))
 }
 
 
+char* int_to_str(int num, int base)
+{
+	static char buf[INT_MAX_LEN+1];
+	static char digits[] = "0123456789ABCDEF";
+
+	char* ret;
+	char *pos = buf + INT_MAX_LEN-1;
+	int tmp = (num < 0) ? -num : num;
+
+	while (tmp != 0) {
+		*pos-- = digits[tmp % base];
+		tmp /= base;
+	}
+
+	if (num < 0) {
+		*pos = '-';
+	} else {
+		pos++;
+	}
+
+	ret = calloc(buf + INT_MAX_LEN+1 - pos, sizeof(char));
+	if (!ret) {
+		fprintf(stderr, "Failed to allocate memory!\n");
+		return NULL;
+	}
+
+	return memcpy(ret, pos, buf + INT_MAX_LEN - pos);  /* memcpy returns to, and calloc already nulled last char */
+}
+
+float rand_float(float min, float max)
+{
+	return ((float)rand()/(float)(RAND_MAX-1))*(max-min) + min;
+}
+
+double rand_double(double min, double max)
+{
+	return ((double)rand()/(double)(RAND_MAX-1))*(max-min) + min;
+}
 
 

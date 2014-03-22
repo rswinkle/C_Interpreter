@@ -2,11 +2,12 @@
 #define PREPROCESSOR_H
 
 #include "vector_char.h"
+
+//brings in lexer.h
 #include "vector_token_lex.h"
 
 #include "cvector.h"
 
-#include "lexer.h"
 
 #include <stdio.h>
 #include <stdarg.h>
