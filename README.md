@@ -230,7 +230,7 @@ Building and Running
 ====================
 I use premake (http://industriousone.com/premake) for generating makefiles and have shell scripts for running
 all my tests at once.
-
+```
 ~ $ git clone https://github.com/rswinkle/C_Interpreter.git
 Cloning into 'C_Interpreter'...
 remote: Reusing existing pack: 489, done.
@@ -271,3 +271,4 @@ comparing output of ../tests/problem6.txt
 ==30655== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 2 from 2)
 ...
 ~/C_Interpreter/build $
+```
