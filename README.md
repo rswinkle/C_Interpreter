@@ -224,3 +224,50 @@ primary_expr              -> identifier
                              constant
                              '(' expr ')'
 ```
+
+
+Building and Running
+====================
+I use premake (http://industriousone.com/premake) for generating makefiles and have shell scripts for running
+all my tests at once.
+
+~ $ git clone https://github.com/rswinkle/C_Interpreter.git
+Cloning into 'C_Interpreter'...
+remote: Reusing existing pack: 489, done.
+remote: Total 489 (delta 0), reused 0 (delta 0)
+Receiving objects: 100% (489/489), 168.87 KiB | 301.00 KiB/s, done.
+Resolving deltas: 100% (264/264), done.
+Checking connectivity... done.
+~ $ cd C_Interpreter/
+~/C_Interpreter $ premake4 gmake
+Building configurations...
+Running action 'gmake'...
+Generating build/Makefile...
+Generating build/cinterpreter.make...
+Done.
+~/C_Interpreter $ cd build/
+~/C_Interpreter/build $ make
+==== Building cinterpreter (debug) ====
+...
+Linking cinterpreter
+~/C_Interpreter/build $ ./cinterpreter 
+Usage: ./cinterpreter [-E] script
+~/C_Interpreter/build $ ./cinterpreter ../tests/switch.txt
+[ouhput from switch.txt here]
+~/C_Interpreter/build $ ../runtests.sh
+running normal tests
+==================
+executing ../tests/backslash.txt
+executing ../tests/break_continue.txt
+executing ../tests/problem6.txt
+...
+comparing output of ../tests/backslash.txt
+comparing output of ../tests/break_continue.txt
+comparing output of ../tests/problem6.txt
+...
+~/C_Interpreter/build $ ../runtests_valgrind.sh | grep ERROR
+==30652== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 2 from 2)
+==30652== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 2 from 2)
+==30655== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 2 from 2)
+...
+~/C_Interpreter/build $
