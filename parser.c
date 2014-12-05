@@ -874,12 +874,11 @@ void statement_rule(parsing_state* p, program_state* prog)
 int is_integral_type(var_value* v)
 {
 	switch (v->type) {
-	case INT_TYPE:
-
+	case INT_TYPE:  //All INT_LITERALS are returned as INT_TYPE
 		return 1;
-
+	default:
+		return 0; // suppress compiler unhandled enums warning
 	}
-	return 0;
 }
 
 

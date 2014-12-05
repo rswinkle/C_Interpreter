@@ -100,6 +100,8 @@ do { \
 		result.type = ULONG_TYPE; \
 		result.v.ulong_val = op a->v.ulong_val; \
 		break; \
+	default: \
+		; \
 	} \
 } while (0)
 
@@ -138,6 +140,8 @@ do { \
 		result.type = ULONG_TYPE; \
 		result.v.ulong_val = a->v.ulong_val op; \
 		break; \
+	default: \
+		; \
 	} \
 } while (0)
 
@@ -1152,6 +1156,8 @@ do { \
 	case DOUBLE_TYPE: \
 		result = (c.v.double_val) ? *a : *b; \
 		break; \
+	default: \
+		; \
 	} \
 } while (0)
 

@@ -183,10 +183,10 @@ void execute_print(var_value a)
 			printf("%u\n", a.v.uint_val);
 			break;
 		case LONG_TYPE:
-			printf("%d\n", a.v.long_val);
+			printf("%ld\n", a.v.long_val);
 			break;
 		case ULONG_TYPE:
-			printf("%u\n", a.v.ulong_val);
+			printf("%lu\n", a.v.ulong_val);
 			break;
 		case FLOAT_TYPE:
 			printf("%f\n", a.v.float_val);
