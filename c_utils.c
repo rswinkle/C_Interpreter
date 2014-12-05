@@ -527,17 +527,19 @@ char* trim(char* str)
 }
 
 
-unsigned int find(c_array haystack, c_array needle)
+long find(c_array haystack, c_array needle)
 {
 	byte* result = haystack.data;
 	byte* end = haystack.data + haystack.len*haystack.elem_size;
-	while(result = memchr(result, needle.data[0], end-result)) {
+	while (result = memchr(result, needle.data[0], end-result)) {
 		if (!memcmp(result, needle.data, needle.len*needle.elem_size)) {
 			return result - haystack.data;
 		} else {
 			++result;
 		}
 	}
+
+	return -1;
 }
 
 /*
@@ -709,6 +711,11 @@ int compare_double(const void* a, const void* b)
 	return 0;
 }
 
+int compare_string(const void* a, const void* b)
+{
+	return strcmp(*(const char**)a, *(const char**)b);
+}
+
 
 
 
@@ -759,9 +766,15 @@ int are_equal_float(const void* a, const void* b)
 {
 	return *(float*)a == *(float*)b;
 }
+
 int are_equal_double(const void* a, const void* b)
 {
 	return *(double*)a == *(double*)b;
+}
+
+int are_equal_string(const void* a, const void* b)
+{
+	return !strcmp(*(char**)a, *(char**)b);
 }
 
 

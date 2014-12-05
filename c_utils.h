@@ -88,6 +88,7 @@ int are_equal_long(const void* a, const void* b);
 int are_equal_ulong(const void* a, const void* b);
 int are_equal_float(const void* a, const void* b);
 int are_equal_double(const void* a, const void* b);
+int are_equal_string(const void* a, const void* b);
 
 int compare_char(const void* a, const void* b);
 int compare_uchar(const void* a, const void* b);
@@ -99,6 +100,7 @@ int compare_long(const void* a, const void* b);
 int compare_ulong(const void* a, const void* b);
 int compare_float(const void* a, const void* b);
 int compare_double(const void* a, const void* b);
+int compare_string(const void* a, const void* b);
 
 int any(c_array* array, int (*is_true)(const void*));
 int all(c_array* array, int (*is_true)(const void*));
@@ -107,7 +109,7 @@ int is_any(c_array* array, const void* the_one, int (*are_equal)(const void*, co
 void map(c_array* array, void (*func)(const void*));
 
 
-unsigned int find(c_array haystack, c_array needle);
+long find(c_array haystack, c_array needle);
 
 
 #define INT_MAX_LEN sizeof(int)*CHAR_BIT
