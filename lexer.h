@@ -8,7 +8,8 @@
 #define PARSING (FILE*)1
 
 //tokens pg 20
-typedef enum Token{
+typedef enum Token
+{
 	END,
 	
 	EQUALEQUAL, GREATER, GTEQ, LESS, LTEQ, NOTEQUAL,

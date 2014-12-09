@@ -439,8 +439,7 @@ token_lex read_token_from_str(char* input, lexer_state* lex_state, FILE* preproc
 	static char token_buf[MAX_TOKEN_LEN];
 	int i = 0, tmp;
 
-	token_lex tok_lex;
-	//memset(&tok_lex, 0, sizeof(token_value));
+	token_lex tok_lex = { 0 };
 
 	char* c = &input[lex_state->cur_char - 1]; //start 1 before for increment
 

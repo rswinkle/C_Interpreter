@@ -20,4 +20,4 @@ addons:
     build_command:   "make -j2"
     branch_pattern: master
 
-script: make
+script: cd build/ && make -j2
