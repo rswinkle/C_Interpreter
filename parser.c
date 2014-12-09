@@ -430,7 +430,11 @@ void parameter_declaration(parsing_state* p, program_state* prog)
 	//parameters aren't freed from the symbol table till exit
 	//they need storage to assign to from the caller's scope in
 	//execute_expr_list
-	active_binding* var = malloc(sizeof(active_binding));;
+	active_binding* var = malloc(sizeof(active_binding));
+	if (!var) { //TODO not really parse error ... but it did occur during parsing so?
+		parse_error(tok, "in parameter_declaration, memory allocation failure\n");
+		exit(0);
+	}
 	var->val.type = vtype;
 	symbol s;
 	s.cur_parent = 0;
@@ -654,6 +658,10 @@ void initialized_declarator(parsing_state* p, program_state* prog, var_type v_ty
 		}
 
 		active_binding* val = malloc(sizeof(active_binding));
+		if (!val) { //TODO not really parse error
+			parse_error(tok, "in initialized_declarator, memory allocation failure\n");
+			exit(0);
+		}
 		val->val.type = v_type;
 		val->parent = prog->cur_parent;
 

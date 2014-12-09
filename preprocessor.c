@@ -76,7 +76,10 @@ void preprocess_file(preprocessor_state* preproc)
 				//it's just not an invocation so just print it out
 				if (p->num_params >= 0) {
 					save_lexer = *lexer;
-					fpos = ftell(input);
+					if ((fpos = ftell(input)) == -1) {
+						perror("ftell failure in preprocess_file");
+						exit(0);
+					}
 					tlex[1] = read_token(input, lexer, NULL);
 					if (tlex[1].tok.type != LPAREN) {
 						*lexer = save_lexer;
@@ -107,7 +110,10 @@ void preprocess_file(preprocessor_state* preproc)
 			}
 
 			save_lexer = *lexer;
-			fpos = ftell(input);
+			if ((fpos = ftell(input)) == -1) {
+				perror("ftell failure in preprocess_file");
+				exit(0);
+			}
 			tlex[1] = read_token(input, lexer, NULL);
 			if (tlex[0].line != tlex[1].line) { //null directive (EOF is always on it's own line)
 				if (tlex[1].tok.type == POUND) {
@@ -117,7 +123,10 @@ void preprocess_file(preprocessor_state* preproc)
 					free(tlex[1].tok.v.id);
 				}
 				*lexer = save_lexer;
-				fseek(input, fpos, SEEK_SET);
+				if (fseek(input, fpos, SEEK_SET)) {
+					perror("fseek failure in preprocess_file");
+					exit(0);
+				}
 				continue;
 			}
 
@@ -298,14 +307,17 @@ void handle_define(preprocessor_state* preproc)
 	memset(macro_buf, 0, MAX_MACRO_LEN);
 
 	save_lex = *lexer;
-	fpos = ftell(input);
+	fpos = ftell(input); //TODO why is this here?
 
 	tok_lex[2] = read_token(input, lexer, NULL);
 
 	while (tok_lex[0].line == lexer->cur_line) {
 		push_token_lex(&tlex, &tok_lex[2]);
 		save_lex = *lexer;
-		fpos = ftell(input);
+		if ((fpos = ftell(input)) == -1) {
+			perror("ftell failure in handle_define");
+			exit(0);
+		}
 		//don't free id bceause vector will do it
 		tok_lex[2] = read_token(input, lexer, NULL);
 	}
@@ -314,7 +326,10 @@ void handle_define(preprocessor_state* preproc)
 		free(tok_lex[2].tok.v.id);
 
 	*lexer = save_lex;
-	fseek(input, fpos, SEEK_SET);
+	if (fseek(input, fpos, SEEK_SET)) {
+		perror("fseek failue in handle_define");
+		exit(0);
+	}
 
 	int buf_pos = 0;
 	int res, len;
@@ -381,13 +396,19 @@ void handle_include(preprocessor_state* preproc)
 		//just clear the line
 		while (1) {
 			save_lexer = preproc->lexer;
-			fpos = ftell(preproc->input);
+			if ((fpos = ftell(preproc->input)) == -1) {
+				perror("ftell error in handle_include");
+				exit(0);
+			}
 			tok_lex = read_token(preproc->input, &preproc->lexer, NULL);
 			if (tok_lex.line != line) {
 				if (tok_lex.tok.type == ID || tok_lex.tok.type == STR_LITERAL)
 					free(tok_lex.tok.v.id);
 				preproc->lexer = save_lexer;
-				fseek(preproc->input, fpos, SEEK_SET);
+				if (fseek(preproc->input, fpos, SEEK_SET)) {
+					perror("fseek failure in handle_include");
+					exit(0);
+				}
 				return;
 			}
 			if (tok_lex.tok.type == ID || tok_lex.tok.type == STR_LITERAL)
@@ -509,7 +530,9 @@ void parse_params(preprocessor_state* preproc, int macro, vector_char* expansion
 
 unsigned int macro_expansion(preprocessor_state* preproc, vector_char* expansion, unsigned long beginning, vector_i* valid_macros, int macro_index)
 {
-	int macro = (valid_macros) ? valid_macros->a[macro_index] : macro_index;
+	//vaild_macros should never be NULL unless I uncomment that alternative method in prescan_argument
+	//int macro = (valid_macros) ? valid_macros->a[macro_index] : macro_index;
+	int macro = valid_macros->a[macro_index];
 
 	vector_char local_expansion, scratch;
 	init_vec_char(&local_expansion, preproc->values.a[macro], strlen(preproc->values.a[macro])+1); //+ 1 for '\0'
@@ -776,10 +799,16 @@ void handle_macro(preprocessor_state* preproc, int macro)
 	token_lex t;
 
 	save_lex = *lexer;
-	fpos = ftell(input);
+	if ((fpos = ftell(input)) == -1) {
+		perror("ftell error in handle_macro");
+		exit(0);
+	}
 	t = read_token(input, lexer, NULL);
 	*lexer = save_lex;
-	fseek(input, fpos, SEEK_SET);
+	if (fseek(input, fpos, SEEK_SET)) {
+		perror("fseek failure in handle_macro");
+		exit(0);
+	}
 	
 	if (t.tok.type == LPAREN) { 
 		char* search, *found;

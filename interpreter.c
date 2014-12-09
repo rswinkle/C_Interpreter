@@ -382,7 +382,7 @@ var_value execute_expr(program_state* prog, expression* e)
 		old_pc = prog->pc;
 		old_func = prog->func;
 
-		//look_up_value should never return NULL, parsing should catch all errors like that
+		//look_up_value should never return NULL here, parsing should catch all errors like that
 		func = GET_FUNCTION(&prog->functions, look_up_value(prog, e->left->tok.v.id, ONLY_GLOBAL)->v.func_loc);
 
 		if (func->n_params) //could also check e->right->tok.type = VOID
@@ -545,6 +545,10 @@ void execute_expr_list(program_state* prog, function* callee, expression* e)
 	function* func = callee;
 	symbol* s;
 	active_binding* v = malloc(sizeof(active_binding));;
+	if (!v) {
+		fprintf(stderr, "allocation failure in execute_expr_list\n");
+		exit(0);
+	}
 
 	var_value result; // <-- necessary for macros but not used ... should refactor
 	var_value val, *val_ptr = &val;
@@ -568,7 +572,11 @@ void execute_expr_list(program_state* prog, function* callee, expression* e)
 
 		e = e->right;
 		++i;
-		v = malloc(sizeof(active_binding));
+
+		if (!(v = malloc(sizeof(active_binding)))) {
+			fprintf(stderr, "allocation failure in execute_expr_list\n");
+			exit(0);
+		}
 	}
 
 	s = GET_SYMBOL(&func->symbols, i);
@@ -818,6 +826,9 @@ var_value* look_up_value(program_state* prog, const char* var, int search)
 		}
 	}
 
+	//Will never get here when interpreting, only when parsing to check if
+	//something is undefined or redeclared.  IOW, there
+	//is no danger of a NULL dereference above
 	return NULL;
 }
 

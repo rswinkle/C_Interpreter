@@ -72,7 +72,9 @@ int file_read(FILE* file, c_array* out)
 
 	fseek(file, 0, SEEK_END);
 	size = ftell(file);
-	if (!size) {
+	if (size <= 0) {
+		if (size == -1)
+			perror("ftell failure");
 		fclose(file);
 		return 0;
 	}
@@ -85,7 +87,7 @@ int file_read(FILE* file, c_array* out)
 
 	rewind(file);
 	if (!fread(data, size, 1, file)) {
-		printf("read failure\n");
+		perror("fread failure");
 		fclose(file);
 		free(data);
 		return 0;
@@ -235,7 +237,9 @@ char* freadstring(FILE* input, int delim, size_t max_len)
 		max_len = 4096;
 	}
 
-	string = malloc(max_len+1);
+	if(!(string = malloc(max_len+1)))
+		return NULL;
+
 	while (1) {
 		temp = fgetc(input);
 
@@ -244,7 +248,12 @@ char* freadstring(FILE* input, int delim, size_t max_len)
 				free(string);
 				return NULL;
 			}
-			string = realloc(string, i+1);
+			tmp_str = realloc(string, i+1);
+			if (!tmp_str) {
+				free(string);
+				return NULL;
+			}
+			string = tmp_str;
 			break;
 		}
 
@@ -484,6 +493,7 @@ int split(c_array* array, byte* delim, size_t delim_len, c_array* out)
 				if (!out->data) {
 					free(results);
 					out->data = NULL;
+					out->len = 0;
 					return 0;
 				}
 				results = (c_array*)out->data;
@@ -501,7 +511,14 @@ int split(c_array* array, byte* delim, size_t delim_len, c_array* out)
 		out->len++;
 	}
 
-	out->data = realloc(out->data, out->len*out->elem_size+1);
+	results = realloc(out->data, out->len*out->elem_size+1);
+	if (!results) {
+		free(out->data);
+		out->data = NULL;
+		out->len = 0;
+		return 0;
+	}
+	out->data = (byte*)results;
 	out->data[out->len*out->elem_size] = 0;
 
 	return 1;
