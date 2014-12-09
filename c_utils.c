@@ -65,7 +65,7 @@ int file_open_read(const char* filename, const char* mode, c_array* out)
 int file_read(FILE* file, c_array* out)
 {
 	byte* data;
-	size_t size;
+	long size;
 	out->data = NULL;
 	out->len = 0;
 	out->elem_size = 1;

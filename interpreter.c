@@ -345,9 +345,12 @@ var_value execute_expr(program_state* prog, expression* e)
 	case LOGICAL_OR:      BINARY_OP(left_ptr, ||, right_ptr);    break;
 	case LOGICAL_AND:     BINARY_OP(left_ptr, &&, right_ptr);    break;
 
+/* old method with dead side effectless left side
 #define MYCOMMA ,
 	case COMMA:           BINARY_OP(left_ptr, MYCOMMA, right_ptr);    break;
 #undef MYCOMMA
+*/
+	case COMMA:           COMMA_OP(right_ptr);   break;
 
 
 	case TERNARY:         COND_EXPR(e->left, left_ptr, right_ptr);    break;
@@ -500,11 +503,13 @@ var_value execute_constant_expr(program_state* prog, expression* e)
 	case LOGICAL_OR:      BINARY_OP(left_ptr, ||, right_ptr);    break;
 	case LOGICAL_AND:     BINARY_OP(left_ptr, &&, right_ptr);    break;
 
-	//according to pg 251 this shouldn't be here, see ./tests/switch.c
+/* according to pg 251 this (comma/sequential operator) shouldn't be here, see ./tests/switch.c
+   old method with dead side effectless left side
 #define MYCOMMA ,
 	case COMMA:           BINARY_OP(left_ptr, MYCOMMA, right_ptr);    break;
 #undef MYCOMMA
-
+*/
+	case COMMA:           COMMA_OP(right_ptr);   break;
 
 	case TERNARY:         COND_EXPR(e->left, left_ptr, right_ptr);    break;
 

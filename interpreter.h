@@ -1162,4 +1162,63 @@ do { \
 } while (0)
 
 
+#define COMMA_OP(b) \
+do { \
+	switch (b->type) { \
+	case CHAR_TYPE: \
+		result.type = CHAR_TYPE; \
+		result.v.char_val = b->v.char_val; \
+		break; \
+	\
+	case UCHAR_TYPE: \
+		result.type = UCHAR_TYPE; \
+		result.v.uchar_val = b->v.uchar_val; \
+		break; \
+	\
+	case SHORT_TYPE: \
+		result.type = SHORT_TYPE; \
+		result.v.short_val = b->v.short_val; \
+		break; \
+	\
+	case USHORT_TYPE: \
+		result.type = USHORT_TYPE; \
+		result.v.ushort_val = b->v.ushort_val; \
+		break; \
+	\
+	case INT_TYPE: \
+		result.type = INT_TYPE; \
+		result.v.int_val = b->v.int_val; \
+		break; \
+	\
+	case UINT_TYPE: \
+		result.type = UINT_TYPE; \
+		result.v.uint_val = b->v.uint_val; \
+		break; \
+	\
+	case LONG_TYPE: \
+		result.type = LONG_TYPE; \
+		result.v.long_val = b->v.long_val; \
+		break; \
+	\
+	case ULONG_TYPE: \
+		result.type = ULONG_TYPE; \
+		result.v.ulong_val = b->v.ulong_val; \
+		break; \
+	\
+	case FLOAT_TYPE: \
+		result.type = FLOAT_TYPE; \
+		result.v.float_val = b->v.float_val; \
+		break; \
+	\
+	case DOUBLE_TYPE: \
+		result.type = DOUBLE_TYPE; \
+		result.v.double_val = b->v.double_val; \
+		break; \
+\
+	default: \
+		puts("wtf1"); \
+	} \
+} while (0)
+
+
 #endif

@@ -307,7 +307,10 @@ void handle_define(preprocessor_state* preproc)
 	memset(macro_buf, 0, MAX_MACRO_LEN);
 
 	save_lex = *lexer;
-	fpos = ftell(input); //TODO why is this here?
+	if ((fpos = ftell(input)) == -1) {
+		perror("ftell failure in handle_define");
+		exit(0);
+	}
 
 	tok_lex[2] = read_token(input, lexer, NULL);
 
