@@ -94,7 +94,10 @@ void preprocess_file(preprocessor_state* preproc)
 					}
 					//restore ( for symmetry in handle_macro
 					*lexer = save_lexer;
-					fseek(input, fpos, SEEK_SET);
+					if (fseek(input, fpos, SEEK_SET)) {
+						perror("fseek failure in preprocess_file");
+						exit(0);
+					}
 				}
 
 				handle_macro(preproc, is_macro);
@@ -301,7 +304,10 @@ void handle_define(preprocessor_state* preproc)
 		//put it back, it's part of the macro value
 		//it's handled below
 		*lexer = save_lex;
-		fseek(input, fpos, SEEK_SET);
+		if (fseek(input, fpos, SEEK_SET)) {
+			perror("fseek failure in preprocess_file");
+			exit(0);
+		}
 	}
 
 	memset(macro_buf, 0, MAX_MACRO_LEN);
