@@ -83,7 +83,10 @@ void preprocess_file(preprocessor_state* preproc)
 					tlex[1] = read_token(input, lexer, NULL);
 					if (tlex[1].tok.type != LPAREN) {
 						*lexer = save_lexer;
-						fseek(input, fpos, SEEK_SET);
+						if (fseek(input, fpos, SEEK_SET)) {
+							perror("fseek failure in preprocess_file");
+							exit(0);
+						}
 
 						if (tlex[1].tok.type == ID || tlex[1].tok.type == STR_LITERAL)
 							free(tlex[1].tok.v.id);
@@ -257,7 +260,10 @@ void handle_define(preprocessor_state* preproc)
 
 	if (tok_lex[1].line != tok_lex[0].line) { //object macro empty string
 		*lexer = save_lex;
-		fseek(input, fpos, SEEK_SET);
+		if (fseek(input, fpos, SEEK_SET)) {
+			perror("fseek failure in handle_define");
+			exit(0);
+		}
 
 		if (check_val && strcmp(check_val, "")) {
 			preprocessor_error(NULL, lexer, "redefinition of %s\n", tok_lex[0].tok.v.id);
