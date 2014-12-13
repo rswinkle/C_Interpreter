@@ -31,7 +31,10 @@ FILE* run_preprocessor(FILE* input, char* filename)
 	preproc.input = input;
 
 	preproc.output = tmpfile();
-	assert(preproc.output);
+	if (!preproc.output) {
+		perror("Failed to open file for preprocessor output");
+		exit(0);
+	}
 
 	vec_str(&preproc.macros, 0, 15);
 	vec_str(&preproc.values, 0, 15);
