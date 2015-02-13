@@ -1,7 +1,7 @@
 #ifndef PREPROCESSOR_H
 #define PREPROCESSOR_H
 
-#include "vector_char.h"
+#include "rsw_cstr.h"
 
 //brings in lexer.h
 #include "vector_token_lex.h"
@@ -57,10 +57,10 @@ void handle_define(preprocessor_state* preproc);
 void handle_include(preprocessor_state* preproc);
 void handle_ifdef(preprocessor_state* preproc);
 
-void parse_params(preprocessor_state* preproc, int macro, vector_char* expansion);
-unsigned int macro_expansion(preprocessor_state* preproc, vector_char* expansion, unsigned long beginning, vector_i* valid_macros, int macro_index);
-void prescan_argument(preprocessor_state* preproc, vector_char* expansion);
-void rescan_expansion(preprocessor_state* preproc, vector_char* expansion, vector_i* valid_macros, int macro_index);
+void parse_params(preprocessor_state* preproc, int macro, rsw_cstr* expansion);
+unsigned int macro_expansion(preprocessor_state* preproc, rsw_cstr* expansion, unsigned long beginning, vector_i* valid_macros, int macro_index);
+void prescan_argument(preprocessor_state* preproc, rsw_cstr* expansion);
+void rescan_expansion(preprocessor_state* preproc, rsw_cstr* expansion, vector_i* valid_macros, int macro_index);
 void handle_macro(preprocessor_state* preproc, int macro);
 
 

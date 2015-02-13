@@ -1,10 +1,7 @@
 
 #include "preprocessor.h"
 
-#define VECTOR_char_IMPLEMENTATION
-#include "vector_char.h"
-
-
+#include "rsw_cstr.h"
 #include "c_utils.h"
 
 #include <ctype.h>
@@ -456,14 +453,13 @@ void handle_include(preprocessor_state* preproc)
 }
 
 
-void parse_params(preprocessor_state* preproc, int macro, vector_char* expansion)
+void parse_params(preprocessor_state* preproc, int macro, rsw_cstr* expansion)
 {
 	macro_params* p = GET_PARAM(&preproc->params, macro);
 	token_lex t;
 
-	vector_char scratch;
-	vec_char_copy(&scratch, expansion);
-//	init_vec_char(&scratch, expansion->a, expansion->size);
+	rsw_cstr scratch;
+	init_cstr_str(&scratch, expansion->a, expansion->size);
 
 	//read (
 	read_token(preproc->input, &preproc->lexer, NULL);
@@ -471,8 +467,8 @@ void parse_params(preprocessor_state* preproc, int macro, vector_char* expansion
 	int param_len, val_len, parens, loc;
 	char* search, *found;
 
-	vector_char arg_expansion;
-	vec_char(&arg_expansion, 0, 50);
+	rsw_cstr arg_expansion;
+	init_cstr_cap(&arg_expansion, 50);
 
 	parens = 0;
 	for (int i=0; i < p->num_params; ++i) {
@@ -504,32 +500,26 @@ void parse_params(preprocessor_state* preproc, int macro, vector_char* expansion
 		//This contradicts C : A Reference Manual pg 50 but it's the only/easiest
 		//way to get correct behavior (ie preventing infinite recursion but allowing nested calls to the same macro)
 		//I know gcc does this (http://gcc.gnu.org/onlinedocs/gcc-3.0.2/cpp_3.html#SEC32)
-		insert_array_char(&arg_expansion, 0, macro_buf, val_len+1); //+1 for '\0'
+		cstr_insert_str(&arg_expansion, 0, macro_buf, val_len);
 		prescan_argument(preproc, &arg_expansion);
 
 		param_len = strlen(p->names[i]);
 	//	val_len = strlen(macro_buf);
-		search = scratch.a;  //search scratch
 		
-		found = strstr(search, p->names[i]);
-		while (found) {
-			loc = found - scratch.a;
-			erase_char(expansion, loc, loc + param_len - 1);
-			erase_char(&scratch, loc, loc + param_len - 1);
-			insert_array_char(expansion, loc, arg_expansion.a, arg_expansion.size-1);
-			insert_array_char(&scratch, loc, arg_expansion.a, arg_expansion.size-1);
+		loc = cstr_find_str(&scratch, p->names[i]);
+		while (loc != (size_t)-1) {
+			cstr_replace(expansion, loc, param_len, arg_expansion.a, arg_expansion.size); //assuming size doesn't include \0
+			cstr_replace(&scratch, loc, param_len, arg_expansion.a, arg_expansion.size); //assuming size doesn't include \0
 
 			//overwrite replacement in scratch with a character not allowed in identifiers
 			//so that replacement of a subsequent parameter won't replace within an expansion
 			//ie #define MYMACRO(a, b) a + b;
 			//called as MYMACRO(b, a) would wrongly go to b + b -> a + a instead of b + a
-			for (int j=loc; j < loc+arg_expansion.size-1; ++j)
+			for (int j=loc; j < loc+arg_expansion.size; ++j)
 				scratch.a[j] = '*';
 
-			search = &scratch.a[loc + arg_expansion.size-1];
-			found = strstr(search, p->names[i]);
+			loc = cstr_find_str_start_at(&scratch, p->names[i], loc+arg_expansion.size); //-1 here
 		}
-
 
 		//reset for next argument
 		arg_expansion.size = 0;
@@ -542,22 +532,22 @@ void parse_params(preprocessor_state* preproc, int macro, vector_char* expansion
 			preprocessor_error(&t, &preproc->lexer, "expected ) in function style macro with 0 arguments,");
 	}
 
-	free_vec_char(&arg_expansion);
-	free_vec_char(&scratch);
+	free_cstr(&arg_expansion);
+	free_cstr(&scratch);
 }
 
-unsigned int macro_expansion(preprocessor_state* preproc, vector_char* expansion, unsigned long beginning, vector_i* valid_macros, int macro_index)
+unsigned int macro_expansion(preprocessor_state* preproc, rsw_cstr* expansion, unsigned long beginning, vector_i* valid_macros, int macro_index)
 {
 	//vaild_macros should never be NULL unless I uncomment that alternative method in prescan_argument
 	//int macro = (valid_macros) ? valid_macros->a[macro_index] : macro_index;
 	int macro = valid_macros->a[macro_index];
 
-	vector_char local_expansion, scratch;
-	init_vec_char(&local_expansion, preproc->values.a[macro], strlen(preproc->values.a[macro])+1); //+ 1 for '\0'
-	vec_char_copy(&scratch, &local_expansion);
+	rsw_cstr local_expansion, scratch;
+	init_cstr_str(&local_expansion, preproc->values.a[macro], strlen(preproc->values.a[macro]));
+	init_cstr_str(&scratch, local_expansion.a, local_expansion.size);
 
-	vector_char arg_expansion;
-	vec_char(&arg_expansion, 0, 50);
+	rsw_cstr arg_expansion;
+	init_cstr_cap(&arg_expansion, 50);
 
 	macro_params* p = GET_PARAM(&preproc->params, macro);
 	int param_len, val_len, parens, loc;
@@ -594,25 +584,20 @@ unsigned int macro_expansion(preprocessor_state* preproc, vector_char* expansion
 			}
 		} while (*c != ',' || parens > 0);
 
-		insert_array_char(&arg_expansion, 0, macro_buf, val_len+1); //+1 for '\0'
+		cstr_insert_str(&arg_expansion, 0, macro_buf, val_len);
 		prescan_argument(preproc, &arg_expansion);
 
 		param_len = strlen(p->names[i]);
-		search = scratch.a;
 		
-		found = strstr(search, p->names[i]);
-		while (found) {
-			loc = found - scratch.a;
-			erase_char(&local_expansion, loc, loc + param_len - 1);
-			erase_char(&scratch, loc, loc + param_len - 1);
-			insert_array_char(&local_expansion, loc, arg_expansion.a, arg_expansion.size-1);
-			insert_array_char(&scratch, loc, arg_expansion.a, arg_expansion.size-1);
+		loc = cstr_find_str(&scratch, p->names[i]);
+		while (loc != (size_t)-1) {
+			cstr_replace(&local_expansion, loc, param_len, arg_expansion.a, arg_expansion.size); //assuming size doesn't include \0
+			cstr_replace(&scratch, loc, param_len, arg_expansion.a, arg_expansion.size); //assuming size doesn't include \0
 
-			for (int j=loc; j < loc+arg_expansion.size-1; ++j)
+			for (int j=loc; j < loc+arg_expansion.size; ++j)
 				scratch.a[j] = '*';
 
-			search = &scratch.a[loc + arg_expansion.size-1];
-			found = strstr(search, p->names[i]);
+			loc = cstr_find_str_start_at(&scratch, p->names[i], loc+arg_expansion.size); //-1 here?
 		}
 
 		arg_expansion.size = 0;
@@ -627,20 +612,19 @@ unsigned int macro_expansion(preprocessor_state* preproc, vector_char* expansion
 
 	rescan_expansion(preproc, &local_expansion, valid_macros, macro_index);
 
-	erase_char(expansion, beginning, c - expansion->a);
-	insert_array_char(expansion, beginning, local_expansion.a, local_expansion.size-1);
+	cstr_replace(expansion, beginning, (c - expansion->a) - beginning + 1, local_expansion.a, local_expansion.size);
 
 	unsigned int local_size = local_expansion.size;
 
-	free_vec_char(&local_expansion);
-	free_vec_char(&scratch);
-	free_vec_char(&arg_expansion);
+	free_cstr(&local_expansion);
+	free_cstr(&scratch);
+	free_cstr(&arg_expansion);
 
-	return beginning + local_size - 1;
+	return beginning + local_size;
 }
 
 
-void prescan_argument(preprocessor_state* preproc, vector_char* expansion)
+void prescan_argument(preprocessor_state* preproc, rsw_cstr* expansion)
 {
 	int loc, macro_name_len, macro_val_len;
 	char* ptr, *search, *found;
@@ -707,7 +691,7 @@ void prescan_argument(preprocessor_state* preproc, vector_char* expansion)
 
 			//since we should be working in tokens not characters
 			//I have to check that the result is not inside another identifier
-			//check before and after 
+			//check before and after TODO I think these tests are insufficient
 			if (found != expansion->a) {
 				if (isalpha(found[-1]) || found[-1] == '_') {
 					search = found + macro_name_len;
@@ -738,7 +722,7 @@ void prescan_argument(preprocessor_state* preproc, vector_char* expansion)
 	free_vec_i(&valid_macros);
 }
 
-void rescan_expansion(preprocessor_state* preproc, vector_char* expansion, vector_i* valid_macros, int macro_index)
+void rescan_expansion(preprocessor_state* preproc, rsw_cstr* expansion, vector_i* valid_macros, int macro_index)
 {
 	int loc, macro_name_len, macro_val_len;
 	char* ptr, *search, *found;
@@ -795,8 +779,8 @@ void handle_macro(preprocessor_state* preproc, int macro)
 	FILE* output = preproc->output;
 	lexer_state* lexer = &preproc->lexer;
 
-	vector_char expansion;
-	init_vec_char(&expansion, preproc->values.a[macro], strlen(preproc->values.a[macro])+1); //+1 for the '\0'
+	rsw_cstr expansion;
+	init_cstr_str(&expansion, preproc->values.a[macro], strlen(preproc->values.a[macro]));
 
 	macro_params* p = GET_PARAM(&preproc->params, macro);
 	
@@ -876,7 +860,7 @@ void handle_macro(preprocessor_state* preproc, int macro)
 
 exit:
 
-	free_vec_char(&expansion);
+	free_cstr(&expansion);
 	free_vec_i(&valid_macros);
 }
 

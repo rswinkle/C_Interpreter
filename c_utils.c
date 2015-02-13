@@ -12,18 +12,18 @@ char* mystrdup(const char* str)
 	 * 	return NULL;
 	 */
 	size_t len = strlen(str);
-	char* temp = calloc(len+1, sizeof(char));
+	char* temp = (char*)calloc(len+1, sizeof(char));
 	if (!temp) {
 		return NULL;
 	}
 
-	return memcpy(temp, str, len);  /* memcpy returns to, and calloc already nulled last char */
+	return (char*)memcpy(temp, str, len);  /* memcpy returns to, and calloc already nulled last char */
 }
 
 c_array init_c_array(byte* data, size_t elem_size, size_t len)
 {
 	c_array a = { NULL, elem_size, 0 };
-	a.data = malloc(len * elem_size + 1);
+	a.data = (byte*)malloc(len * elem_size + 1);
 	if (!a.data)
 		return a;
 
@@ -41,7 +41,7 @@ c_array init_c_array(byte* data, size_t elem_size, size_t len)
 c_array copy_c_array(c_array src)
 {
 	c_array a = { NULL, src.elem_size, 0 };
-	a.data = malloc(src.len * src.elem_size + 1);
+	a.data = (byte*)malloc(src.len * src.elem_size + 1);
 	if (!a.data)
 		return a;
 
@@ -79,7 +79,7 @@ int file_read(FILE* file, c_array* out)
 		return 0;
 	}
 
-	data = malloc(size+1);
+	data = (byte*)malloc(size+1);
 	if (!data) {
 		fclose(file);
 		return 0;
@@ -150,7 +150,7 @@ int file_open_readlines(const char* filename, c_array* lines, c_array* file_cont
 	}
 
 	len = file_contents->len / 60 + 1; /* start with conservative estimate if # of lines */
-	lines->data = malloc(len * sizeof(char*) + 1);
+	lines->data = (byte*)malloc(len * sizeof(char*) + 1);
 	if (!lines->data)
 		return 0;
 
@@ -165,7 +165,7 @@ int file_open_readlines(const char* filename, c_array* lines, c_array* file_cont
 			i++;
 			if (i == len) {
 				len *= 2;
-				if (!(char_ptr = realloc(lines->data, len * sizeof(char*) + 1))) {
+				if (!(char_ptr = (char**)realloc(lines->data, len * sizeof(char*) + 1))) {
 					free(lines->data);
 					lines->len = 0;
 					return 0;
@@ -177,7 +177,7 @@ int file_open_readlines(const char* filename, c_array* lines, c_array* file_cont
 		}
 	}
 
-	lines->data = realloc(char_ptr, i*sizeof(char*)+1);
+	lines->data = (byte*)realloc(char_ptr, i*sizeof(char*)+1);
 	lines->len = i;
 	lines->elem_size = sizeof(char*);
 
@@ -202,7 +202,7 @@ int freadstring_into_str(FILE* input, int delim, char* str, size_t len)
 		temp = getc(input);
 
 		if (temp == EOF || temp == delim) {
-			if (!i && temp == EOF) {
+			if (!i && temp != delim) {
 				return 0;
 			}
 			break;
@@ -237,7 +237,7 @@ char* freadstring(FILE* input, int delim, size_t max_len)
 		max_len = 4096;
 	}
 
-	if(!(string = malloc(max_len+1)))
+	if(!(string = (char*)malloc(max_len+1)))
 		return NULL;
 
 	while (1) {
@@ -248,7 +248,7 @@ char* freadstring(FILE* input, int delim, size_t max_len)
 				free(string);
 				return NULL;
 			}
-			tmp_str = realloc(string, i+1);
+			tmp_str = (char*)realloc(string, i+1);
 			if (!tmp_str) {
 				free(string);
 				return NULL;
@@ -259,7 +259,7 @@ char* freadstring(FILE* input, int delim, size_t max_len)
 
 		if (i == max_len) {
 			if (inf) {
-				tmp_str = realloc(string, max_len*2+1);
+				tmp_str = (char*)realloc(string, max_len*2+1);
 				if (!tmp_str) {
 					free(string);
 					return NULL;
@@ -337,7 +337,7 @@ char* readstring(c_array* input, char delim, size_t max_len)
 		max_len = 4096;
 	}
 
-	if (!(string = malloc(max_len+1)))
+	if (!(string = (char*)malloc(max_len+1)))
 		return NULL;
 
 	while (*p) {
@@ -348,7 +348,7 @@ char* readstring(c_array* input, char delim, size_t max_len)
 				free(string);
 				return NULL;
 			}
-			tmp_str = realloc(string, i+1);
+			tmp_str = (char*)realloc(string, i+1);
 			if (!tmp_str) {
 				free(string);
 				return NULL;
@@ -359,7 +359,7 @@ char* readstring(c_array* input, char delim, size_t max_len)
 
 		if (i == max_len) {
 			if (inf) {
-				tmp_str = realloc(string, max_len*2+1);
+				tmp_str = (char*)realloc(string, max_len*2+1);
 				if (!tmp_str) {
 					free(string);
 					return NULL;
@@ -382,7 +382,7 @@ char* readstring(c_array* input, char delim, size_t max_len)
 
 
 
-c_array slice_c_array(c_array array, int start, int end)
+c_array slice_c_array(c_array array, long start, long end)
 {
 	c_array a = { NULL, array.elem_size, 0 };
 	int len;
@@ -403,7 +403,7 @@ c_array slice_c_array(c_array array, int start, int end)
 		return a;
 
 	len = end - start;
-	if (!(a.data = malloc(len * array.elem_size + 1)))
+	if (!(a.data = (byte*)malloc(len * array.elem_size + 1)))
 		return a;
 
 	a.data[len * array.elem_size] = 0;  /* as with file read functions always null terminate */
@@ -414,12 +414,12 @@ c_array slice_c_array(c_array array, int start, int end)
 }
 
 /* TODO make skip_chars byte* or u8*? */
-int read_char(FILE* input, char* skip_chars, int complement, int clear_line)
+int read_char(FILE* input, const char* skip_chars, int complement, int clear_line)
 {
 	int c, ret;
 	byte tmp;
 	c_array skip;
-	char* tmp_skip = (skip_chars) ? skip_chars : "";
+	const char* tmp_skip = (skip_chars) ? skip_chars : "";
 
 	SET_C_ARRAY(skip, (byte*)skip_chars, 1, strlen(tmp_skip));
 
@@ -437,15 +437,15 @@ int read_char(FILE* input, char* skip_chars, int complement, int clear_line)
 	return ret;
 }
 
-char* read_string(FILE* file, char* skip_chars, int delim, size_t max_len)
+char* read_string(FILE* file, const char* skip_chars, int delim, size_t max_len)
 {
 	int tmp;
 	byte tmp2;
 	char* str = NULL;
 	c_array skip;
-	str = (skip_chars) ? skip_chars : "";
+	const char* tmp_skip = (skip_chars) ? skip_chars : "";
 
-	SET_C_ARRAY(skip, (byte*)skip_chars, 1, strlen(str));
+	SET_C_ARRAY(skip, (byte*)skip_chars, 1, strlen(tmp_skip));
 
 	do {
 		tmp = getc(file);
@@ -474,13 +474,13 @@ int split(c_array* array, byte* delim, size_t delim_len, c_array* out)
 	byte* match;
 	c_array* results;
 
-	out->data = malloc(max_len*sizeof(c_array)+1);
+	out->data = (byte*)malloc(max_len*sizeof(c_array)+1);
 	if (!out->data)
 		return 0;
 
 	results = (c_array*)out->data;
 
-	while (match = memchr(&array->data[pos], delim[0], array->len*array->elem_size - pos)) {
+	while (match = (byte*)memchr(&array->data[pos], delim[0], array->len*array->elem_size - pos)) {
 		if (!memcmp(match, delim, delim_len)) {
 			results[out->len].data = &array->data[pos];
 			results[out->len].elem_size = 1;
@@ -489,7 +489,7 @@ int split(c_array* array, byte* delim, size_t delim_len, c_array* out)
 			out->len++;
 			if (out->len == max_len) {
 				max_len *= 2;
-				out->data = realloc(results, max_len*out->elem_size + 1);
+				out->data = (byte*)realloc(results, max_len*out->elem_size + 1);
 				if (!out->data) {
 					free(results);
 					out->data = NULL;
@@ -511,7 +511,7 @@ int split(c_array* array, byte* delim, size_t delim_len, c_array* out)
 		out->len++;
 	}
 
-	results = realloc(out->data, out->len*out->elem_size+1);
+	results = (c_array*)realloc(out->data, out->len*out->elem_size+1);
 	if (!results) {
 		free(out->data);
 		out->data = NULL;
@@ -553,11 +553,11 @@ char* trim(char* str)
 }
 
 
-long find(c_array haystack, c_array needle)
+size_t find(c_array haystack, c_array needle)
 {
 	byte* result = haystack.data;
 	byte* end = haystack.data + haystack.len*haystack.elem_size;
-	while (result = memchr(result, needle.data[0], end-result)) {
+	while (result = (byte*)memchr(result, needle.data[0], end-result)) {
 		if (!memcmp(result, needle.data, needle.len*needle.elem_size)) {
 			return result - haystack.data;
 		} else {
@@ -565,7 +565,7 @@ long find(c_array haystack, c_array needle)
 		}
 	}
 
-	return -1;
+	return -1; /* make a macro or static const size_t npos = -1 ? */
 }
 
 /*
@@ -873,13 +873,13 @@ char* int_to_str(int num, int base)
 		pos++;
 	}
 
-	ret = calloc(buf + INT_MAX_LEN+1 - pos, sizeof(char));
+	ret = (char*)calloc(buf + INT_MAX_LEN+1 - pos, sizeof(char));
 	if (!ret) {
 		fprintf(stderr, "Failed to allocate memory!\n");
 		return NULL;
 	}
 
-	return memcpy(ret, pos, buf + INT_MAX_LEN - pos);  /* memcpy returns to, and calloc already nulled last char */
+	return (char*)memcpy(ret, pos, buf + INT_MAX_LEN - pos);  /* memcpy returns to, and calloc already nulled last char */
 }
 
 float rand_float(float min, float max)
@@ -891,5 +891,6 @@ double rand_double(double min, double max)
 {
 	return ((double)rand()/(double)(RAND_MAX-1))*(max-min) + min;
 }
+
 
 

@@ -19,11 +19,12 @@ solution "CInterpreter"
 		"lexer.h",
 		"c_utils.c",
 		"c_utils.h",
+		"rsw_cstr.c",
+		"rsw_cstr.h",
 		"cvector.h",
 		"clist.h",
 		"preprocessor.c",
 		"preprocessor.h",
-		"vector_char.h",
 		"vector_token_lex.h"
 		}
 		--excludes { }

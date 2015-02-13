@@ -69,6 +69,7 @@ OBJECTS := \
 	$(OBJDIR)/interpreter.o \
 	$(OBJDIR)/lexer.o \
 	$(OBJDIR)/c_utils.o \
+	$(OBJDIR)/rsw_cstr.o \
 	$(OBJDIR)/preprocessor.o \
 
 RESOURCES := \
@@ -143,6 +144,9 @@ $(OBJDIR)/lexer.o: ../lexer.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(CFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/c_utils.o: ../c_utils.c
+	@echo $(notdir $<)
+	$(SILENT) $(CC) $(CFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/rsw_cstr.o: ../rsw_cstr.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(CFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/preprocessor.o: ../preprocessor.c
