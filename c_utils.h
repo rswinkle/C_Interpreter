@@ -35,6 +35,7 @@ int file_read(FILE* file, c_array* out);
 int file_open_write(const char* filename, const char* mode, c_array* out);
 int file_write(FILE* file, c_array* out);
 int file_open_readlines(const char* filename, c_array* lines, c_array* file_contents);
+int file_readlines(FILE* file, c_array* lines, c_array* file_contents);
 
 int freadstring_into_str(FILE* input, int delim, char* str, size_t len);
 int freadline_into_str(FILE* input, char* str, size_t len);

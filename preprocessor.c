@@ -505,11 +505,11 @@ void parse_params(preprocessor_state* preproc, int macro, rsw_cstr* expansion)
 
 		param_len = strlen(p->names[i]);
 	//	val_len = strlen(macro_buf);
-		
+
 		loc = cstr_find_str(&scratch, p->names[i]);
 		while (loc != (size_t)-1) {
-			cstr_replace(expansion, loc, param_len, arg_expansion.a, arg_expansion.size); //assuming size doesn't include \0
-			cstr_replace(&scratch, loc, param_len, arg_expansion.a, arg_expansion.size); //assuming size doesn't include \0
+			cstr_replace_substr(expansion, loc, param_len, arg_expansion.a, arg_expansion.size); //assuming size doesn't include \0
+			cstr_replace_substr(&scratch, loc, param_len, arg_expansion.a, arg_expansion.size); //assuming size doesn't include \0
 
 			//overwrite replacement in scratch with a character not allowed in identifiers
 			//so that replacement of a subsequent parameter won't replace within an expansion
@@ -591,8 +591,8 @@ unsigned int macro_expansion(preprocessor_state* preproc, rsw_cstr* expansion, u
 		
 		loc = cstr_find_str(&scratch, p->names[i]);
 		while (loc != (size_t)-1) {
-			cstr_replace(&local_expansion, loc, param_len, arg_expansion.a, arg_expansion.size); //assuming size doesn't include \0
-			cstr_replace(&scratch, loc, param_len, arg_expansion.a, arg_expansion.size); //assuming size doesn't include \0
+			cstr_replace_substr(&local_expansion, loc, param_len, arg_expansion.a, arg_expansion.size); //assuming size doesn't include \0
+			cstr_replace_substr(&scratch, loc, param_len, arg_expansion.a, arg_expansion.size); //assuming size doesn't include \0
 
 			for (int j=loc; j < loc+arg_expansion.size; ++j)
 				scratch.a[j] = '*';
@@ -612,7 +612,7 @@ unsigned int macro_expansion(preprocessor_state* preproc, rsw_cstr* expansion, u
 
 	rescan_expansion(preproc, &local_expansion, valid_macros, macro_index);
 
-	cstr_replace(expansion, beginning, (c - expansion->a) - beginning + 1, local_expansion.a, local_expansion.size);
+	cstr_replace_substr(expansion, beginning, (c - expansion->a) - beginning + 1, local_expansion.a, local_expansion.size);
 
 	unsigned int local_size = local_expansion.size;
 

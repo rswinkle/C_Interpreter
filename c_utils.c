@@ -20,6 +20,8 @@ char* mystrdup(const char* str)
 	return (char*)memcpy(temp, str, len);  /* memcpy returns to, and calloc already nulled last char */
 }
 
+/** Creates a new c_array, with given parameters.  Copies data
+ * into newly allocated space, null terminated */
 c_array init_c_array(byte* data, size_t elem_size, size_t len)
 {
 	c_array a = { NULL, elem_size, 0 };
@@ -38,6 +40,8 @@ c_array init_c_array(byte* data, size_t elem_size, size_t len)
 	return a;
 }
 
+/** Creates a full copy of src, data copied into newly
+ * allocated space. */
 c_array copy_c_array(c_array src)
 {
 	c_array a = { NULL, src.elem_size, 0 };
@@ -50,7 +54,7 @@ c_array copy_c_array(c_array src)
 	return a;
 }
 
-
+/** Same as file_read but opens filename first */
 int file_open_read(const char* filename, const char* mode, c_array* out)
 {
 	FILE *file = fopen(filename, mode);
@@ -61,7 +65,10 @@ int file_open_read(const char* filename, const char* mode, c_array* out)
 }
 
 
-
+/** Read file into uninitialized c_array out. out.len is set
+ * to the size of the file, the data is read into out.data and
+ * NULL terminated.  file is closed before returning (since you
+ * just read the entire file ...). */
 int file_read(FILE* file, c_array* out)
 {
 	byte* data;
@@ -97,14 +104,13 @@ int file_read(FILE* file, c_array* out)
 
 	out->data = data;
 	out->len = size;
-	out->elem_size = 1;
 
 	fclose(file);
 	return size;
 }
 
 
-
+/** Same as file_write but opens filename first */
 int file_open_write(const char* filename, const char* mode, c_array* out)
 {
 	FILE* file = fopen(filename, mode);
@@ -114,6 +120,7 @@ int file_open_write(const char* filename, const char* mode, c_array* out)
 	return file_write(file, out);
 }
 
+/** Writes contents of out to file and closes file */
 int file_write(FILE* file, c_array* out)
 {
 	int ret = fwrite(out->data, out->elem_size, out->len, file);
@@ -129,13 +136,14 @@ int file_write(FILE* file, c_array* out)
 
 
 
-/*
- * builds an array of pointers to the strings in file_contents.  file_contents->data
- * is output from file_read or file_open_read or similar block of text/data.  The pointers
- * in lines are not allocated but point into file_contents->data ie file_contents->data
- * is modified to turn '\n' to '\0'
+/** Reads file into uninitialized c_array file_contents.
+ * Uninitialized c_array lines is filled with char* pointers to lines in file_contents.data.
+ * The lines are not allocated but point into file_contents->data ie file_contents->data
+ * is modified to turn '\n' to '\0' so you can do this
+ * printf("\"%s\"\n", ((char**)lines_array.data)[i]);
+ * and you only have to free file_contents.data and line_array.data.
  */
-int file_open_readlines(const char* filename, c_array* lines, c_array* file_contents)
+int file_readlines(FILE* file, c_array* lines, c_array* file_contents)
 {
 	int i, pos, len;
 	char** char_ptr = NULL;
@@ -145,7 +153,7 @@ int file_open_readlines(const char* filename, c_array* lines, c_array* file_cont
 	lines->len = 0;
 	lines->elem_size = 1;
 
-	if (!file_open_read(filename, "r", file_contents)) {
+	if (!file_read(file, file_contents)) {
 		return 0;
 	}
 
@@ -184,12 +192,23 @@ int file_open_readlines(const char* filename, c_array* lines, c_array* file_cont
 	return 1;
 }
 
+/** Same as file_readlines but opens filename first */
+int file_open_readlines(const char* filename, c_array* lines, c_array* file_contents)
+{
+	FILE* file = fopen(filename, "r");
+	if (!file)
+		return 0;
+
+	return file_readlines(file, lines, file_contents);
+}
 
 int freadline_into_str(FILE* input, char* str, size_t len)
 {
 	return freadstring_into_str(input, '\n', str, len);
 }
 
+/** Reads up to len-1 characters into str or until delim is hit.
+ *  Delim is not included, and str is always NULL terminated.*/
 int freadstring_into_str(FILE* input, int delim, char* str, size_t len)
 {
 	int temp;
@@ -222,6 +241,12 @@ char* freadline(FILE* input)
 	return freadstring(input, '\n', 0);
 }
 
+/** Reads and returns a newly allocated string from file.  It reads
+ * until delim is reached or max_len characters are read.  Delim is not
+ * included in the string.  max_len refers to the resulting strlen, and
+ * the string is always null terminated.  If max_len is 0, freadstring
+ * will continue to read, reallocated as necessary, until delim is hit
+ * or allocation fails */
 char* freadstring(FILE* input, int delim, size_t max_len)
 {
 	char* string = NULL, *tmp_str = NULL;
@@ -292,6 +317,7 @@ int readline_into_str(c_array* input, char* str, size_t len)
 	return readstring_into_str(input, '\n', str, len);
 }
 
+/** Same as freadstring_into_str but reads from c_array input */
 int readstring_into_str(c_array* input, char delim, char* str, size_t len)
 {
 	char temp;
@@ -321,6 +347,7 @@ char* readline(c_array* input)
 	return readstring(input, '\n', 0);
 }
 
+/** Same as freadstring but reads from c_array input */
 char* readstring(c_array* input, char delim, size_t max_len)
 {
 	char* string = NULL, *tmp_str = NULL;
@@ -381,7 +408,8 @@ char* readstring(c_array* input, char delim, size_t max_len)
 }
 
 
-
+/** Behaves like Python's simple slicing, returning a c_array
+ *  sliced from array */
 c_array slice_c_array(c_array array, long start, long end)
 {
 	c_array a = { NULL, array.elem_size, 0 };
@@ -413,7 +441,10 @@ c_array slice_c_array(c_array array, long start, long end)
 	return a;
 }
 
-/* TODO make skip_chars byte* or u8*? */
+/** Reads characters until one is found that isn't in skip_chars or (if complement
+ * is non-zero) until one is in skip_chars.  Return found char.  If clear_line
+ * is non-zero skip forward in file to next '\n'.  See tests for example
+ * TODO make skip_chars byte* or u8*? */
 int read_char(FILE* input, const char* skip_chars, int complement, int clear_line)
 {
 	int c, ret;
@@ -437,11 +468,12 @@ int read_char(FILE* input, const char* skip_chars, int complement, int clear_lin
 	return ret;
 }
 
+/* Same as freadstring except it ignores any characters in skip_chars first.
+ * Note, string can still contain chars in skip_chars, it just can't start with any. */
 char* read_string(FILE* file, const char* skip_chars, int delim, size_t max_len)
 {
 	int tmp;
 	byte tmp2;
-	char* str = NULL;
 	c_array skip;
 	const char* tmp_skip = (skip_chars) ? skip_chars : "";
 
@@ -454,17 +486,14 @@ char* read_string(FILE* file, const char* skip_chars, int delim, size_t max_len)
 		tmp2 = tmp;
 	} while (is_any(&skip, &tmp2, are_equal_uchar));
 	ungetc(tmp, file);
-	do {
-		str = freadstring(file, delim, max_len);
-	} while (!str);
-
-	return str;
+	
+	return freadstring(file, delim, max_len);
 }
 
 
-/* fills out.data with c_array's whose data members point at the split
- * out strings in array.data, iow you don't free anything in out.
- * see example usage in main.c ... for now I don't NULL out delimiter
+/** Fills uninitialized c_array out with c_array's whose data members point at the split
+ * segments in array.data, iow you don't free anything in out.
+ * see example usage in tests ... I don't NULL out delimiter
  * so you can't just print ((*c_array)&out.data[i])->data as a string */
 int split(c_array* array, byte* delim, size_t delim_len, c_array* out)
 {
@@ -480,6 +509,8 @@ int split(c_array* array, byte* delim, size_t delim_len, c_array* out)
 
 	results = (c_array*)out->data;
 
+	/* Not using strstr because c_utils/c_arrays and this function are meant to handle arbitrary data
+ 	 * not just chars/strings */
 	while (match = (byte*)memchr(&array->data[pos], delim[0], array->len*array->elem_size - pos)) {
 		if (!memcmp(match, delim, delim_len)) {
 			results[out->len].data = &array->data[pos];
@@ -524,7 +555,7 @@ int split(c_array* array, byte* delim, size_t delim_len, c_array* out)
 	return 1;
 }
 
-
+/** Removes leading whitespace from string */
 char* ltrim(char* str)
 {
 	int i = 0;
@@ -536,6 +567,7 @@ char* ltrim(char* str)
 	return str;
 }
 
+/** Removes trailing whitespace from string */
 char* rtrim(char* str)
 {
 	int i;
@@ -547,12 +579,14 @@ char* rtrim(char* str)
 	return str;
 }
 
+/** Removes whitespace on both ends of string */
 char* trim(char* str)
 {
 	return ltrim(rtrim(str));
 }
 
-
+/** Searches for needle in haystack returning first result or -1
+ *  which, since size_t is unsigned is converted to size_t's max value */
 size_t find(c_array haystack, c_array needle)
 {
 	byte* result = haystack.data;
@@ -569,7 +603,7 @@ size_t find(c_array haystack, c_array needle)
 }
 
 /*
-
+TODO finish without using vector_int ...
 void find_all(c_array haystack, c_array needle, vector_int* vec)
 {
 	byte* result = haystack.data;
@@ -585,6 +619,7 @@ void find_all(c_array haystack, c_array needle, vector_int* vec)
 }
 */
 
+/** My implementation of std C's bsearch, no particular reason to use it over bsearch */
 void* mybsearch(const void *key, const void *buf, size_t num, size_t size, int (*compare)(const void *, const void *))
 {
 	size_t min = 0, max = num-1;
@@ -605,7 +640,7 @@ void* mybsearch(const void *key, const void *buf, size_t num, size_t size, int (
 }
 
 
-
+/** All these compare functions are premade for std C's qsort and bsearch */
 int compare_char(const void* a, const void* b)
 {
 	char a_ = *(char*)a;
@@ -747,7 +782,7 @@ int compare_string(const void* a, const void* b)
 
 
 
-
+/** All these are_equal functions are premade for my is_any function */
 int are_equal_char(const void* a, const void* b)
 {
 	return *(char*)a == *(char*)b;
@@ -804,9 +839,8 @@ int are_equal_string(const void* a, const void* b)
 }
 
 
-//int is_any_array
 
-
+/** Returns true if are_equal returns true for the_one and any element of array */
 int is_any(c_array* array, const void* the_one, int (*are_equal)(const void*, const void*))
 {
 	size_t i;
@@ -819,7 +853,7 @@ int is_any(c_array* array, const void* the_one, int (*are_equal)(const void*, co
 
 
 
-
+/** Returns true if is_true returns true for any element of array */
 int any(c_array* array, int (*is_true)(const void*))
 {
 	size_t i;
@@ -831,7 +865,7 @@ int any(c_array* array, int (*is_true)(const void*))
 	return 0;
 }
 
-
+/** Returns true if is_true returns true for every element of array */
 int all(c_array* array, int (*is_true)(const void*))
 {
 	size_t i;
@@ -843,7 +877,7 @@ int all(c_array* array, int (*is_true)(const void*))
 	return 1;
 }
 
-
+/** Executes func on all elements of array */
 void map(c_array* array, void (*func)(const void*))
 {
 	size_t i;
@@ -852,7 +886,8 @@ void map(c_array* array, void (*func)(const void*))
 	}
 }
 
-
+/** Converts num to a string in with base base (2-16).
+ *  not thread safe */
 char* int_to_str(int num, int base)
 {
 	static char buf[INT_MAX_LEN+1];
@@ -882,11 +917,13 @@ char* int_to_str(int num, int base)
 	return (char*)memcpy(ret, pos, buf + INT_MAX_LEN - pos);  /* memcpy returns to, and calloc already nulled last char */
 }
 
+/** Returns a random float [min, max) */
 float rand_float(float min, float max)
 {
 	return ((float)rand()/(float)(RAND_MAX-1))*(max-min) + min;
 }
 
+/** Returns a random double [min, max) */
 double rand_double(double min, double max)
 {
 	return ((double)rand()/(double)(RAND_MAX-1))*(max-min) + min;

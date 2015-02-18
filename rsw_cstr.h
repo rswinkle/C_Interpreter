@@ -73,8 +73,9 @@ size_t cstr_find_start_at(rsw_cstr* str, rsw_cstr* needle, size_t start);
 size_t cstr_find_str(rsw_cstr* str, char* needle);
 size_t cstr_find_str_start_at(rsw_cstr* str, char* needle, size_t start);
 
-int cstr_replace(rsw_cstr* str, size_t index, size_t num, char* a, size_t len);
-int cstr_replace_cstr(rsw_cstr* str, size_t index, size_t num, rsw_cstr* str2);
+int cstr_replace(rsw_cstr* str, char* find, char* a, size_t num);
+int cstr_replace_substr(rsw_cstr* str, size_t index, size_t num, char* a, size_t len);
+int cstr_replace_substr_cstr(rsw_cstr* str, size_t index, size_t num, rsw_cstr* str2);
 
 int cstr_split(rsw_cstr* str, rsw_cstr* delim, rsw_cstr** results, size_t* num_results);
 
