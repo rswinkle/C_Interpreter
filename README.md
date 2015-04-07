@@ -4,6 +4,8 @@ C_Interpreter
 [![Build Status](https://travis-ci.org/rswinkle/C_Interpreter.svg?branch=master)](https://travis-ci.org/rswinkle/C_Interpreter)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/3624/badge.svg)](https://scan.coverity.com/projects/3624)
 
+[![Contact me on Codementor](https://cdn.codementor.io/badges/contact_me_github.svg)](https://www.codementor.io/rswinkle)
+
 This started as C port of an old college assignment
 in C++.  You can see that in the first commit though I
 might have made some minor changes/improvements during
