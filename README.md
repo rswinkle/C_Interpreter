@@ -22,7 +22,7 @@ If you're looking for something more professional there's
 * [Cling](http://root.cern.ch/drupal/content/cling)
 * [Ch](http://www.softintegration.com/)
 
-* [tcc](http://en.wikipedia.org/wiki/Tiny_C_Compiler), a compiler that's so
+* [TCC](http://en.wikipedia.org/wiki/Tiny_C_Compiler), a compiler that's so
 fast and self-contained they have a command line switch -run to immediately
 run it after compiling so you can use C as a JIT scripting language,
 
@@ -78,164 +78,164 @@ Current Grammar (work in progress)
 	initialized_declarator_list     -> initialized_declarator
 	                                   initialized_declarator_list ',' initialized_declarator
 
-	initialized_declarator    -> identifier
-                          	  -> identifier '=' assign_expr
+	initialized_declarator          -> identifier
+	                                   identifier '=' assign_expr
 
-	declaration_specifier     -> char, signed char
-	                             short, short int, signed short, signed short int
-	                             int, signed int, signed
-	                             long, long int, signed long, signed long int
+	declaration_specifier           -> char, signed char
+	                                   short, short int, signed short, signed short int
+	                                   int, signed int, signed
+	                                   long, long int, signed long, signed long int
 
-	                             unsigned char
-	                             unsigned short, unsigned short int
-	                             unsigned, unsigned int
-	                             unsigned long, unsigned long int
+	                                   unsigned char
+	                                   unsigned short, unsigned short int
+	                                   unsigned, unsigned int
+	                                   unsigned long, unsigned long int
 
-	                             float
-	                             double
+	                                   float
+	                                   double
 
-	compound_statement        -> '{' decl_or_stmt_list '}'
+	compound_statement              -> '{' decl_or_stmt_list '}'
 
-	decl_or_stmt_list         -> decl_or_stmt
-	                             decl_or_stmt_list decl_or_stmt
+	decl_or_stmt_list               -> decl_or_stmt
+	                                   decl_or_stmt_list decl_or_stmt
 
-	decl_or_stmt              -> declaration
-	                             statement
+	decl_or_stmt                    -> declaration
+	                                   statement
 
-	statement                 -> expr_stmt
-	                             while_stmt
-	                             for_stmt
-	                             do_stmt
-	                             if_stmt
-	                             print_stmt
-	                             compound_statement
-	                             return_stmt
-	                             goto_stmt
-	                             labeled_stmt
-	                             break_or_continue_stmt
-	                             switch_stmt
-	                             case_or_default_stmt
-	                             null_stmt
+	statement                       -> expr_stmt
+	                                   while_stmt
+	                                   for_stmt
+	                                   do_stmt
+	                                   if_stmt
+	                                   print_stmt
+	                                   compound_statement
+	                                   return_stmt
+	                                   goto_stmt
+	                                   labeled_stmt
+	                                   break_or_continue_stmt
+	                                   switch_stmt
+	                                   case_or_default_stmt
+	                                   null_stmt
 
-	null_stmt                 -> ';'
+	null_stmt                       -> ';'
 
-	switch_stmt               -> switch '(' expr ')' statement
+	switch_stmt                     -> switch '(' expr ')' statement
 
-	case_or_default_stmt      -> case constant_expr ':'
-	                             default ':'
+	case_or_default_stmt            -> case constant_expr ':'
+	                                   default ':'
 
-	constant_expr             -> cond_expr  //nothing but integer literals allowed
-	                                        //see tests/switch.c
+	constant_expr                   -> cond_expr  //nothing but integer literals allowed
+	                                              //see tests/switch.c
 
-	break_or_continue_stmt    -> break ';'
-	                             continue ';'
+	break_or_continue_stmt          -> break ';'
+	                                   continue ';'
 
-	labeled_stmt              -> identifier ':' statement
+	labeled_stmt                    -> identifier ':' statement
 
-	do_stmt                   -> do statement while '(' expr ')' ';'
+	do_stmt                         -> do statement while '(' expr ')' ';'
 
-	while_stmt                -> while '(' expr ')' statement
+	while_stmt                      -> while '(' expr ')' statement
 
-	for_stmt                  -> for for_expressions statement
+	for_stmt                        -> for for_expressions statement
 
-	for_expressions           -> '(' initial_clause<opt> ';' expr<opt> ';' expr<opt> ')'
+	for_expressions                 -> '(' initial_clause<opt> ';' expr<opt> ';' expr<opt> ')'
 
-	initial_clause            -> expr
-	                             declaration
+	initial_clause                  -> expr
+	                                   declaration
 
-	if_stmt                   -> if '(' expr ')' statement
-	                             if '(' expr ')' statement else statement
+	if_stmt                         -> if '(' expr ')' statement
+	                                   if '(' expr ')' statement else statement
 
-	print_stmt                -> print expr ';'
+	print_stmt                      -> print expr ';'
 
-	goto_stmt                 -> goto identifier ';'
+	goto_stmt                       -> goto identifier ';'
 
-	expr_stmt                 -> expr ';'
+	expr_stmt                       -> expr ';'
 
-	expr                      -> comma_expr
+	expr                            -> comma_expr
 
-	comma_expr                -> assign_expr
-	                             assign_expr ',' assign_expr
+	comma_expr                      -> assign_expr
+	                                   assign_expr ',' assign_expr
 
-	assign_expr               -> cond_expr
-	                             identifier assign_op assign_expr
+	assign_expr                     -> cond_expr
+	                                   identifier assign_op assign_expr
 
-	assign_op                 -> one of '=' '+=' '-=' '*=' '/=' '%='
+	assign_op                       -> one of '=' '+=' '-=' '*=' '/=' '%='
 
-	cond_expr                 -> logical_or_expr
-	                             logica_or_expr '?' expr ':' cond_expr
+	cond_expr                       -> logical_or_expr
+	                                   logica_or_expr '?' expr ':' cond_expr
 
-	logical_or_expr           -> logical_and_expr
-	                             logical_or_expr '||' logical_and_expr
+	logical_or_expr                 -> logical_and_expr
+	                                   logical_or_expr '||' logical_and_expr
 
-	logical_and_expr          -> bit_or_expr
-	                             logical_and_expr '&&' bit_or_expr
+	logical_and_expr                -> bit_or_expr
+	                                   logical_and_expr '&&' bit_or_expr
 
-	bit_or_expr               -> bit_xor_expr
-	                             bit_or_expr '|' bit_xor_expr
+	bit_or_expr                     -> bit_xor_expr
+	                                   bit_or_expr '|' bit_xor_expr
 
-	bit_xor_expr              -> bit_and_expr
-	                             bit_xor_expr '^' bit_and_expr
+	bit_xor_expr                    -> bit_and_expr
+	                                   bit_xor_expr '^' bit_and_expr
 
-	bit_and_expr              -> equality_expr
-	                             bit_and_expr '&' equality_expr
+	bit_and_expr                    -> equality_expr
+	                                   bit_and_expr '&' equality_expr
 
-	equality_expr             -> relational_expr
-	                             equality_expr '==' relational_expr
-	                             equality_expr '!=' relational_expr
+	equality_expr                   -> relational_expr
+	                                   equality_expr '==' relational_expr
+	                                   equality_expr '!=' relational_expr
 
-	relational_expr           -> shift_expr
-	                             relational_expr relational_op shift_expr
+	relational_expr                 -> shift_expr
+	                                   relational_expr relational_op shift_expr
 
-	relational_op             -> one of '<' '>' '<=' '>='
+	relational_op                   -> one of '<' '>' '<=' '>='
 
-	shift_expr                -> add_expr
-	                             shift_expr '<<' add_expr
-	                             shift_expr '>>' add_expr
+	shift_expr                      -> add_expr
+	                                   shift_expr '<<' add_expr
+	                                   shift_expr '>>' add_expr
 
-	add_expr                  -> mult_expr
-	                             add_expr '+' mult_expr
-	                             add_expr '-' mult_expr
+	add_expr                        -> mult_expr
+	                                   add_expr '+' mult_expr
+	                                   add_expr '-' mult_expr
 
-	mult_expr                 -> unary_expr
-	                             mult_expr mult_op unary_expr
+	mult_expr                       -> unary_expr
+	                                   mult_expr mult_op unary_expr
 
-	mult_op                   -> one of '*' '/' '%'
+	mult_op                         -> one of '*' '/' '%'
 
-	unary_expr                -> postfix_expr
-	                             bit_negation_expr
-	                             logical_negation_expr
-	                             preincrement_expr
-	                             predecrement_expr
+	unary_expr                      -> postfix_expr
+	                                   bit_negation_expr
+	                                   logical_negation_expr
+	                                   preincrement_expr
+	                                   predecrement_expr
 
-	preincrement_expr         -> '++' unary_expr
-	predecrement_expr         -> '--' unary_expr
+	preincrement_expr               -> '++' unary_expr
+	predecrement_expr               -> '--' unary_expr
 
-	logical_negation_expr     -> '!' unary_expr
+	logical_negation_expr           -> '!' unary_expr
 
-	bit_negation_expr         -> '~' unary_expr
+	bit_negation_expr               -> '~' unary_expr
 
-	postfix_expr              -> function_call
-	                             primary_expr
-	                             postincrement_expr
-	                             postdecrement_expr
+	postfix_expr                    -> function_call
+	                                   primary_expr
+	                                   postincrement_expr
+	                                   postdecrement_expr
 
-	postincrement_expr        -> postfix_expr '++'
-	postdecrement_expr        -> postfix_expr '--'
+	postincrement_expr              -> postfix_expr '++'
+	postdecrement_expr              -> postfix_expr '--'
 
-	function_call             -> identifier '(' expression_list ')'
+	function_call                   -> identifier '(' expression_list ')'
 
-	expression_list           -> assign_expr
-	                             expression_list ',' assign_expr
+	expression_list                 -> assign_expr
+	                                   expression_list ',' assign_expr
 
-	primary_expr              -> identifier
-	                             constant
-	                             '(' expr ')'
+	primary_expr                    -> identifier
+	                                   constant
+	                                   '(' expr ')'
 
 
 Building and Running
 ====================
-I use premake (http://industriousone.com/premake) for generating makefiles and have shell scripts for running
+I use [premake](http://premake.github.io/) for generating makefiles and have shell scripts for running
 all my tests at once.
 
 	~ $ git clone https://github.com/rswinkle/C_Interpreter.git
