@@ -1,8 +1,46 @@
+<!DOCTYPE html>
+
+	<head>
+	
+<title>C_Interpreter | Robert Winkler</title>
+
+
+	<link rel="stylesheet" type="text/css" href="/css/global.css">
+	<meta charset="utf-8" />
+	<script type="text/javascript" src="/scripts/changetheme.js"></script>
+
+	</head>
+
+
+<body>
+
+
+	<div class="navbar">
+		<div class="container flex">
+			<div>
+			<h1>Robert Winkler</h1>
+			<a id="theme" href="#dark" onclick="change('/css/global.css', '/css/dark.css');">Dark Theme</a>
+			</div>
+			<table>
+				<tr>
+					<td><a href="/">Home</a></td>
+					<td><a href="/blog/">Blog</a></td>
+					<td><a href="/projects/">Projects</a></td>
+				</tr>
+			</table>
+		</div>
+	</div>
+
+
+<div class="container">
+
+
+
 <h1>C_Interpreter</h1>
+
 <p><a href="https://travis-ci.org/rswinkle/C_Interpreter"><img alt="Build Status" src="https://travis-ci.org/rswinkle/C_Interpreter.svg?branch=master"></a>
 <a href="https://scan.coverity.com/projects/3624"><img alt="Coverity Scan Build Status" src="https://scan.coverity.com/projects/3624/badge.svg"></a></p>
 <p><a href="https://www.codementor.io/rswinkle"><img alt="Contact me on Codementor" src="https://cdn.codementor.io/badges/contact_me_github.svg"></a></p>
-<p><a href="http://www.robertwinkler.com/projects/c_interpreter.html">http://www.robertwinkler.com/projects/c_interpreter.html</a></p>
 <p>This started as C port of an old college assignment
 in C++.  You can see that in the first commit though I
 might have made some minor changes/improvements during
@@ -10,6 +48,9 @@ port.</p>
 <p>Now my goal is to make something approaching scriptable
 C.  I'll consider it done when it can run itself ...
 so it'll probably never be completely done.</p>
+<h1>Download</h1>
+<p>Get the source from <a href="https://github.com/rswinkle/C_Interpreter">Github</a>.</p>
+<h1>Alternatives</h1>
 <p>If you're looking for something more professional there's</p>
 <ul>
 <li><a href="http://root.cern.ch/drupal/content/cling">Cling</a></li>
@@ -22,20 +63,19 @@ fast and self-contained they have a command line switch -run to immediately
 run it after compiling so you can use C as a JIT scripting language,</p>
 </li>
 </ul>
+<h1>Tests</h1>
 <p>I've kept the old tests around (updating them so they
 keep working) but I've been adding new tests for
 new features.  They're not comprehensive and they
 don't test every edge case but they're growing.</p>
+<h1>Misc</h1>
 <p>I'm using the 5th edition of C: A Reference Manual for
 all the nitty gritty details and the very convenient
 complete C grammar/syntax in the appendix.</p>
-<p>The grammar below is the current status more or less.
-It'll be interesting to see how it grows and which
-parts converge with full syntax first.</p>
 <p>I've also added a BNF spec for C I found online just
 to have something for reference in the repository.</p>
-<p>I've now added a preprocessor which currently supports
-the following (and of course actually using the macros):</p>
+<h1>Current Grammar (work in progress)</h1>
+<h3>Preprocessor</h3>
 <pre><code>#include "relative path based on current directory"
 #define name
 #define name sequence_of_tokens
@@ -43,7 +83,8 @@ the following (and of course actually using the macros):</p>
 #undef name
 # (null directive)
 </code></pre>
-<h1>Current Grammar (work in progress)</h1>
+<p>It also of course supports actually using the macros.</p>
+<h3>C language</h3>
 <pre><code>translation_unit                -&gt; top_level_declaration
                                    translation_unit top_level_declaration
 
@@ -262,3 +303,45 @@ comparing output of ../tests/problem6.txt
 ...
 ~/C_Interpreter/build $
 </code></pre>
+
+
+</div>
+
+
+	<div class="footer">
+		<div class="container flex">
+			<a href="https://github.com/rswinkle">
+				<img alt="github" src="/images/icons/github.svg">
+			</a>
+			<a href="https://www.linkedin.com/in/rswinkle">
+				<img alt="linkedin" src="/images/icons/linkedin.svg">
+			</a>
+			<a href="https://www.google.com/+RobertWinkler25">
+				<img alt="google+" src="/images/icons/google+.svg">
+			</a>
+			<a href="https://www.goodreads.com/user/show/909505-robert">
+				<img alt="goodreads" src="/images/icons/goodreads.svg">
+			</a>
+			<a href="https://twitter.com/robertwinkler9">
+				<img alt="twitter" src="/images/icons/twitter.svg">
+			</a>
+			<a href="https://stackoverflow.com/users/2624136/rswinkle">
+				<img alt="stackoverflow" src="/images/icons/stackoverflow.svg">
+			</a>
+			<a href="http://www.youtube.com/c/RobertWinkler25">
+				<img alt="youtube" src="/images/icons/youtube.svg">
+			</a>
+			<a href="https://www.reddit.com/user/robert_winkler/">
+				<img alt="reddit" src="/images/icons/reddit.svg">
+			</a>
+		</div>
+	</div>
+	<p class="container" style="font-size:0.75em;color:#b3b3b3;text-align:center;">
+		© Robert Winkler, 2010 - 2016. Site design based closely on
+		<a href="http://www.michaelfogleman.com/">Michael Fogelman's awesome site</a>.
+	</p>
+
+
+</body>
+
+</html>
