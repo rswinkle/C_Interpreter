@@ -33,17 +33,17 @@ FILE* run_preprocessor(FILE* input, char* filename)
 		exit(0);
 	}
 
-	vec_str(&preproc.macros, 0, 15);
-	vec_str(&preproc.values, 0, 15);
-	vec_void(&preproc.params, 0, 15, sizeof(macro_params), free_macro_params, NULL);
+	cvec_str(&preproc.macros, 0, 15);
+	cvec_str(&preproc.values, 0, 15);
+	cvec_void(&preproc.params, 0, 15, sizeof(macro_params), free_macro_params, NULL);
 	vec_token_lex(&preproc.if_stack, 0, 10, free_token_lex, NULL);
 	
 	preproc.lexer = (lexer_state){ filename, 1, 0, 0 }; //TODO
 	preprocess_file(&preproc);
 
-	free_vec_str(&preproc.macros);
-	free_vec_str(&preproc.values);
-	free_vec_void(&preproc.params);
+	cvec_free_str(&preproc.macros);
+	cvec_free_str(&preproc.values);
+	cvec_free_void(&preproc.params);
 	free_vec_token_lex(&preproc.if_stack);
 	fclose(input);
 
@@ -57,7 +57,7 @@ void preprocess_file(preprocessor_state* preproc)
 	long fpos;
 	int c;
 
-	token_lex tlex[10]; 
+	token_lex tlex[10];
 
 	FILE* input = preproc->input;
 	FILE* output = preproc->output;
@@ -163,9 +163,9 @@ void preprocess_file(preprocessor_state* preproc)
 			
 				int exists = look_up_macro_loc(preproc, tlex[0].tok.v.id);
 				if (exists >= 0) {
-					erase_str(&preproc->macros, exists, exists);
-					erase_str(&preproc->values, exists, exists);
-					erase_void(&preproc->params, exists, exists);
+					cvec_erase_str(&preproc->macros, exists, exists);
+					cvec_erase_str(&preproc->values, exists, exists);
+					cvec_erase_void(&preproc->params, exists, exists);
 				}
 				free(tlex[1].tok.v.id);
 
@@ -204,9 +204,8 @@ void preprocess_file(preprocessor_state* preproc)
 			}
 
 			if (!strcmp(tlex[1].tok.v.id, "error")) {
-				//check for string
-				//preprocessor_error(NULL, 
-
+				// check for string
+				// preprocessor_error(NULL,
 			}
 
 eat_newline:
@@ -269,9 +268,9 @@ void handle_define(preprocessor_state* preproc)
 			preprocessor_error(NULL, lexer, "redefinition of %s\n", tok_lex[0].tok.v.id);
 		}
 		if (!check_val) {
-			push_str(&preproc->macros, tok_lex[0].tok.v.id);
-			push_str(&preproc->values, "");
-			push_void(&preproc->params, &p);
+			cvec_push_str(&preproc->macros, tok_lex[0].tok.v.id);
+			cvec_push_str(&preproc->values, "");
+			cvec_push_void(&preproc->params, &p);
 		}
 		goto exit;
 	}
@@ -376,9 +375,9 @@ void handle_define(preprocessor_state* preproc)
 	}
 
 	//push new macro
-	push_str(&preproc->macros, tok_lex[0].tok.v.id);
-	push_str(&preproc->values, macro_buf);
-	push_void(&preproc->params, &p);
+	cvec_push_str(&preproc->macros, tok_lex[0].tok.v.id);
+	cvec_push_str(&preproc->values, macro_buf);
+	cvec_push_void(&preproc->params, &p);
 
 exit:
 	free(tok_lex[0].tok.v.id);  // name of macro
@@ -671,7 +670,7 @@ void prescan_argument(preprocessor_state* preproc, rsw_cstr* expansion)
 	*/
 
 	vector_i valid_macros;
-	vec_i(&valid_macros, preproc->macros.size, preproc->macros.size);
+	cvec_i(&valid_macros, preproc->macros.size, preproc->macros.size);
 
 	for (int j=0; j < preproc->macros.size; ++j) {
 			valid_macros.a[j] = j;
@@ -719,7 +718,7 @@ void prescan_argument(preprocessor_state* preproc, rsw_cstr* expansion)
 		}
 	}
 
-	free_vec_i(&valid_macros);
+	cvec_free_i(&valid_macros);
 }
 
 void rescan_expansion(preprocessor_state* preproc, rsw_cstr* expansion, vector_i* valid_macros, int macro_index)
@@ -729,7 +728,7 @@ void rescan_expansion(preprocessor_state* preproc, rsw_cstr* expansion, vector_i
 	macro_params* p;
 
 	int macro = valid_macros->a[macro_index];
-	erase_i(valid_macros, macro_index, macro_index);
+	cvec_erase_i(valid_macros, macro_index, macro_index);
 
 	for (int i, j=0; j < valid_macros->size; ++j) {
 		i = valid_macros->a[j];
@@ -769,7 +768,7 @@ void rescan_expansion(preprocessor_state* preproc, rsw_cstr* expansion, vector_i
 			search = &expansion->a[loc];
 		}
 	}
-	insert_i(valid_macros, macro_index, macro);
+	cvec_insert_i(valid_macros, macro_index, macro);
 }
 
 
@@ -789,7 +788,7 @@ void handle_macro(preprocessor_state* preproc, int macro)
 		parse_params(preproc, macro, &expansion);
 
 	vector_i valid_macros;
-	vec_i(&valid_macros, preproc->macros.size, preproc->macros.size);
+	cvec_i(&valid_macros, preproc->macros.size, preproc->macros.size);
 	for (int i=0; i < preproc->macros.size; ++i) {
 		valid_macros.a[i] = i;
 	}
@@ -861,7 +860,7 @@ void handle_macro(preprocessor_state* preproc, int macro)
 exit:
 
 	free_cstr(&expansion);
-	free_vec_i(&valid_macros);
+	cvec_free_i(&valid_macros);
 }
 
 

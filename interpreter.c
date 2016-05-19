@@ -24,11 +24,11 @@ void run(program_state* prog, char* start_func)
 
 	var_value ret = prog->func->ret_val;
 	
-	free_vec_void(&prog->functions);
-	free_vec_str(&prog->global_variables);
-	free_vec_void(&prog->global_values);
-	free_vec_void(&prog->expressions);
-	free_vec_str(&prog->string_db);
+	cvec_free_void(&prog->functions);
+	cvec_free_str(&prog->global_variables);
+	cvec_free_void(&prog->global_values);
+	cvec_free_void(&prog->expressions);
+	cvec_free_str(&prog->string_db);
 }
 
 
@@ -39,9 +39,9 @@ void execute(program_state* prog)
 	int i, outer_parent = prog->cur_parent;
 	statement* stmt, *target;
 
-	while ( *prog->pc < prog->stmt_list->size ) {
+	while (*prog->pc < prog->stmt_list->size) {
 		stmt = GET_STMT(prog->stmt_list, *prog->pc);
-//		print_statement(stmt);
+		//print_statement(stmt);
 
 		switch (stmt->type) {
 

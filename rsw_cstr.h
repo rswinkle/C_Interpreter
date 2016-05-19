@@ -27,7 +27,7 @@ int init_cstr(rsw_cstr* str);
 int init_cstr_cap(rsw_cstr* str, size_t capacity);
 int init_cstr_sz(rsw_cstr* str, size_t size, int val);
 int init_cstr_sz_cap(rsw_cstr* str, size_t size, int val, size_t capacity);
-int init_cstr_str(rsw_cstr* str, char* start, size_t len);
+int init_cstr_str(rsw_cstr* str, const char* start, size_t len);
 
 //rsw_cstr* vec_char_heap(size_t size, size_t capacity);
 //rsw_cstr* init_vec_char_heap(char* vals, size_t num);
@@ -43,7 +43,7 @@ int cstr_insert(rsw_cstr* str, size_t i, char a);
 int cstr_insert_str(rsw_cstr* str, size_t i, char* a, size_t len);
 int cstr_insert_cstr(rsw_cstr* str, size_t i, rsw_cstr* a_str);
 
-int cstr_concatenate(rsw_cstr* str, char* a, size_t len);
+int cstr_concatenate(rsw_cstr* str, const char* a, size_t len);
 int cstr_concatenate_cstr(rsw_cstr* str, rsw_cstr* a_str);
 
 void cstr_erase(rsw_cstr* str, size_t start, size_t end);
@@ -58,7 +58,7 @@ void cstr_clear(rsw_cstr* str);
 void free_cstr_heap(void* str);
 void free_cstr(void* str);
 
-int cstr_set_str(rsw_cstr* str, char* a, size_t len);
+int cstr_set_str(rsw_cstr* str, const char* a, size_t len);
 
 rsw_cstr* cstr_ltrim(rsw_cstr* str);
 rsw_cstr* cstr_rtrim(rsw_cstr* str);
@@ -74,7 +74,7 @@ size_t cstr_find_str(rsw_cstr* str, char* needle);
 size_t cstr_find_str_start_at(rsw_cstr* str, char* needle, size_t start);
 
 int cstr_replace(rsw_cstr* str, char* find, char* a, size_t num);
-int cstr_replace_substr(rsw_cstr* str, size_t index, size_t num, char* a, size_t len);
+int cstr_replace_substr(rsw_cstr* str, size_t index, size_t num, const char* a, size_t len);
 int cstr_replace_substr_cstr(rsw_cstr* str, size_t index, size_t num, rsw_cstr* str2);
 
 int cstr_split(rsw_cstr* str, rsw_cstr* delim, rsw_cstr** results, size_t* num_results);

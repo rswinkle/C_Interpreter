@@ -460,7 +460,7 @@ int read_char(FILE* input, const char* skip_chars, int complement, int clear_lin
 			return ret;
 		tmp = ret;
 		c = is_any(&skip, &tmp, are_equal_uchar);
-	} while (!complement && c || complement && !c);
+	} while ((!complement && c) || (complement && !c));
 
 	if (clear_line && ret != '\n')
 		do { c = getc(input); } while (c != '\n' && c != EOF);
@@ -511,7 +511,7 @@ int split(c_array* array, byte* delim, size_t delim_len, c_array* out)
 
 	/* Not using strstr because c_utils/c_arrays and this function are meant to handle arbitrary data
  	 * not just chars/strings */
-	while (match = (byte*)memchr(&array->data[pos], delim[0], array->len*array->elem_size - pos)) {
+	while ((match = (byte*)memchr(&array->data[pos], delim[0], array->len*array->elem_size - pos))) {
 		if (!memcmp(match, delim, delim_len)) {
 			results[out->len].data = &array->data[pos];
 			results[out->len].elem_size = 1;
@@ -591,7 +591,7 @@ size_t find(c_array haystack, c_array needle)
 {
 	byte* result = haystack.data;
 	byte* end = haystack.data + haystack.len*haystack.elem_size;
-	while (result = (byte*)memchr(result, needle.data[0], end-result)) {
+	while ((result = (byte*)memchr(result, needle.data[0], end-result))) {
 		if (!memcmp(result, needle.data, needle.len*needle.elem_size)) {
 			return result - haystack.data;
 		} else {
@@ -641,143 +641,277 @@ void* mybsearch(const void *key, const void *buf, size_t num, size_t size, int (
 
 
 /** All these compare functions are premade for std C's qsort and bsearch */
-int compare_char(const void* a, const void* b)
+int cmp_char_lt(const void* a, const void* b)
 {
 	char a_ = *(char*)a;
 	char b_ = *(char*)b;
 
 	if (a_ < b_)
 		return -1;
-	else if (a_ > b_)
+	if (a_ > b_)
 		return 1;
 
 	return 0;
 }
 
-int compare_uchar(const void* a, const void* b)
+int cmp_uchar_lt(const void* a, const void* b)
 {
 	unsigned char a_ = *(unsigned char*)a;
 	unsigned char b_ = *(unsigned char*)b;
 
 	if (a_ < b_)
 		return -1;
-	else if (a_ > b_)
+	if (a_ > b_)
 		return 1;
 
 	return 0;
 }
 
-int compare_short(const void* a, const void* b)
+int cmp_short_lt(const void* a, const void* b)
 {
 	short a_ = *(short*)a;
 	short b_ = *(short*)b;
 
 	if (a_ < b_)
 		return -1;
-	else if (a_ > b_)
+	if (a_ > b_)
 		return 1;
 
 	return 0;
 }
 
-int compare_ushort(const void* a, const void* b)
+int cmp_ushort_lt(const void* a, const void* b)
 {
 	unsigned short a_ = *(unsigned short*)a;
 	unsigned short b_ = *(unsigned short*)b;
 
 	if (a_ < b_)
 		return -1;
-	else if (a_ > b_)
+	if (a_ > b_)
 		return 1;
 
 	return 0;
 }
 
-
-int compare_int(const void* a, const void* b)
+int cmp_int_lt(const void* a, const void* b)
 {
 	int a_ = *(int*)a;
 	int b_ = *(int*)b;
 
 	if (a_ < b_)
 		return -1;
-	else if (a_ > b_)
+	if (a_ > b_)
 		return 1;
 
 	return 0;
 }
 
-int compare_uint(const void* a, const void* b)
+int cmp_uint_lt(const void* a, const void* b)
 {
 	unsigned int a_ = *(unsigned int*)a;
 	unsigned int b_ = *(unsigned int*)b;
 
 	if (a_ < b_)
 		return -1;
-	else if (a_ > b_)
+	if (a_ > b_)
 		return 1;
 
 	return 0;
 }
 
-int compare_long(const void* a, const void* b)
+int cmp_long_lt(const void* a, const void* b)
 {
 	long a_ = *(long*)a;
 	long b_ = *(long*)b;
 
 	if (a_ < b_)
 		return -1;
-	else if (a_ > b_)
+	if (a_ > b_)
 		return 1;
 
 	return 0;
 }
 
-int compare_ulong(const void* a, const void* b)
+int cmp_ulong_lt(const void* a, const void* b)
 {
 	unsigned long a_ = *(unsigned long*)a;
 	unsigned long b_ = *(unsigned long*)b;
 
 	if (a_ < b_)
 		return -1;
-	else if (a_ > b_)
+	if (a_ > b_)
 		return 1;
 
 	return 0;
 }
 
-int compare_float(const void* a, const void* b)
+int cmp_float_lt(const void* a, const void* b)
 {
 	float a_ = *(float*)a;
 	float b_ = *(float*)b;
 
 	if (a_ < b_)
 		return -1;
-	else if (a_ > b_)
+	if (a_ > b_)
 		return 1;
 
 	return 0;
 }
 
-int compare_double(const void* a, const void* b)
+int cmp_double_lt(const void* a, const void* b)
 {
 	double a_ = *(double*)a;
 	double b_ = *(double*)b;
 
 	if (a_ < b_)
 		return -1;
-	else if (a_ > b_)
+	if (a_ > b_)
 		return 1;
 
 	return 0;
 }
 
-int compare_string(const void* a, const void* b)
+int cmp_string_lt(const void* a, const void* b)
 {
 	return strcmp(*(const char**)a, *(const char**)b);
 }
 
+/* greater than */
+int cmp_char_gt(const void* a, const void* b)
+{
+	char a_ = *(char*)a;
+	char b_ = *(char*)b;
 
+	if (a_ > b_)
+		return -1;
+	if (a_ < b_)
+		return 1;
+
+	return 0;
+}
+
+int cmp_uchar_gt(const void* a, const void* b)
+{
+	unsigned char a_ = *(unsigned char*)a;
+	unsigned char b_ = *(unsigned char*)b;
+
+	if (a_ > b_)
+		return -1;
+	if (a_ < b_)
+		return 1;
+
+	return 0;
+}
+
+int cmp_short_gt(const void* a, const void* b)
+{
+	short a_ = *(short*)a;
+	short b_ = *(short*)b;
+
+	if (a_ > b_)
+		return -1;
+	if (a_ < b_)
+		return 1;
+
+	return 0;
+}
+
+int cmp_ushort_gt(const void* a, const void* b)
+{
+	unsigned short a_ = *(unsigned short*)a;
+	unsigned short b_ = *(unsigned short*)b;
+
+	if (a_ > b_)
+		return -1;
+	if (a_ < b_)
+		return 1;
+
+	return 0;
+}
+
+
+int cmp_int_gt(const void* a, const void* b)
+{
+	int a_ = *(int*)a;
+	int b_ = *(int*)b;
+
+	if (a_ > b_)
+		return -1;
+	if (a_ < b_)
+		return 1;
+
+	return 0;
+}
+
+int cmp_uint_gt(const void* a, const void* b)
+{
+	unsigned int a_ = *(unsigned int*)a;
+	unsigned int b_ = *(unsigned int*)b;
+
+	if (a_ > b_)
+		return -1;
+	if (a_ < b_)
+		return 1;
+
+	return 0;
+}
+
+int cmp_long_gt(const void* a, const void* b)
+{
+	long a_ = *(long*)a;
+	long b_ = *(long*)b;
+
+	if (a_ > b_)
+		return -1;
+	if (a_ < b_)
+		return 1;
+
+	return 0;
+}
+
+int cmp_ulong_gt(const void* a, const void* b)
+{
+	unsigned long a_ = *(unsigned long*)a;
+	unsigned long b_ = *(unsigned long*)b;
+
+	if (a_ > b_)
+		return -1;
+	if (a_ < b_)
+		return 1;
+
+	return 0;
+}
+
+int cmp_float_gt(const void* a, const void* b)
+{
+	float a_ = *(float*)a;
+	float b_ = *(float*)b;
+
+	if (a_ > b_)
+		return -1;
+	if (a_ < b_)
+		return 1;
+
+	return 0;
+}
+
+int cmp_double_gt(const void* a, const void* b)
+{
+	double a_ = *(double*)a;
+	double b_ = *(double*)b;
+
+	if (a_ > b_)
+		return -1;
+	if (a_ < b_)
+		return 1;
+
+	return 0;
+}
+
+int cmp_string_gt(const void* a, const void* b)
+{
+	return -(strcmp(*(const char**)a, *(const char**)b));
+}
 
 
 
