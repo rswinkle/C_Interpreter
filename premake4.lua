@@ -10,22 +10,8 @@ solution "CInterpreter"
 		language "C"
 		files
 		{
-		"main.c",
-		"parser.c",
-		"parser.h",
-		"interpreter.c",
-		"interpreter.h",
-		"lexer.c",
-		"lexer.h",
-		"c_utils.c",
-		"c_utils.h",
-		"rsw_cstr.c",
-		"rsw_cstr.h",
-		"cvector.h",
-		"clist.h",
-		"preprocessor.c",
-		"preprocessor.h",
-		"vector_token_lex.h"
+			"src/*.c",
+			"src/*.h"
 		}
 		--excludes { }
 		--      libdirs { }
