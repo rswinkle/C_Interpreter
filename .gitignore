@@ -29,3 +29,27 @@ build/*
 !build/Makefile
 !build/*.make
 *.swp
+
+#stupid autotools crap
+.deps/
+AUTHORS
+COPYING
+ChangeLog
+INSTALL
+Makefile.in
+NEWS
+README
+aclocal.m4
+autom4te.cache/
+autoscan.log
+cinterpreter
+compile
+config.log
+config.status
+configure.scan
+depcomp
+install-sh
+missing
+src/.deps/
+src/.dirstamp
+
