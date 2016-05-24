@@ -91,17 +91,30 @@ int are_equal_float(const void* a, const void* b);
 int are_equal_double(const void* a, const void* b);
 int are_equal_string(const void* a, const void* b);
 
-int compare_char(const void* a, const void* b);
-int compare_uchar(const void* a, const void* b);
-int compare_short(const void* a, const void* b);
-int compare_ushort(const void* a, const void* b);
-int compare_int(const void* a, const void* b);
-int compare_uint(const void* a, const void* b);
-int compare_long(const void* a, const void* b);
-int compare_ulong(const void* a, const void* b);
-int compare_float(const void* a, const void* b);
-int compare_double(const void* a, const void* b);
-int compare_string(const void* a, const void* b);
+int cmp_char_lt(const void* a, const void* b);
+int cmp_uchar_lt(const void* a, const void* b);
+int cmp_short_lt(const void* a, const void* b);
+int cmp_ushort_lt(const void* a, const void* b);
+int cmp_int_lt(const void* a, const void* b);
+int cmp_uint_lt(const void* a, const void* b);
+int cmp_long_lt(const void* a, const void* b);
+int cmp_ulong_lt(const void* a, const void* b);
+int cmp_float_lt(const void* a, const void* b);
+int cmp_double_lt(const void* a, const void* b);
+int cmp_string_lt(const void* a, const void* b);
+
+int cmp_char_gt(const void* a, const void* b);
+int cmp_uchar_gt(const void* a, const void* b);
+int cmp_short_gt(const void* a, const void* b);
+int cmp_ushort_gt(const void* a, const void* b);
+int cmp_int_gt(const void* a, const void* b);
+int cmp_uint_gt(const void* a, const void* b);
+int cmp_long_gt(const void* a, const void* b);
+int cmp_ulong_gt(const void* a, const void* b);
+int cmp_float_gt(const void* a, const void* b);
+int cmp_double_gt(const void* a, const void* b);
+int cmp_string_gt(const void* a, const void* b);
+
 
 int any(c_array* array, int (*is_true)(const void*));
 int all(c_array* array, int (*is_true)(const void*));

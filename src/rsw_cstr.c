@@ -81,7 +81,7 @@ int init_cstr_sz_cap(rsw_cstr* str, size_t size, int val, size_t capacity)
 }
 
 
-int init_cstr_str(rsw_cstr* str, char* start, size_t len)
+int init_cstr_str(rsw_cstr* str, const char* start, size_t len)
 {
 	str->capacity = len + CSTR_ST_SZ;
 	str->size = len;
@@ -235,7 +235,7 @@ int cstr_insert_cstr(rsw_cstr* str, size_t i, rsw_cstr* a_str)
 	return 1;
 }
 
-int cstr_concatenate(rsw_cstr* str, char* a, size_t len)
+int cstr_concatenate(rsw_cstr* str, const char* a, size_t len)
 {
 	char* tmp;
 	size_t tmp_sz;
@@ -343,7 +343,7 @@ void free_cstr(void* str)
 }
 
 /* Sets a cstr to first num chars in a (clears previous contents) */
-int cstr_set_str(rsw_cstr* str, char* a, size_t len)
+int cstr_set_str(rsw_cstr* str, const char* a, size_t len)
 {
 	char* tmp;
 	size_t tmp_sz;
@@ -528,7 +528,7 @@ int cstr_replace_substr_cstr(rsw_cstr* str, size_t index, size_t num, rsw_cstr* 
 	return cstr_replace_substr(str, index, num, str2->a, str2->size);
 }
 
-int cstr_replace_substr(rsw_cstr* str, size_t index, size_t num, char* a, size_t len)
+int cstr_replace_substr(rsw_cstr* str, size_t index, size_t num, const char* a, size_t len)
 {
 	if (index >= str->size) {
 		assert(index < str->size);
@@ -577,7 +577,7 @@ int cstr_split(rsw_cstr* str, rsw_cstr* delim, rsw_cstr** results, size_t* num_r
 	
 	char* search = str->a;
 	char* result;
-	while (result = strstr(search, delim->a)) {
+	while ((result = strstr(search, delim->a))) {
 		init_cstr_str(&ret[num], search, result-search);
 		++num;
 
