@@ -93,6 +93,9 @@ beginblock:
 		{
 			int a = 15;
 			{
+				//this is also undefined after jumping in
+				//tcc prints 0, gcc prints 32766, both with default optimization
+				//we print 0
 sib_inner:
 				printf("%d\n", a);
 
@@ -115,10 +118,13 @@ decl:
 		}
 	}
 
-	int check = 2;	
+	int check = 2;
 	{
 		int test = 321;
 		{
+			//after jumping back here the value of test is
+			//undefined (or implementation defined I forget)
+			//some compilers print 160, test's old value but I don't
 backinto:
 			printf("%d\n", test);
 
@@ -137,4 +143,4 @@ backinto:
 
 	return 0;
 }
-	
+

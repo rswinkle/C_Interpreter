@@ -31,7 +31,8 @@ build/*
 *.swp
 
 #ignore test output
-tests/*.txt.err
+*.err
+*.out
 
 #stupid autotools crap
 .deps/

@@ -55,8 +55,21 @@ test_array[47]=../tests/test_control_whilewhile_if1.txt
 test_array[48]=../tests/types.txt
 
 
-preprocessor_test_array[0]=../tests/preprocessor.txt
-preprocessor_test_array[1]=../tests/include.c
+preprocessor_test_array[0]=../tests/preprocessor/preprocessor.txt
+preprocessor_test_array[1]=../tests/preprocessor/include.c
+
+ret_array_index=0
+
+set_ret_array()
+{
+	$ret_array[$ret_array_index]=$?
+	((ret_array_index++))
+	printf "%d %d %d\n" $ret_array_index $ret_array[$ret_array_index] $?
+	#if [[ $? ]]
+	#then
+		#exit 1
+	#fi
+}
 
 
 echo -e "\nrunning normal tests\n=================="
@@ -81,16 +94,19 @@ do
 	fi
 done
 
+if [[ -n "$1" ]]
+then
 
-echo -e "\nrunning preprocessor tests\n=========================="
-for f in ${preprocessor_test_array[*]}
-do
-	echo "running preprocessor on $f"
-	./cinterpreter -E $f > $f.out
-done
+	echo -e "\nrunning preprocessor tests\n=========================="
+	for f in ${preprocessor_test_array[*]}
+	do
+		echo "running preprocessor on $f"
+		./cinterpreter -E $f > $f.out
+	done
 
-for f in ${preprocessor_test_array[*]}
-do
-	echo "comparing preprocessor output of $f"
-	diff -b $f.expected $f.out
-done
+	for f in ${preprocessor_test_array[*]}
+	do
+		echo "comparing preprocessor output of $f"
+		diff -b $f.expected $f.out
+	done
+fi

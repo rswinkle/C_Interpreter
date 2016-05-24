@@ -296,7 +296,7 @@ void top_level_declaration(parsing_state* p, program_state* prog)
 		else
 			function_definition(p, prog);
 	} else {
-		parse_error(peek_token(p, 0), "Error parsing top_level_declaration, declaration_specifier expected,");
+		parse_error(peek_token(p, 0), "Error parsing top_level_declaration, declaration_specifier expected");
 		exit(0);
 	}
 }
@@ -316,7 +316,7 @@ void function_definition(parsing_state* p, program_state* prog)
 		get_token(p);
 		return;
 	} else if (tok->type != LBRACE) {
-		parse_error(tok, "expected ; or { for function declaration or definition, ");
+		parse_error(tok, "expected ';' or '{' for function declaration or definition, ");
 		exit(0);
 	}
 
@@ -1938,7 +1938,10 @@ void parse_error(token_value* tok, char *str, ...)
 	fprintf(stderr, "Parse Error: ");
 	vfprintf(stderr, str, args);
 	if (tok) {
-		fprintf(stderr, ", got ");
+		if (str[strlen(str)-1] == '\n')
+			fprintf(stderr, "Got ");
+		else
+			fprintf(stderr, ", got ");
 		print_token(tok, stderr, 0);
 		token_lex* lex = (token_lex*)tok;
 		fprintf(stderr, " at line %u, position %u\n", lex->line, lex->pos);
