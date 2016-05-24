@@ -20,6 +20,9 @@ env:
   #    build_command:   "make -j2"
   #    branch_pattern: master
 
+
+install: sudo apt-get install valgrind
+
 script:
     - cd build/ && make -j2
     - ../runtests.py
