@@ -64,10 +64,10 @@ echo -e "\nrunning normal tests\n=================="
 for f in ${test_array[*]}
 do
 	echo "executing $f"
-	./cinterpreter $f > $f.out
+	./cinterpreter $f 1> $f.out 2> $f.err
 
-	# for if I ever update expected output
-	#with stderr warnings
+	# for if I ever both stderr and stdout
+	# in the same file
 	#./cinterpreter $f &> $f.out
 done
 
@@ -75,6 +75,10 @@ for f in ${test_array[*]}
 do
 	echo "comparing output of $f"
 	diff $f.expected $f.out
+	if [[ -s $f.expected.err ]]
+	then
+		diff $f.expected.err $f.err
+	fi
 done
 
 
@@ -88,5 +92,5 @@ done
 for f in ${preprocessor_test_array[*]}
 do
 	echo "comparing preprocessor output of $f"
-	diff $f.expected $f.out
+	diff -b $f.expected $f.out
 done

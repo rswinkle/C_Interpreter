@@ -95,7 +95,6 @@ void free_var_value(void* var)
 }
 
 
-	
 void print_statement(statement* stmt)
 {
 	switch (stmt->type) {
@@ -116,7 +115,7 @@ void print_statement(statement* stmt)
 	case RETURN_STMT:              puts("RETURN_STMT");  break;
 	case START_COMPOUND_STMT:      puts("START_COMPOUND_STMT");  break;
 	case END_COMPOUND_STMT:                puts("END_COMPOUND_STMT");  break;
-					  
+
 	default:
 		puts("Unknown statement type");
 	}
@@ -648,7 +647,7 @@ void initialized_declarator(parsing_state* p, program_state* prog, var_type v_ty
 	//
 	//no statements are made for global variables and they can only
 	//have constant expressions
-	if (prog->func) { 
+	if (prog->func) {
 		symbol* check = look_up_symbol(prog, tok->v.id);
 		//TODO this does not yet handle hiding except function_level from global
 		if (check && check->cur_parent == prog->cur_parent) {
@@ -1396,13 +1395,13 @@ void cond_expr(parsing_state* p, program_state* prog, expression* e)
 	if (peek_token(p, 0)->type == TERNARY) {
 		get_token(p);
 		e->left = copy_expr(prog, e);
-		e->tok.type = TERNARY; 
+		e->tok.type = TERNARY;
 		e->right = make_expression(prog);
 
 		e->right->left = make_expression(prog);
 		expr(p, prog, e->right->left);
 		if (peek_token(p, 0)->type != COLON) {
-			parse_error(peek_token(p, 0), "in ternary expression expected :");
+			parse_error(peek_token(p, 0), "in ternary expression expected ':'");
 			exit(0);
 		}
 		get_token(p);
@@ -1703,7 +1702,7 @@ void function_call(parsing_state* p, program_state* prog, expression* e)
 		parse_error(tok, "implicit declaration of function '%s'.\n", tok->v.id);
 		exit(0);
 	} else if (check->type != FUNCTION_TYPE) {
-		parse_error(tok, "called object '%s' is not a function\n", tok->v.id); 
+		parse_error(tok, "called object '%s' is not a function\n", tok->v.id);
 		exit(0);
 	}
 

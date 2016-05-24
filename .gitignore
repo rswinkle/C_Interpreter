@@ -30,6 +30,9 @@ build/*
 !build/*.make
 *.swp
 
+#ignore test output
+tests/*.txt.err
+
 #stupid autotools crap
 .deps/
 AUTHORS

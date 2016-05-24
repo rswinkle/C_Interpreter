@@ -1,0 +1,2 @@
+Parse Error: return statement with no expression in a function with a return type
+Got ; at line 72, position 8
