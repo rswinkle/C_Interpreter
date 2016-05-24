@@ -22,7 +22,7 @@ for f in language_tests:
 		ret_array += [os.system("diff {0}.err {0}.expected.err".format(f))]
 	
 	if rc or ret_array[-1]:
-		print("test {} failed".format(f))
+		print('{: <40}'.format(f.rpartition('/')[-1]), "..... failed")
 
 
 
@@ -37,7 +37,7 @@ if len(sys.argv) > 1:
 			ret_array += [os.system("diff {0}.err {0}.expected.err".format(f))]
 		
 		if rc or ret_array[-1]:
-			print("test {} failed".format(f))
+			print('{: <40}'.format(f.rpartition('/')[-1]), "..... failed")
 
 if any(ret_array):
 	exit(1)
