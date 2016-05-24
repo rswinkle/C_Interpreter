@@ -13,11 +13,13 @@ preprocessor_tests = [
 ret_array = []
 
 for f in language_tests:
-	rc = os.system('valgrind --leak-check=full -v ./cinterpreter {0} 2>&1 | grep "ERROR SUMMARY: 0" > /dev/null'.format(f))
+	rc = os.system('valgrind --leak-check=full -v ./cinterpreter {0} 2>&1 > tmp.txt'.format(f))
+	rc = os.system('cat tmp.txt | grep "ERROR SUMMARY: 0" > /dev/null')
 	ret_array += [rc]
 	
 	if rc:
 		print('{: <40}'.format(f.rpartition('/')[-1]), "..... failed")
+		os.system('cat tmp.txt')
 
 
 
