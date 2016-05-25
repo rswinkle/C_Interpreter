@@ -1,29 +1,34 @@
 language: c
 compiler:
-  - gcc
-  - clang
+	- gcc
+	- clang
 # Change this to your needs
 
 env:
-  global:
-   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
-   #   via the "travis encrypt" command using the project repo's public key
-   - secure: "lftSf6purdbpJsvCuH8P8uEEEl5t1EEMH+PI2xQ32Gs6hZwp84mcLOhjzvQ3d7vvItEQhFYc0/DZTVqXGZ9V++cZI8ls6EIGmt+CrNjWps5MQdLsYYIunQvh5ajlZyH+UvRPvY//o00Rpu0kLSskoFAY2wT06wIep2VL952McOk="
+	global:
+ # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+ #   via the "travis encrypt" command using the project repo's public key
+		- secure: "lftSf6purdbpJsvCuH8P8uEEEl5t1EEMH+PI2xQ32Gs6hZwp84mcLOhjzvQ3d7vvItEQhFYc0/DZTVqXGZ9V++cZI8ls6EIGmt+CrNjWps5MQdLsYYIunQvh5ajlZyH+UvRPvY//o00Rpu0kLSskoFAY2wT06wIep2VL952McOk="
 
-  #addons:
-  #  coverity_scan:
-  #    project:
-  #      name: "rswinkle/C_Interpreter"
-  #      description: "Build submitted via Travis CI"
-  #    notification_email: rob121618@gmail.com
-  #    build_command_prepend: "cd build/; make clean"
-  #    build_command:   "make -j2"
-  #    branch_pattern: master
+	#addons:
+	#  coverity_scan:
+	#    project:
+	#      name: "rswinkle/C_Interpreter"
+	#      description: "Build submitted via Travis CI"
+	#    notification_email: rob121618@gmail.com
+	#    build_command_prepend: "cd build/; make clean"
+	#    build_command:   "make -j2"
+	#    branch_pattern: master
 
+sudo: false
 
-install: sudo apt-get install valgrind
+addons:
+	apt:
+		packages:
+			- vaglrind
+
 
 script:
-    - cd build/ && make -j2
-    - ../runtests.py
-    - ../run_valgrind_tests.py
+	- cd build/ && make -j2
+	- ../runtests.py
+	- ../run_valgrind_tests.py
