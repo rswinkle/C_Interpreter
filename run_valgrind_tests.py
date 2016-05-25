@@ -13,8 +13,8 @@ preprocessor_tests = [
 ret_array = []
 
 for f in language_tests:
-	rc = os.system('valgrind --leak-check=full -v ./cinterpreter {0} 2>&1 > tmp.txt'.format(f))
-	rc = os.system('cat tmp.txt | grep "ERROR SUMMARY: 0" > /dev/null')
+	rc = os.system('valgrind --leak-check=full -v > tmp.txt ./cinterpreter {0} 2>&1'.format(f))
+	rc = os.system('grep "ERROR SUMMARY: 0" tmp.txt > /dev/null')
 	ret_array += [rc]
 	
 	if rc:
