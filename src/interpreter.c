@@ -134,7 +134,6 @@ void execute(program_state* prog)
 
 	if (prog->func->ret_val.type != VOID_TYPE) {
 		fprintf(stderr, "Warning, falling off the end of non-void function.\n");
-
 	}
 }
 

@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
-import sys, os, glob
+import sys, string, glob, argparse, os
+#import tempfile
+from subprocess import *
+from os.path import *
 
 language_tests = glob.glob("../tests/*.txt")
 
@@ -10,40 +13,59 @@ preprocessor_tests = [
 		]
 
 
-ret_array = []
-
-for f in language_tests:
-	os.system("./cinterpreter {0} 1> {0}.out 2> {0}.err".format(f))
-
-	rc = os.system("diff {0}.out {0}.expected".format(f))
-	ret_array += [rc]
-
-	if os.path.exists("{}.expected.err".format(f)):
-		ret_array += [os.system("diff {0}.err {0}.expected.err".format(f))]
-	
-	if rc or ret_array[-1]:
-		print('{: <40}'.format(f.rpartition('/')[-1]), "..... failed")
+def main():
+	parser = argparse.ArgumentParser(description="Run C_Interpreter tests")
+	parser.add_argument("-E", "--run-preproc", action="store_true", help="Run preprocessor tests too")
+	args = parser.parse_args()
+	print(args)
 
 
+	ret = rc1 = rc2 = rc3 = 0
+	for f in language_tests:
+		proc = Popen(["./cinterpreter", f], stdout=PIPE, stderr=PIPE, universal_newlines=True)
 
-if len(sys.argv) > 1:
-	for f in preprocessor_tests:
-		os.system("./cinterpreter -E {0} 1> {0}.out 2> {0}.err".format(f))
+		out, err = proc.communicate()
+		rc1 = proc.returncode
 
-		rc = os.system("diff {0}.out {0}.expected".format(f))
-		ret_array += [rc]
+		rc2 = int(out != open("{}.expected".format(f)).read())
 
+		rc3 = 0
 		if os.path.exists("{}.expected.err".format(f)):
-			ret_array += [os.system("diff {0}.err {0}.expected.err".format(f))]
+			rc3 = int(err != open("{}.expected.err".format(f)).read())
+		elif err and len(err) != 0:
+			print("no expected stderr output file but stderr isn't empty")
 		
-		if rc or ret_array[-1]:
-			print('{: <40}'.format(f.rpartition('/')[-1]), "..... failed")
-
-if any(ret_array):
-	exit(1)
-
-exit(0)
+		if rc1 or rc2 or rc3:
+			print('{: <40} failed'.format(f.rpartition('/')[-1]))
+			print('popen out err = rc1, rc2, rc3')
+			print('stdout:\n{0}\nstderr:\n{1}'.format(out, err))
+			ret = 1
 
 
 
+	rc1=rc2=rc3=0
+	if args.run_preproc:
+		for f in preprocessor_tests:
+			proc = Popen(["./cinterpreter", "-E", f], stdout=PIPE, stderr=PIPE, universal_newlines=True)
+			out, err = proc.communicate()
+			rc1 = proc.returncode
 
+			rc2 += int(out != open("{}.expected".format(f)).read())
+
+			if os.path.exists("{}.expected.err".format(f)):
+				rc3 = int(err != open("{}.expected.err".format(f)).read())
+			elif err and len(err) != 0:
+				print("no expected stderr output file but stderr isn't empty")
+			
+		if rc1 or rc2 or rc3:
+			print('{: <40} ..... failed'.format(f.rpartition('/')[-1]))
+			print('stdout:\n{0}\nstderr:\n{1}'.format(out, err))
+			ret = 1
+
+	exit(ret)
+
+
+
+
+if __name__ == "__main__":
+	main()

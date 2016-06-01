@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
-import sys, os, glob
+import sys, string, glob, argparse, os
+#import tempfile
+from subprocess import *
+from os.path import *
 
 language_tests = glob.glob("../tests/*.txt")
 
@@ -10,29 +13,44 @@ preprocessor_tests = [
 		]
 
 
-ret_array = []
 
-for f in language_tests:
-	rc = os.system('valgrind --leak-check=full -v > tmp.txt ./cinterpreter {0} 2>&1'.format(f))
-	rc = os.system('grep "ERROR SUMMARY: 0" tmp.txt > /dev/null')
-	ret_array += [rc]
-	
-	if rc:
-		print('{: <40}'.format(f.rpartition('/')[-1]), "..... failed")
-		os.system('cat tmp.txt')
+def main():
+	parser = argparse.ArgumentParser(description="Run C_Interpreter tests")
+	parser.add_argument("-E", "--run-preproc", action="store_true", help="Run preprocessor tests too")
+	args = parser.parse_args()
+	print(args)
 
+	ret = 0
+	for f in language_tests:
+		proc = Popen(["valgrind", "--leak-check=full", "-v", "./cinterpreter", f], stdout=PIPE, stderr=PIPE, universal_newlines=True)
+		out, err = proc.communicate()
 
-
-if len(sys.argv) > 1:
-	for f in preprocessor_tests:
-		rc = os.system('valgrind --leak-check=full -v ./cinterpreter -E {0} 2>&1 | grep "ERROR SUMMARY: 0" > /dev/null'.format(f))
-		ret_array += [rc]
-
+		rc = int(err.find('ERROR SUMMARY: 0') == -1)
+		
 		if rc:
-			print('{: <40}'.format(f.rpartition('/')[-1]), "..... failed")
+			print('{: <40} ..... failed'.format(f.rpartition('/')[-1]))
+			print("stdout:")
+			print(out)
+			ret = rc
 
-if any(ret_array):
-	exit(1)
 
-exit(0)
 
+	if len(sys.argv) > 1:
+		for f in preprocessor_tests:
+			proc = Popen(["valgrind", "--leak-check=full", "-v", "./cinterpreter", "-E", f], stdout=PIPE, stderr=PIPE, universal_newlines=True)
+			out, err = proc.communicate()
+
+			rc = int(err.find('ERROR SUMMARY: 0') == -1)
+			
+			if rc:
+				print('{: <40} ..... failed'.format(f.rpartition('/')[-1]))
+				print("stdout:")
+				print(out)
+				ret = rc
+
+	exit(ret)
+
+
+
+if __name__ == "__main__":
+	main()
