@@ -11,7 +11,7 @@
 
 #include "cvector.h"
 
-#include "vector_token_lex.h"
+#include "cvector_token_lex.h"
 
 
 #define GET_STMT(VEC, I) GET_VOID(VEC, statement, I)
@@ -78,7 +78,7 @@ void free_active_binding_list(void* l);
 
 typedef struct parsing_state
 {
-	vector_token_lex tokens;
+	cvector_token_lex tokens;
 	unsigned int pos;
 } parsing_state;
 
