@@ -4,7 +4,7 @@
 #include "rsw_cstr.h"
 
 //brings in lexer.h
-#include "vector_token_lex.h"
+#include "cvector_token_lex.h"
 
 #include "cvector.h"
 
@@ -37,7 +37,7 @@ typedef struct preprocessor_state
 	
 	vector_void params;
 
-	vector_token_lex if_stack;
+	cvector_token_lex if_stack;
 
 	lexer_state lexer;
 	FILE* input;

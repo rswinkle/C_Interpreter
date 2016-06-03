@@ -5,8 +5,8 @@
 #define CVECTOR_IMPLEMENTATION
 #include "cvector.h"
 
-#define VECTOR_token_lex_IMPLEMENTATION
-#include "vector_token_lex.h"
+#define CVECTOR_token_lex_IMPLEMENTATION
+#include "cvector_token_lex.h"
 
 #include <stdio.h>
 
@@ -167,7 +167,7 @@ void parse_seek(parsing_state* p, int origin, long offset)
 void parse_program_string(program_state* prog, char* string)
 {
 	parsing_state p;
-	vec_token_lex(&p.tokens, 0, 1000, NULL, NULL);
+	cvec_token_lex(&p.tokens, 0, 1000, NULL, NULL);
 
 	cvec_str(&prog->string_db, 0, 100);
 	int i, line;
@@ -191,10 +191,10 @@ void parse_program_string(program_state* prog, char* string)
 				prog->string_db.a[prog->string_db.size-1] = tok_lex.tok.v.id;
 			}
 		}
-		push_token_lex(&p.tokens, &tok_lex);
+		cvec_push_token_lex(&p.tokens, &tok_lex);
 		tok_lex = read_token_from_str(string, &lexer, PARSING);
 	}
-	push_token_lex(&p.tokens, &tok_lex); //push END
+	cvec_push_token_lex(&p.tokens, &tok_lex); //push END
 	free(lexer.cur_file);
 
 	p.pos = 0;
@@ -215,13 +215,13 @@ void parse_program_string(program_state* prog, char* string)
 
 	translation_unit(&p, prog);
 
-	free_vec_token_lex(&p.tokens);
+	cvec_free_token_lex(&p.tokens);
 }
 
 void parse_program_file(program_state* prog, FILE* file)
 {
 	parsing_state p;
-	vec_token_lex(&p.tokens, 0, 1000, NULL, NULL);
+	cvec_token_lex(&p.tokens, 0, 1000, NULL, NULL);
 
 	cvec_str(&prog->string_db, 0, 100);
 	int i, line;
@@ -244,10 +244,10 @@ void parse_program_file(program_state* prog, FILE* file)
 				prog->string_db.a[prog->string_db.size-1] = tok_lex.tok.v.id;
 			}
 		}
-		push_token_lex(&p.tokens, &tok_lex);
+		cvec_push_token_lex(&p.tokens, &tok_lex);
 		tok_lex = read_token(file, &lexer, PARSING);
 	}
-	push_token_lex(&p.tokens, &tok_lex); //push END
+	cvec_push_token_lex(&p.tokens, &tok_lex); //push END
 	free(lexer.cur_file);
 	fclose(file);
 
@@ -270,7 +270,7 @@ void parse_program_file(program_state* prog, FILE* file)
 
 	translation_unit(&p, prog);
 
-	free_vec_token_lex(&p.tokens);
+	cvec_free_token_lex(&p.tokens);
 }
 
 

@@ -36,7 +36,7 @@ FILE* run_preprocessor(FILE* input, char* filename)
 	cvec_str(&preproc.macros, 0, 15);
 	cvec_str(&preproc.values, 0, 15);
 	cvec_void(&preproc.params, 0, 15, sizeof(macro_params), free_macro_params, NULL);
-	vec_token_lex(&preproc.if_stack, 0, 10, free_token_lex, NULL);
+	cvec_token_lex(&preproc.if_stack, 0, 10, free_token_lex, NULL);
 	
 	preproc.lexer = (lexer_state){ filename, 1, 0, 0 }; //TODO
 	preprocess_file(&preproc);
@@ -44,7 +44,7 @@ FILE* run_preprocessor(FILE* input, char* filename)
 	cvec_free_str(&preproc.macros);
 	cvec_free_str(&preproc.values);
 	cvec_free_void(&preproc.params);
-	free_vec_token_lex(&preproc.if_stack);
+	cvec_free_token_lex(&preproc.if_stack);
 	fclose(input);
 
 	rewind(preproc.output);
@@ -240,8 +240,8 @@ void handle_define(preprocessor_state* preproc)
 	FILE* input = preproc->input;
 	lexer_state* lexer = &preproc->lexer;
 
-	vector_token_lex tlex;
-	vec_token_lex(&tlex, 0, 10, free_token_lex, NULL);
+	cvector_token_lex tlex;
+	cvec_token_lex(&tlex, 0, 10, free_token_lex, NULL);
 	
 	token_lex tok_lex[4];
 	tok_lex[0] = read_token(input, lexer, NULL);
@@ -280,7 +280,7 @@ void handle_define(preprocessor_state* preproc)
 		tok_lex[2] = read_token(input, lexer, NULL);
 		while (tok_lex[2].tok.type == ID) {
 			n++;
-			push_token_lex(&tlex, &tok_lex[2]);
+			cvec_push_token_lex(&tlex, &tok_lex[2]);
 			//don't free id because vector will
 			tok_lex[3] = read_token(input, lexer, NULL);
 			if (tok_lex[3].tok.type != COMMA)
@@ -326,7 +326,7 @@ void handle_define(preprocessor_state* preproc)
 	tok_lex[2] = read_token(input, lexer, NULL);
 
 	while (tok_lex[0].line == lexer->cur_line) {
-		push_token_lex(&tlex, &tok_lex[2]);
+		cvec_push_token_lex(&tlex, &tok_lex[2]);
 		save_lex = *lexer;
 		if ((fpos = ftell(input)) == -1) {
 			perror("ftell failure in handle_define");
@@ -386,7 +386,7 @@ exit:
 		free(tok_lex[1].tok.v.id);
 
 
-	free_vec_token_lex(&tlex);
+	cvec_free_token_lex(&tlex);
 }
 
 
@@ -641,7 +641,7 @@ void prescan_argument(preprocessor_state* preproc, rsw_cstr* expansion)
 	lexer_state lex = { 1, 0, 0, 0};
 	tok_lex = read_token_from_str(&expansion->a[lex.cur_char], &lex, NULL);
 	while (tok_lex.tok.type != END) {
-		push_token_lex(&tlek, &tok_lex);
+		cvec_push_token_lex(&tlek, &tok_lex);
 		tok_lex = read_token_from_str(&expansion->a[lex.cur_char], &lex, NULL);
 	}
 
