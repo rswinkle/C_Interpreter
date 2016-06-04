@@ -114,7 +114,7 @@ start:
 			tok_lex.tok.type = SUB;
 		}
 		break;
-		
+
 	case '*':
 		HANDLE_BACKSLASH();
 		if (c == '=') {
@@ -191,7 +191,7 @@ start:
 			tok_lex.tok.type = BIT_OR;
 		}
 		break;
-		  	  
+
 	case '&':
 		HANDLE_BACKSLASH();
 		if (c == '&') {
@@ -226,7 +226,7 @@ start:
 			tok_lex.tok.type = LOGICAL_NEGATION;
 		}
 		break;
-		
+
 
 	case '<':
 		HANDLE_BACKSLASH();
@@ -280,7 +280,7 @@ start:
 		break;
 
 	default:
-		
+
 		//TODO should +532 and -12321 be handled
 		//as literals or unary +/- and 2 positive literals?
 		//and what about hex and oct literals?  crap
@@ -299,7 +299,7 @@ start:
 
 				token_buf[i++] = c;
 				HANDLE_BACKSLASH();
-				
+
 				while (isdigit(c)) {
 					token_buf[i++] = c;
 					HANDLE_BACKSLASH();
@@ -375,11 +375,11 @@ start:
 					goto token_length_error;
 			}
 			token_buf[i] = '\0';
-			
+
 			tok_lex.tok.type = STR_LITERAL;
 			tok_lex.tok.v.id = mystrdup(token_buf);
 			assert(tok_lex.tok.v.id);
-				
+
 		} else if (c == EOF) {
 			tok_lex.tok.type = END;
 			tok_lex.pos = 1;
@@ -409,7 +409,7 @@ void lex_error(lexer_state* lex, char *str, ...)
 {
 	va_list args;
 	va_start(args, str);
-	
+
 	fprintf(stderr, "%s:%u:%u: Lexer Error: ", lex->cur_file, lex->cur_line, lex->cur_pos);
 	vfprintf(stderr, str, args);
 
@@ -528,7 +528,7 @@ start:
 			tok_lex.tok.type = SUB;
 		}
 		break;
-		
+
 	case '*':
 		HANDLE_BACKSLASH_STR();
 		if (*c == '=') {
@@ -605,7 +605,7 @@ start:
 			tok_lex.tok.type = BIT_OR;
 		}
 		break;
-		  	  
+
 	case '&':
 		HANDLE_BACKSLASH_STR();
 		if (*c == '&') {
@@ -640,7 +640,7 @@ start:
 			tok_lex.tok.type = LOGICAL_NEGATION;
 		}
 		break;
-		
+
 
 	case '<':
 		HANDLE_BACKSLASH_STR();
@@ -709,7 +709,7 @@ start:
 
 				token_buf[i++] = *c;
 				HANDLE_BACKSLASH_STR();
-				
+
 				while (isdigit(*c)) {
 					token_buf[i++] = *c;
 					HANDLE_BACKSLASH_STR();
@@ -784,11 +784,11 @@ start:
 					goto token_length_error;
 			}
 			token_buf[i] = '\0';
-			
+
 			tok_lex.tok.type = STR_LITERAL;
 			tok_lex.tok.v.id = mystrdup(token_buf);
 			assert(tok_lex.tok.v.id);
-				
+
 		} else if (*c == '\0') {
 			tok_lex.tok.type = END;
 			tok_lex.pos = 1;
@@ -837,7 +837,7 @@ void free_token_lex(void* tok_lex)
 
 void print_token(token_value* tok, FILE* file, int print_enum)
 {
-	if (print_enum) { 
+	if (print_enum) {
 		switch (tok->type) {
 			case END:              fprintf(file, "END");     break;
 			case EQUALEQUAL:       fprintf(file, "EQUALEQUAL");     break;

@@ -19,11 +19,11 @@ void run(program_state* prog, char* start_func)
 	prog->cur_parent = -1;
 
 	//set parameters here, ie argc, argv
-		
+
 	execute(prog);
 
 	var_value ret = prog->func->ret_val;
-	
+
 	cvec_free_void(&prog->functions);
 	cvec_free_str(&prog->global_variables);
 	cvec_free_void(&prog->global_values);
@@ -114,7 +114,7 @@ void execute(program_state* prog)
 		case START_COMPOUND_STMT:
 			prog->cur_parent = *prog->pc;
 			break;
-			
+
 		case END_COMPOUND_STMT:
 			pop_scope(prog);	//freeing all bindings with cur_parent
 			prog->cur_parent = GET_STMT(prog->stmt_list, stmt->parent)->parent;
@@ -231,7 +231,7 @@ var_value execute_expr(program_state* prog, expression* e)
 	case BIT_NEGATION:
 		left = execute_expr(prog, e->left);
 		break;
-	
+
 
 	case MULT:
 	case DIV:
@@ -239,7 +239,7 @@ var_value execute_expr(program_state* prog, expression* e)
 
 	case ADD:
 	case SUB:
-	
+
 	case LEFT_SHIFT:
 	case RIGHT_SHIFT:
 
@@ -252,9 +252,9 @@ var_value execute_expr(program_state* prog, expression* e)
 	case EQUALEQUAL:
 
 	case BIT_AND:
-	
+
 	case BIT_XOR:
-	
+
 	case BIT_OR:
 
 	case LOGICAL_AND:
@@ -307,7 +307,7 @@ var_value execute_expr(program_state* prog, expression* e)
 		result.type = FLOAT_TYPE;
 		result.v.float_val = e->tok.v.float_val;
 		return result;
-		
+
 	case DOUBLE_LITERAL:
 		result.type = DOUBLE_TYPE;
 		result.v.double_val = e->tok.v.double_val;
@@ -318,7 +318,7 @@ var_value execute_expr(program_state* prog, expression* e)
 		print_token(&e->tok, stderr, 0);
 		exit(0);
 	}
-	
+
 
 
 	switch (e->tok.type) {
@@ -373,7 +373,7 @@ var_value execute_expr(program_state* prog, expression* e)
 	case RSHIFT_EQUAL:       INTEGRAL_BINARY_OP(var, >>=, right_ptr);   break;
 
 	case MODEQUAL:           INTEGRAL_BINARY_OP(var, %=, right_ptr);   break;
-	
+
 
 	case LOGICAL_NEGATION:   PRE_OP(!, left_ptr);   break;
 	case BIT_NEGATION:       PRE_OP(~, left_ptr);   break;
@@ -472,7 +472,7 @@ var_value execute_constant_expr(program_state* prog, expression* e)
 		result.type = FLOAT_TYPE;
 		result.v.float_val = e->tok.v.float_val;
 		return result;
-		
+
 	case DOUBLE_LITERAL:
 		result.type = DOUBLE_TYPE;
 		result.v.double_val = e->tok.v.double_val;
@@ -524,7 +524,7 @@ var_value execute_constant_expr(program_state* prog, expression* e)
 	case MULTEQUAL:          BINARY_OP(var, *=, right_ptr);   break;
 	case DIVEQUAL:           BINARY_OP(var, /=, right_ptr);   break;
 	case MODEQUAL:           INTEGRAL_BINARY_OP(var, %=, right_ptr);   break;
-	
+
 
 	case LOGICAL_NEGATION:   PRE_OP(!, left_ptr);   break;
 
@@ -588,10 +588,10 @@ void execute_expr_list(program_state* prog, function* callee, expression* e)
 	val = execute_expr(prog, e);
 	v->val.type = (list_entry(s->head.prev, active_binding, list))->val.type;
 	BINARY_OP((&v->val), =, val_ptr);
-	
+
 	list_add(&v->list, &s->head);
 	s->cur_parent = v->parent = 0;
-}	
+}
 
 
 void execute_goto(program_state* prog, statement* stmt)
@@ -650,7 +650,7 @@ void remove_binding_symbol(symbol* s)
 	list_del(&v->list);
 	free(v);
 
-	if (!list_empty(&s->head)) { 
+	if (!list_empty(&s->head)) {
 		v = list_entry(s->head.next, active_binding, list);
 		s->cur_parent = v->parent;
 	} else {
@@ -686,7 +686,7 @@ void clear_bindings(program_state* prog)
 		remove_binding_symbol(GET_SYMBOL(&prog->func->symbols, i));
 	}
 }
-	
+
 
 void pop_scope(program_state* prog)
 {
@@ -709,7 +709,7 @@ int is_ancestor(program_state* prog, int parent, int child)
 		stmt = GET_STMT(prog->stmt_list, tmp);
 		tmp = stmt->parent;
 	} while (tmp >= 0 && tmp != parent);
-	
+
 	return tmp == parent;
 }
 
@@ -724,7 +724,7 @@ void apply_scope(program_state* prog, int jump_to, int child, int parent)
 		apply_scope(prog, jump_to, stmt->parent, parent);
 
 	prog->cur_parent = child;
-	//even once we get back to parent we have to check for jumping over decls	
+	//even once we get back to parent we have to check for jumping over decls
 	for (int i=0; i<stmt->bindings->size; ++i) {
 		b = GET_BINDING(stmt->bindings, i);
 		if (b->decl_stmt < jump_to) {
@@ -752,7 +752,7 @@ void remove_scope(program_state* prog, int jump_to, int child, int parent)
 
 	prog->cur_parent = parent;
 
-	stmt = GET_STMT(prog->stmt_list, parent);	
+	stmt = GET_STMT(prog->stmt_list, parent);
 
 	for (int i=0; i<stmt->bindings->size; ++i) {
 		b = GET_BINDING(stmt->bindings, i);
@@ -769,7 +769,7 @@ int find_lowest_common_ancestor(program_state* prog, int parent1, int parent2)
 
 	//I can't think of a better way right now so just brute forcing it
 	//parent stmt/block with highest index is lowest common ancestor
-	int max = 0;	
+	int max = 0;
 	stmt1 = GET_STMT(prog->stmt_list, parent1);
 	stmt2 = GET_STMT(prog->stmt_list, parent2);
 	for (statement* s1 = stmt1; s1 != (statement*)prog->stmt_list->a; s1 = GET_STMT(prog->stmt_list, s1->parent)) {

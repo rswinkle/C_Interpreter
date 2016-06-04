@@ -39,13 +39,13 @@ unsigned int look_up_loc(program_state* prog, const char* var);
 
 
 /***********Operations ***************
- * Operator overloading is one of the few things 
+ * Operator overloading is one of the few things
  * I would add to C
 typedef enum
 {
 	UNKNOWN = 0,
 
-	CHAR_TYPE, 
+	CHAR_TYPE,
 	UCHAR_TYPE,
 
 	SHORT_TYPE,
@@ -59,7 +59,7 @@ typedef enum
 
 	FUNCTION_TYPE,
 	VOID_TYPE,
-	
+
 	INT_PTR_TYPE
 } var_type;
 

@@ -340,7 +340,7 @@ void function_definition(parsing_state* p, program_state* prog)
 
 	cvec_free_str(&prog->func->labels);
 	cvec_free_i(&prog->func->label_locs);
-		
+
 	//functions are only global scope (and default extern)
 	prog->func = NULL;
 	prog->stmt_list = NULL;
@@ -396,7 +396,7 @@ void parameter_list(parsing_state* p, program_state* prog)
 			get_token(p);
 		return;
 	}
-	
+
 	parameter_declaration(p, prog);
 
 	tok = peek_token(p, 0);
@@ -417,7 +417,7 @@ void parameter_declaration(parsing_state* p, program_state* prog)
 		parse_error(tok, "in parameter_declaration, ID expected\n");
 		exit(0);
 	}
-	
+
 	var_value* v = look_up_value(prog, tok->v.id, ONLY_LOCAL);
 	if (v) {
 		parse_error(tok, "in parameter_declaration, redeclaration of symbol\n");
@@ -471,7 +471,7 @@ void storage_specifier(parsing_state* p, program_state* prog, int match)
 
 		break;
 	case STATIC:
-		
+
 		break;
 	case TYPEDEF:
 
@@ -582,7 +582,7 @@ var_type declaration_specifier(parsing_state* p, program_state* prog, int match,
 			break;
 		}
 		break;
-	
+
 	case FLOAT:
 		type = FLOAT_TYPE;
 		break;
@@ -675,14 +675,14 @@ void initialized_declarator(parsing_state* p, program_state* prog, var_type v_ty
 
 		list_add(&val->list, &tmp->head);
 		tmp->cur_parent = prog->cur_parent;
-		
+
 		statement decl_stmt;
 		memset(&decl_stmt, 0, sizeof(statement));
 		decl_stmt.type = DECL_STMT;
 		decl_stmt.vtype = v_type;
 		decl_stmt.lvalue = tok->v.id;
 		decl_stmt.parent = prog->cur_parent;
-		
+
 		binding b;
 		b.name = tmp->name;
 		b.vtype = v_type;
@@ -690,7 +690,7 @@ void initialized_declarator(parsing_state* p, program_state* prog, var_type v_ty
 		cvec_push_void(prog->bindings, &b);
 
 		cvec_push_void(prog->stmt_list, &decl_stmt);
-		
+
 		if (peek_token(p, 1)->type == EQUAL) {
 			statement an_expr;
 			memset(&an_expr, 0, sizeof(statement));
@@ -724,7 +724,7 @@ void initialized_declarator(parsing_state* p, program_state* prog, var_type v_ty
 		} else {
 			get_token(p); //read ID
 		}
-		
+
 	}
 }
 
@@ -831,7 +831,7 @@ void statement_rule(parsing_state* p, program_state* prog)
 	case DEFAULT:
 		case_or_default_stmt(p, prog);
 		break;
-		
+
 	case IF:
 		if_stmt(p, prog);
 		break;
@@ -939,7 +939,7 @@ void switch_stmt(parsing_state* p, program_state* prog)
 
 	expr(p, prog, a_switch.exp);
 	//TODO when I add more types make sure expression is integral type
-	
+
 	tok = get_token(p);
 	if (tok->type != RPAREN) {
 		parse_error(tok, "in switch_stmt, expected RPAREN\n");
@@ -1018,7 +1018,7 @@ void do_stmt(parsing_state* p, program_state* prog)
 		parse_error(tok, "in do_stmt epected LPAREN\n");
 		exit(0);
 	}
-	
+
 	statement do_stmt;
 	memset(&do_stmt, 0, sizeof(statement));
 	do_stmt.type = DO_STMT;
@@ -1153,7 +1153,7 @@ void for_stmt(parsing_state* p, program_state* prog)
 	prog->cur_iter = prog->cur_iter_switch = for_loc;
 
 	statement_rule(p, prog);
-	
+
 	//TODO more efficient way to do this
 	binding* b;
 	for (int i=0; i<prog->bindings->size; ++i) {
@@ -1164,7 +1164,7 @@ void for_stmt(parsing_state* p, program_state* prog)
 	prog->cur_iter = old_cur_iter;
 	prog->cur_iter_switch = old_cur_i_switch;
 	prog->bindings = old_bindings;
-	
+
 	//put 3rd expression "increment clause" at end
 	size_t third_expr = prog->stmt_list->size;
 	if (a_stmt.exp)
@@ -1215,7 +1215,7 @@ void goto_stmt(parsing_state* p, program_state* prog)
 		parse_error(tok, "in goto_stmt, expected ID (for label)\n");
 		exit(0);
 	}
-	
+
 	a_goto.lvalue = tok->v.id;
 
 	tok = get_token(p);
@@ -1223,7 +1223,7 @@ void goto_stmt(parsing_state* p, program_state* prog)
 		parse_error(tok, "in goto_stmt, expected SEMICOLON\n");
 		exit(0);
 	}
-		
+
 	cvec_push_void(prog->stmt_list, &a_goto); //jump to after else statement
 }
 
@@ -1293,7 +1293,7 @@ void expr(parsing_state* p, program_state* prog, expression* e)
 void comma_expr(parsing_state* p, program_state* prog, expression* e)
 {
 	assign_expr(p, prog, e);
-	
+
 	token_value* tok = peek_token(p, 0);
 	while (tok->type == COMMA) {
 		get_token(p);
@@ -1302,7 +1302,7 @@ void comma_expr(parsing_state* p, program_state* prog, expression* e)
 		e->tok.type = tok->type;
 
 		e->right = make_expression(prog);
-		
+
 		assign_expr(p, prog, e->right);
 		tok = peek_token(p, 0);
 	}
@@ -1327,7 +1327,7 @@ void assign_expr(parsing_state* p, program_state* prog, expression* e)
 
 		if (assignment_operator(peek_token(p, 0)->type)) {
 			if (e->tok.type != ID) {  //TODO for now
-				parse_error(&e->tok, "in assign_expr, lvalue required as left operand of assignment.\n");	
+				parse_error(&e->tok, "in assign_expr, lvalue required as left operand of assignment.\n");
 				exit(0);
 			}
 		}
@@ -1348,7 +1348,7 @@ void assign_expr(parsing_state* p, program_state* prog, expression* e)
 
 		if (assignment_operator(peek_token(p, 0)->type)) {
 			if (e->tok.type != ID) {  //TODO for now
-				parse_error(&e->tok, "in assign_expr, lvalue required as left operand of assignment.\n");	
+				parse_error(&e->tok, "in assign_expr, lvalue required as left operand of assignment.\n");
 				exit(0);
 			}
 		}
@@ -1357,9 +1357,9 @@ void assign_expr(parsing_state* p, program_state* prog, expression* e)
 
 	get_token(p);  //match ID
 	e->tok = *tok; //id from above
-	
+
 	tok = get_token(p); //get assignment op
-	
+
 	//assignment operators are right associative for obvious reasons
 	//they're the only right associative binary operators in C
 	//
@@ -1387,7 +1387,7 @@ expression* copy_expr(program_state* prog, expression* e)
 	memcpy(copy, e, sizeof(expression));
 	return copy;
 }
-	
+
 void cond_expr(parsing_state* p, program_state* prog, expression* e)
 {
 	logical_or_expr(p, prog, e);
@@ -1441,7 +1441,7 @@ void logical_and_expr(parsing_state* p, program_state* prog, expression* e)
 		e->tok.type = LOGICAL_AND;
 
 		e->right = make_expression(prog);
-		
+
 		bitwise_or_expr(p, prog, e->right);
 	}
 }
@@ -1459,7 +1459,7 @@ void bitwise_or_expr(parsing_state* p, program_state* prog, expression* e)
 		e->tok.type = BIT_OR;
 
 		e->right = make_expression(prog);
-		
+
 		bitwise_xor_expr(p, prog, e->right);
 	}
 }
@@ -1476,7 +1476,7 @@ void bitwise_xor_expr(parsing_state* p, program_state* prog, expression* e)
 		e->tok.type = BIT_XOR;
 
 		e->right = make_expression(prog);
-		
+
 		bitwise_and_expr(p, prog, e->right);
 	}
 }
@@ -1493,7 +1493,7 @@ void bitwise_and_expr(parsing_state* p, program_state* prog, expression* e)
 		e->tok.type = BIT_AND;
 
 		e->right = make_expression(prog);
-		
+
 		equality_expr(p, prog, e->right);
 	}
 }
@@ -1510,7 +1510,7 @@ void equality_expr(parsing_state* p, program_state* prog, expression* e)
 		e->tok.type = tok->type;
 
 		e->right = make_expression(prog);
-		
+
 		relational_expr(p, prog, e->right);
 		tok = peek_token(p, 0);
 	}
@@ -1529,7 +1529,7 @@ void relational_expr(parsing_state* p, program_state* prog, expression* e)
 
 		e->right = make_expression(prog);
 		shift_expr(p, prog, e->right);
-		
+
 		tok = peek_token(p, 0);
 	}
 }
@@ -1547,7 +1547,7 @@ void shift_expr(parsing_state* p, program_state* prog, expression* e)
 
 		e->right = make_expression(prog);
 		add_expr(p, prog, e->right);
-		
+
 		tok = peek_token(p, 0);
 	}
 }
@@ -1561,7 +1561,7 @@ void add_expr(parsing_state* p, program_state* prog, expression* e)
 	token_value* tok = peek_token(p, 0);
 	while (tok->type == ADD || tok->type == SUB) {
 		get_token(p);
-		
+
 		e->left = copy_expr(prog, e);
 		e->tok.type = tok->type;
 
@@ -1611,7 +1611,7 @@ void unary_expr(parsing_state* p, program_state* prog, expression* e)
 	case LOGICAL_NEGATION:
 		logical_negation_expr(p, prog, e);
 		break;
-		
+
 
 	case BIT_NEGATION:
 		bit_negation_expr(p, prog, e);
@@ -1688,7 +1688,7 @@ void function_call(parsing_state* p, program_state* prog, expression* e)
 {
 	token_value* tok = get_token(p);
 	get_token(p);  //get '('
-	
+
 	e->tok.type = FUNC_CALL;
 
 	e->left = make_expression(prog);
@@ -1708,7 +1708,7 @@ void function_call(parsing_state* p, program_state* prog, expression* e)
 
 
 	e->right = make_expression(prog);
-	
+
 	if (peek_token(p, 0)->type == RPAREN) {
 		e->right->tok.type = VOID;
 		get_token(p);
@@ -1834,12 +1834,12 @@ void if_stmt(parsing_state* p, program_state* prog)
 		a_goto.parent = prog->cur_parent;
 		size_t goto_loc = prog->stmt_list->size;
 		cvec_push_void(prog->stmt_list, &a_goto); //jump to after else statement
-	
+
 		//reset jump for failed if condition to after the goto
 		GET_STMT(prog->stmt_list, if_loc)->jump_to = prog->stmt_list->size;
 
 		statement_rule(p, prog);
-		
+
 		GET_STMT(prog->stmt_list, goto_loc)->jump_to = prog->stmt_list->size;
 	}
 }
@@ -1858,7 +1858,7 @@ void print_stmt(parsing_state* p, program_state* prog)
 	expr(p, prog, a_print.exp);
 
 	//a_print.lvalue = tok->v.id;
-	
+
 	token_value* tok = get_token(p);
 	if (tok->type != SEMICOLON) {
 		parse_error(tok, "in print_stmt, SEMICOLON expected.\n");

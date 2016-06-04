@@ -42,7 +42,7 @@ typedef enum
 
 	FUNCTION_TYPE,
 	VOID_TYPE,
-	
+
 	INT_PTR_TYPE
 } var_type;
 
@@ -68,7 +68,7 @@ typedef struct var_value
 		unsigned int ptr;
 	} v;
 } var_value;
-	
+
 #define GET_VAR_VALUE(VEC, I) GET_VOID(VEC, var_value, I)
 
 
@@ -135,7 +135,7 @@ typedef struct statement
 	char* lvalue;
 	expression* exp;
 	var_type vtype;
-	
+
 	long parent;
 
 	int case_val;
@@ -148,7 +148,7 @@ typedef struct statement
 typedef struct symbol
 {
 	char* name;
-	
+
 	int cur_parent;
 	list_head head;
 } symbol;
