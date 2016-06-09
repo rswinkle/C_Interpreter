@@ -744,7 +744,7 @@ void compound_statement(parsing_state* p, program_state* prog)
 	//will change it in the loop below
 	start.parent = prog->cur_parent;
 
-	vector_void* old_bindings = prog->bindings;
+	cvector_void* old_bindings = prog->bindings;
 	int old_parent = prog->cur_parent;
 
 	start.bindings = cvec_void_heap(0, 20, sizeof(binding), NULL, NULL);
@@ -1097,7 +1097,7 @@ void for_stmt(parsing_state* p, program_state* prog)
 	a_stmt.bindings = cvec_void_heap(0, 3, sizeof(binding), NULL, NULL);
 
 	int old_parent = prog->cur_parent;
-	vector_void* old_bindings = prog->bindings;
+	cvector_void* old_bindings = prog->bindings;
 
 	prog->cur_parent = prog->stmt_list->size;
 	prog->bindings = a_stmt.bindings;

@@ -62,7 +62,7 @@ void execute(program_state* prog)
 			var_value v = execute_expr(prog, stmt->exp);
 			a_case* c;
 			for (i=0; i<stmt->bindings->size; ++i) {
-				c = GET_VOID(stmt->bindings, a_case, i);
+				c = CVEC_GET_VOID(stmt->bindings, a_case, i);
 				if (c->val == v.v.int_val) {
 					*prog->pc = c->jump_to - 1;
 					break;
@@ -204,7 +204,7 @@ var_value execute_expr(program_state* prog, expression* e)
 	var_value* var;
 
 	function* old_func, *func;
-	vector_void* old_stmt_list;
+	cvector_void* old_stmt_list;
 	size_t* old_pc;
 
 	var_value result, left, right;

@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#define GET_PARAM(VEC, I) GET_VOID(VEC, macro_params, I)
+#define GET_PARAM(VEC, I) CVEC_GET_VOID(VEC, macro_params, I)
 
 typedef struct macro_params
 {
@@ -21,7 +21,7 @@ typedef struct macro_params
 } macro_params;
 
 /*
- * vector_void or generated of this?
+ * cvector_void or generated of this?
 typedef struct macro
 {
 	char* name;
@@ -32,10 +32,10 @@ typedef struct macro
 
 typedef struct preprocessor_state
 {
-	vector_str macros;
-	vector_str values;
+	cvector_str macros;
+	cvector_str values;
 	
-	vector_void params;
+	cvector_void params;
 
 	cvector_token_lex if_stack;
 
@@ -58,9 +58,9 @@ void handle_include(preprocessor_state* preproc);
 void handle_ifdef(preprocessor_state* preproc);
 
 void parse_params(preprocessor_state* preproc, int macro, rsw_cstr* expansion);
-unsigned int macro_expansion(preprocessor_state* preproc, rsw_cstr* expansion, unsigned long beginning, vector_i* valid_macros, int macro_index);
+unsigned int macro_expansion(preprocessor_state* preproc, rsw_cstr* expansion, unsigned long beginning, cvector_i* valid_macros, int macro_index);
 void prescan_argument(preprocessor_state* preproc, rsw_cstr* expansion);
-void rescan_expansion(preprocessor_state* preproc, rsw_cstr* expansion, vector_i* valid_macros, int macro_index);
+void rescan_expansion(preprocessor_state* preproc, rsw_cstr* expansion, cvector_i* valid_macros, int macro_index);
 void handle_macro(preprocessor_state* preproc, int macro);
 
 

@@ -14,10 +14,10 @@
 #include "cvector_token_lex.h"
 
 
-#define GET_STMT(VEC, I) GET_VOID(VEC, statement, I)
-#define GET_FUNCTION(VEC, I) GET_VOID(VEC, function, I)
-#define GET_SYMBOL(VEC, I) GET_VOID(VEC, symbol, I)
-#define GET_BINDING(VEC, I) GET_VOID(VEC, binding, I)
+#define GET_STMT(VEC, I) CVEC_GET_VOID(VEC, statement, I)
+#define GET_FUNCTION(VEC, I) CVEC_GET_VOID(VEC, function, I)
+#define GET_SYMBOL(VEC, I) CVEC_GET_VOID(VEC, symbol, I)
+#define GET_BINDING(VEC, I) CVEC_GET_VOID(VEC, binding, I)
 
 
 typedef enum
@@ -69,7 +69,7 @@ typedef struct var_value
 	} v;
 } var_value;
 
-#define GET_VAR_VALUE(VEC, I) GET_VOID(VEC, var_value, I)
+#define GET_VAR_VALUE(VEC, I) CVEC_GET_VOID(VEC, var_value, I)
 
 
 void free_var_value(void* var);
@@ -139,7 +139,7 @@ typedef struct statement
 	long parent;
 
 	int case_val;
-	vector_void* bindings;
+	cvector_void* bindings;
 } statement;
 
 
@@ -155,14 +155,14 @@ typedef struct symbol
 
 typedef struct function
 {
-	vector_void stmt_list;
+	cvector_void stmt_list;
 	size_t pc;
 	var_value ret_val;
 	int n_params;
-	vector_void symbols;
+	cvector_void symbols;
 
-	vector_str labels;
-	vector_i label_locs;
+	cvector_str labels;
+	cvector_i label_locs;
 } function;
 
 
@@ -170,8 +170,8 @@ typedef struct function
 
 typedef struct program_state
 {
-	vector_void functions;
-	vector_void* stmt_list;
+	cvector_void functions;
+	cvector_void* stmt_list;
 	size_t* pc;
 	function* func;
 
@@ -180,12 +180,12 @@ typedef struct program_state
 	int cur_iter;
 	int cur_iter_switch;
 
-	vector_str global_variables;
-	vector_void global_values;
+	cvector_str global_variables;
+	cvector_void global_values;
 
-	vector_void expressions;
-	vector_str string_db;
-	vector_void* bindings;
+	cvector_void expressions;
+	cvector_str string_db;
+	cvector_void* bindings;
 } program_state;
 
 /***************************/

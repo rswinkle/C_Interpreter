@@ -535,7 +535,7 @@ void parse_params(preprocessor_state* preproc, int macro, rsw_cstr* expansion)
 	free_cstr(&scratch);
 }
 
-unsigned int macro_expansion(preprocessor_state* preproc, rsw_cstr* expansion, unsigned long beginning, vector_i* valid_macros, int macro_index)
+unsigned int macro_expansion(preprocessor_state* preproc, rsw_cstr* expansion, unsigned long beginning, cvector_i* valid_macros, int macro_index)
 {
 	//vaild_macros should never be NULL unless I uncomment that alternative method in prescan_argument
 	//int macro = (valid_macros) ? valid_macros->a[macro_index] : macro_index;
@@ -669,7 +669,7 @@ void prescan_argument(preprocessor_state* preproc, rsw_cstr* expansion)
 	}
 	*/
 
-	vector_i valid_macros;
+	cvector_i valid_macros;
 	cvec_i(&valid_macros, preproc->macros.size, preproc->macros.size);
 
 	for (int j=0; j < preproc->macros.size; ++j) {
@@ -721,7 +721,7 @@ void prescan_argument(preprocessor_state* preproc, rsw_cstr* expansion)
 	cvec_free_i(&valid_macros);
 }
 
-void rescan_expansion(preprocessor_state* preproc, rsw_cstr* expansion, vector_i* valid_macros, int macro_index)
+void rescan_expansion(preprocessor_state* preproc, rsw_cstr* expansion, cvector_i* valid_macros, int macro_index)
 {
 	int loc, macro_name_len, macro_val_len;
 	char* ptr, *search, *found;
@@ -787,7 +787,7 @@ void handle_macro(preprocessor_state* preproc, int macro)
 	if (p->num_params >= 0)
 		parse_params(preproc, macro, &expansion);
 
-	vector_i valid_macros;
+	cvector_i valid_macros;
 	cvec_i(&valid_macros, preproc->macros.size, preproc->macros.size);
 	for (int i=0; i < preproc->macros.size; ++i) {
 		valid_macros.a[i] = i;

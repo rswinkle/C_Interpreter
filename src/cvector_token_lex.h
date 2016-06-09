@@ -3,7 +3,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
 
 #include "lexer.h"
 
@@ -122,7 +121,7 @@ cvector_token_lex* cvec_init_token_lex_heap(token_lex* vals, size_t num, void(*e
 			elem_init(&vec->a[i], &vals[i]);
 		}
 	} else {
-		memcpy(vec->a, vals, sizeof(token_lex)*num);
+		memmove(vec->a, vals, sizeof(token_lex)*num);
 	}
 	
 	vec->elem_free = elem_free;
@@ -165,7 +164,7 @@ int cvec_init_token_lex(cvector_token_lex* vec, token_lex* vals, size_t num, voi
 			elem_init(&vec->a[i], &vals[i]);
 		}
 	} else {
-		memcpy(vec->a, vals, sizeof(token_lex)*num);
+		memmove(vec->a, vals, sizeof(token_lex)*num);
 	}
 
 	vec->elem_free = elem_free;
@@ -200,7 +199,7 @@ void cvec_token_lex_copy(void* dest, void* src)
 			vec1->elem_init(&vec1->a[i], &vec2->a[i]);
 		}
 	} else {
-		memcpy(vec1->a, vec2->a, vec1->size*sizeof(token_lex));
+		memmove(vec1->a, vec2->a, vec1->size*sizeof(token_lex));
 	}
 }
 
@@ -212,7 +211,7 @@ int cvec_push_token_lex(cvector_token_lex* vec, token_lex* a)
 		if (vec->elem_init) {
 			vec->elem_init(&vec->a[vec->size], a);
 		} else {
-			memcpy(&vec->a[vec->size], a, sizeof(token_lex));
+			memmove(&vec->a[vec->size], a, sizeof(token_lex));
 		}
 	} else {
 		tmp_sz = CVEC_token_lex_ALLOCATOR(vec->capacity);
@@ -225,7 +224,7 @@ int cvec_push_token_lex(cvector_token_lex* vec, token_lex* a)
 		if (vec->elem_init) {
 			vec->elem_init(&vec->a[vec->size], a);
 		} else {
-			memcpy(&vec->a[vec->size], a, sizeof(token_lex));
+			memmove(&vec->a[vec->size], a, sizeof(token_lex));
 		}
 		
 		vec->capacity = tmp_sz;
@@ -238,7 +237,7 @@ int cvec_push_token_lex(cvector_token_lex* vec, token_lex* a)
 void cvec_pop_token_lex(cvector_token_lex* vec, token_lex* ret)
 {
 	if (ret) {
-		memcpy(ret, &vec->a[--vec->size], sizeof(token_lex));
+		memmove(ret, &vec->a[--vec->size], sizeof(token_lex));
 	} else {
 		vec->size--;
 	}
@@ -282,7 +281,7 @@ int cvec_insert_token_lex(cvector_token_lex* vec, size_t i, token_lex* a)
 		if (vec->elem_init) {
 			vec->elem_init(&vec->a[i], a);
 		} else {
-			memcpy(&vec->a[i], a, sizeof(token_lex));
+			memmove(&vec->a[i], a, sizeof(token_lex));
 		}
 	} else {
 		tmp_sz = CVEC_token_lex_ALLOCATOR(vec->capacity);
@@ -297,7 +296,7 @@ int cvec_insert_token_lex(cvector_token_lex* vec, size_t i, token_lex* a)
 		if (vec->elem_init) {
 			vec->elem_init(&vec->a[i], a);
 		} else {
-			memcpy(&vec->a[i], a, sizeof(token_lex));
+			memmove(&vec->a[i], a, sizeof(token_lex));
 		}
 		
 		vec->capacity = tmp_sz;
@@ -327,7 +326,7 @@ int cvec_insert_array_token_lex(cvector_token_lex* vec, size_t i, token_lex* a, 
 			vec->elem_init(&vec->a[j+i], &a[j]);
 		}
 	} else {
-		memcpy(&vec->a[i], a, num*sizeof(token_lex));
+		memmove(&vec->a[i], a, num*sizeof(token_lex));
 	}
 	vec->size += num;
 	return 1;
@@ -406,7 +405,7 @@ void cvec_set_val_sz_token_lex(cvector_token_lex* vec, token_lex* val)
 		}
 	} else {
 		for (i=0; i<vec->size; i++) {
-			memcpy(&vec->a[i], val, sizeof(token_lex));
+			memmove(&vec->a[i], val, sizeof(token_lex));
 		}
 	}
 }
@@ -427,7 +426,7 @@ void cvec_set_val_cap_token_lex(cvector_token_lex* vec, token_lex* val)
 		}
 	} else {
 		for (i=0; i<vec->capacity; i++) {
-			memcpy(&vec->a[i], val, sizeof(token_lex));
+			memmove(&vec->a[i], val, sizeof(token_lex));
 		}
 	}
 }
