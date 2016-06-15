@@ -1988,8 +1988,8 @@ void cvec_set_val_sz_str(cvector_str* vec, char* val)
 
 /** Fills entire allocated array (capacity) with val.  Size is set
  * to capacity in this case because strings are individually dynamically allocated.
- * This is different from cvector_i, vector_d and vector (without a free function) where the size stays the same.
-   TODO  Remove this function?  even more unnecessary than for cvector_i and vector_d and different behavior*/
+ * This is different from cvector_i, cvector_d and cvector_void (without a free function) where the size stays the same.
+   TODO  Remove this function?  even more unnecessary than for cvector_i and cvector_d and different behavior*/
 void cvec_set_val_cap_str(cvector_str* vec, char* val)
 {
 	size_t i;
@@ -2587,24 +2587,45 @@ The allocator macros are used in all functions that increase the size by 1.
 In others (constructors, insert_array, reserve) CVEC_X_START_SZ is the amount
 extra allocated.
 
-
 There are also 2 templates, one for basic types and one for types that contain
 dynamically allocated memory and you might want a free and/or init function.
 In other words the first template is based off cvector_i and the second is based
 off of cvector_void, so look at the corresponding documentation for behavior.
 
-They are located in cvector_template.h, cvector_template2.h.
+There are 2 ways to use/create your own cvector types.  The easiest way is to use
+the macros defined in cvector_macro.h which are also included in the all-in-one header
+cvector.h.  You can see how to use them in cvector_tests.c:
 
-To generate your own vector files for a type just run:
-<pre>
-python3 generate_code.py yourtype
-</pre>
+	#define RESIZE(a) ((a)*2)
 
-which will generate the results for all templates so just delete the ones
+	CVEC_NEW_DECLS(short)
+	CVEC_NEW_DECLS2(f_struct)
+
+	CVEC_NEW_DEFS(short, RESIZE)
+	CVEC_NEW_DEFS2(f_struct, RESIZE)
+
+The RESIZE macro has to be defined before using the macros for now, serving the
+same purpose as the regular allocator macros above.  Obviously the DECL macros
+declare type and prototypes while the DEFS define them.  Using the macros for
+user made types is much easier than the files because you can call the macro
+right in the header where you define the type instead of having to include the
+type in the generated file.  Basically 1 step rather than 2-3 and no extra files
+needed.
+
+The other way, and the only way in previous versions of CVector, is to generate
+your own files from the template files which are located in cvector_template.h
+and cvector_template2.h.
+
+To generate your own cvector files for a type just run:
+
+	python3 generate_code.py yourtype
+
+which will generate the results for both templates so just delete the one
 you don't want.
 
-cvector_short and cvector_f_struct are examples of the process and
-how to add it to the testing.
+cvector_short and cvector_f_struct are examples of the generated files.  While I
+now test the macros instead of the files, it's the same code, and you can still
+see how I used to test them.
 
 
 \section des_notes Design Notes
