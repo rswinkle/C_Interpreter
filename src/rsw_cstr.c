@@ -567,8 +567,9 @@ int cstr_split(rsw_cstr* str, rsw_cstr* delim, rsw_cstr** results, size_t* num_r
 			assert(ret);
 			return 0;
 		}
-		num = 1;
 		init_cstr_str(ret, str->a, str->size);
+		*num_results = 1;
+		*results = ret;
 		return 1;
 	}
 
