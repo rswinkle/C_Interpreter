@@ -37,7 +37,7 @@ def main():
 		
 		if rc1 or rc2 or rc3:
 			print('{: <40} failed'.format(f.rpartition('/')[-1]))
-			print('popen out err = rc1, rc2, rc3')
+			print('popen out err = {} {} {}'.format(rc1, rc2, rc3))
 			print('stdout:\n{0}\nstderr:\n{1}'.format(out, err))
 			ret = 1
 
