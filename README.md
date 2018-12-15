@@ -4,8 +4,6 @@ C_Interpreter
 [![Build Status](https://travis-ci.org/rswinkle/C_Interpreter.svg?branch=master)](https://travis-ci.org/rswinkle/C_Interpreter)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/3624/badge.svg)](https://scan.coverity.com/projects/3624)
 
-[![Contact me on Codementor](https://cdn.codementor.io/badges/contact_me_github.svg)](https://www.codementor.io/rswinkle)
-
 [http://www.robertwinkler.com/projects/c_interpreter.html](http://www.robertwinkler.com/projects/c_interpreter.html)
 
 This started as C port of an old college assignment
@@ -17,6 +15,13 @@ Now my goal is to make something approaching scriptable
 C.  I'll consider it done when it can run itself ...
 so it'll probably never be completely done.
 
+Download
+========
+Get the source from [Github](https://github.com/rswinkle/C_Interpreter).
+
+
+Alternatives
+============
 If you're looking for something more professional there's
 
 * [Cling](http://root.cern.ch/drupal/content/cling)
@@ -27,25 +32,26 @@ fast and self-contained they have a command line switch -run to immediately
 run it after compiling so you can use C as a JIT scripting language,
 
 
-
+Tests
+=====
 I've kept the old tests around (updating them so they
 keep working) but I've been adding new tests for
 new features.  They're not comprehensive and they
 don't test every edge case but they're growing.
 
+
+Misc
+====
 I'm using the 5th edition of C: A Reference Manual for
 all the nitty gritty details and the very convenient
 complete C grammar/syntax in the appendix.
 
-The grammar below is the current status more or less.
-It'll be interesting to see how it grows and which
-parts converge with full syntax first.
-
 I've also added a BNF spec for C I found online just
 to have something for reference in the repository.
 
-I've now added a preprocessor which currently supports
-the following (and of course actually using the macros):
+Current Grammar (work in progress)
+==================================
+### Preprocessor
 
 	#include "relative path based on current directory"
 	#define name
@@ -54,9 +60,9 @@ the following (and of course actually using the macros):
 	#undef name
 	# (null directive)
 
+It also of course supports actually using the macros.
 
-Current Grammar (work in progress)
-==================================
+### C language
 
 	translation_unit                -> top_level_declaration
 	                                   translation_unit top_level_declaration
@@ -261,21 +267,9 @@ all my tests at once.
 	Usage: ./cinterpreter [-E] script
 	~/C_Interpreter/build $ ./cinterpreter ../tests/switch.txt
 	[ouhput from switch.txt here]
-	~/C_Interpreter/build $ ../runtests.sh
-	running normal tests
-	==================
-	executing ../tests/backslash.txt
-	executing ../tests/break_continue.txt
-	executing ../tests/problem6.txt
-	...
-	comparing output of ../tests/backslash.txt
-	comparing output of ../tests/break_continue.txt
-	comparing output of ../tests/problem6.txt
-	...
-	~/C_Interpreter/build $ ../runtests_valgrind.sh | grep ERROR
-	==30652== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 2 from 2)
-	==30652== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 2 from 2)
-	==30655== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 2 from 2)
-	...
+	~/C_Interpreter/build $ ../runtests.py
+	Should be nothing here, only failures produce output
+	~/C_Interpreter/build $ ../run_valgrind_tests.py
+	Same here.  Note this make take a minute, valgrind makes things slow
 	~/C_Interpreter/build $
 

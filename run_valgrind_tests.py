@@ -18,7 +18,7 @@ def main():
 	parser = argparse.ArgumentParser(description="Run C_Interpreter tests")
 	parser.add_argument("-E", "--run-preproc", action="store_true", help="Run preprocessor tests too")
 	args = parser.parse_args()
-	print(args)
+	#print(args)
 
 	ret = 0
 	for f in language_tests:

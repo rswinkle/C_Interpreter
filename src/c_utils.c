@@ -1031,10 +1031,10 @@ char* int_to_str(int num, int base)
 	char *pos = buf + INT_MAX_LEN-1;
 	int tmp = (num < 0) ? -num : num;
 
-	while (tmp != 0) {
+	do {
 		*pos-- = digits[tmp % base];
 		tmp /= base;
-	}
+	} while (tmp != 0);
 
 	if (num < 0) {
 		*pos = '-';
