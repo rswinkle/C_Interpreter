@@ -11,7 +11,7 @@
 
 
 
-void run(program_state* prog, char* start_func);
+var_value run(program_state* prog, char* start_func);
 void execute(program_state* prog);
 var_value execute_expr(program_state* prog, expression* e);
 var_value execute_constant_expr(program_state* prog, expression* e);

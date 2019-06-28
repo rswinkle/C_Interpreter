@@ -61,10 +61,10 @@ void free_symbol(void* var)
 	free_active_binding_list(&s->head);
 }
 
-
+// Used as a regular constructor, we don't use from
 void init_function(void* to, void* from)
 {
-	function* to_func = to, *from_func = from;
+	function* to_func = to;
 
 	to_func->pc = 0;
 	cvec_void(&to_func->stmt_list, 0, 50, sizeof(statement), free_statement, NULL);
@@ -92,10 +92,9 @@ void free_statement(void* stmt)
 
 void free_var_value(void* var)
 {
-	var_value *v = var;
-	//TODO
-	//nothing to free for now
-
+	//var_value *v = var;
+	// TODO when necessary
+	// nothing to free for now
 }
 
 
@@ -139,6 +138,9 @@ void print_type(var_value* v)
 	case ULONG_TYPE:     puts("ULONG_TYPE"); break;
 	case FLOAT_TYPE:     puts("FLOAT_TYPE"); break;
 	case DOUBLE_TYPE:    puts("DOUBLE_TYPE"); break;
+	case FUNCTION_TYPE:  puts("FUNCTION_TYPE"); break;
+	case VOID_TYPE:      puts("VOID_TYPE"); break;
+	case INT_PTR_TYPE:   puts("INT_PTR_TYPE"); break;
 	default:
 		puts("unknown type in print_type");
 	}
@@ -174,12 +176,12 @@ void parse_program_string(program_state* prog, char* string)
 	cvec_token_lex(&p.tokens, 0, 1000, NULL, NULL);
 
 	cvec_str(&prog->string_db, 0, 100);
-	int i, line;
+	int i;
 
 	//starts on line 1
 	lexer_state lexer = { NULL, 1, 0, 0, 0 };
 
-	token_lex tok_lex, tlex[2];
+	token_lex tok_lex;
 	tok_lex = read_token_from_str(string, &lexer, PARSING);
 	while (tok_lex.tok.type != END) {
 		if (tok_lex.tok.type == ID || tok_lex.tok.type == STR_LITERAL) {
@@ -228,7 +230,7 @@ void parse_program_file(program_state* prog, FILE* file)
 	cvec_token_lex(&p.tokens, 0, 1000, NULL, NULL);
 
 	cvec_str(&prog->string_db, 0, 100);
-	int i, line;
+	int i;
 
 	//starts on line 1
 	lexer_state lexer = { NULL, 1, 0, 0, 0 };
@@ -357,8 +359,8 @@ void function_declarator(parsing_state* p, program_state* prog, var_type vtype)
 
 	//TODO make sure it's not already defined and make sure it matches previous declarations
 
-	function a_func, *func_ptr;
-	cvec_push_void(&prog->functions, &a_func);  //initialization is done automatically init_function
+	function* func_ptr;
+	cvec_push_void(&prog->functions, NULL);  //initialization is done automatically in init_function
 	assert(prog->functions.size <= 10);  //for now prevent possibility of bug
 
 	var_value var;

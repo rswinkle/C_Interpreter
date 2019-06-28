@@ -3,7 +3,7 @@
 
 
 
-void run(program_state* prog, char* start_func)
+var_value run(program_state* prog, char* start_func)
 {
 	char* func_name = (start_func) ? start_func : "main";
 	var_value* var = look_up_value(prog, func_name, ONLY_GLOBAL); //global is current local
@@ -29,6 +29,8 @@ void run(program_state* prog, char* start_func)
 	cvec_free_void(&prog->global_values);
 	cvec_free_void(&prog->expressions);
 	cvec_free_str(&prog->string_db);
+
+	return ret;
 }
 
 
@@ -37,7 +39,7 @@ void execute(program_state* prog)
 {
 	*prog->pc = 0;
 	int i, outer_parent = prog->cur_parent;
-	statement* stmt, *target;
+	statement* stmt;
 
 	while (*prog->pc < prog->stmt_list->size) {
 		stmt = GET_STMT(prog->stmt_list, *prog->pc);
@@ -193,8 +195,14 @@ void execute_print(var_value a)
 		case DOUBLE_TYPE:
 			printf("%f\n", a.v.double_val);
 			break;
+		case FUNCTION_TYPE:
+			printf("%u\n", a.v.func_loc);
+			break;
+		case VOID_TYPE:
+		case INT_PTR_TYPE:
+			break;
 		default:
-			fprintf(stderr, "type not supported yet\n");
+			fprintf(stderr, "unknown/unsupported type\n");
 			exit(0);
 	}
 }

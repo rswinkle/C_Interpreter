@@ -464,7 +464,6 @@ void parse_params(preprocessor_state* preproc, int macro, rsw_cstr* expansion)
 	read_token(preproc->input, &preproc->lexer, NULL);
 
 	int param_len, val_len, parens, loc;
-	char* search, *found;
 
 	rsw_cstr arg_expansion;
 	init_cstr_cap(&arg_expansion, 50);
@@ -551,7 +550,7 @@ unsigned int macro_expansion(preprocessor_state* preproc, rsw_cstr* expansion, u
 	macro_params* p = GET_PARAM(&preproc->params, macro);
 	int param_len, val_len, parens, loc;
 
-	char* search, *found, *c;
+	char* c;
 
 	//beginning is start of macro name so jump forward len (the first c++ will jump over '(' )
 	c = &expansion->a[beginning + strlen(preproc->macros.a[macro])];

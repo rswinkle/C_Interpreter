@@ -403,6 +403,9 @@ stray_backslash:
 
 token_length_error:
 	lex_error(lex_state, "Token length is too long, max token length is %d,", MAX_TOKEN_LEN-1);
+	
+	// never gets here, gets rid of compiler warning
+	return tok_lex;
 }
 
 void lex_error(lexer_state* lex, char *str, ...)
@@ -815,6 +818,9 @@ stray_backslash:
 
 token_length_error:
 	lex_error(lex_state, "Token length is too long, max token length is %d,", MAX_TOKEN_LEN - 1);
+
+	// never gets here, gets rid of compiler warning
+	return tok_lex;
 }
 
 

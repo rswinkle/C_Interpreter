@@ -36,9 +36,15 @@ int main(int argc, char** argv)
 	}
 
 	parse_program_file(&program, preprocessed);
-	run(&program, "main");
+	var_value ret = run(&program, "main");
 
+	// TODO change tests to accomodate this output?
+	// printf("Return value: ");
+	// execute_print(ret);
 
+	// can't do this either till I fix one of the tests
+	//if (ret.type >= INT_TYPE)
+	//	return ret.v.int_val;
 
 	return 0;
 }
