@@ -1783,8 +1783,9 @@ int cvec_push_str(cvector_str* vec, char* a)
  *  (ie ret has adequate space.) */
 void cvec_pop_str(cvector_str* vec, char* ret)
 {
+	vec->size--;
 	if (ret)
-		strcpy(ret, vec->a[--vec->size]);
+		strcpy(ret, vec->a[vec->size]);
 	CVEC_FREE(vec->a[vec->size]);
 }
 
@@ -2634,7 +2635,7 @@ action and how it should behave, look at cvector_tests.c
 \section LICENSE
 CVector is licensed under the MIT License.
 
-Copyright (c) 2011-2018 Robert Winkler
+Copyright (c) 2011-2019 Robert Winkler
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the "Software"), to deal in the Software without restriction, including without limitation
