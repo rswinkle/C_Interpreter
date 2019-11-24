@@ -82,11 +82,7 @@ void free_function(void* func)
 void free_statement(void* stmt)
 {
 	statement* s = (statement*)stmt;
-
-	// TODO make all cvec_free_*_heap functions check for NULL?
-	// after all free(NULL) works fine...
-	if (s->bindings)
-		cvec_free_void_heap(s->bindings);
+	cvec_free_void_heap(s->bindings);
 }
 
 
