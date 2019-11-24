@@ -43,8 +43,5 @@ int main(int argc, char** argv)
 	// execute_print(ret);
 
 	// can't do this either till I fix one of the tests
-	//if (ret.type >= INT_TYPE)
-	//	return ret.v.int_val;
-
-	return 0;
+	return extract_int(ret);
 }

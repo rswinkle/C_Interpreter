@@ -31,7 +31,7 @@ void apply_scope(program_state* prog, int jump_to, int child, int parent);
 void remove_scope(program_state* prog, int jump_to, int child, int parent);
 int find_lowest_common_ancestor(program_state* prog, int parent1, int parent2);
 
-
+int extract_int(var_value v);
 
 symbol* look_up_symbol(program_state* prog, const char* var);
 var_value* look_up_value(program_state* prog, const char* var, int search);

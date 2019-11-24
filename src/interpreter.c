@@ -160,8 +160,6 @@ int is_true(var_value v)
 	}
 }
 
-
-
 void execute_print(var_value a)
 {
 	switch (a.type) {
@@ -543,8 +541,6 @@ var_value execute_constant_expr(program_state* prog, expression* e)
 	return result;
 }
 
-
-
 /* executes parameter list of function call (aka expression_list)
  * from left to right assigning them to ascending parameters
  * order of evaluation is unspecified/implementation specific according to C spec
@@ -600,7 +596,6 @@ void execute_expr_list(program_state* prog, function* callee, expression* e)
 	list_add(&v->list, &s->head);
 	s->cur_parent = v->parent = 0;
 }
-
 
 void execute_goto(program_state* prog, statement* stmt)
 {
@@ -694,7 +689,6 @@ void clear_bindings(program_state* prog)
 		remove_binding_symbol(GET_SYMBOL(&prog->func->symbols, i));
 	}
 }
-
 
 void pop_scope(program_state* prog)
 {
@@ -790,6 +784,31 @@ int find_lowest_common_ancestor(program_state* prog, int parent1, int parent2)
 	return max;
 }
 
+int extract_int(var_value v)
+{
+	switch (v.type) {
+	case CHAR_TYPE:     return v.v.char_val;
+	case UCHAR_TYPE:    return v.v.uchar_val;
+	case SHORT_TYPE:    return v.v.short_val;
+	case USHORT_TYPE:   return v.v.ushort_val;
+	case INT_TYPE:      return v.v.int_val;
+	case UINT_TYPE:     return v.v.uint_val;
+	case LONG_TYPE:     return v.v.long_val;
+	case ULONG_TYPE:    return v.v.ulong_val;
+	case FLOAT_TYPE:    return v.v.float_val;
+	case DOUBLE_TYPE:   return v.v.double_val;
+
+	// TODO could just default to 0 for all other types for now
+	case VOID_TYPE:     return 0;
+
+	default:
+		printf("%d\n", v.type);
+		fprintf(stderr, "Error unknown type\n");
+		exit(0);
+	}
+}
+
+
 unsigned int look_up_loc(program_state* prog, const char* var)
 {
 	for (int i=0; i<prog->global_variables.size; ++i) {
@@ -801,7 +820,6 @@ unsigned int look_up_loc(program_state* prog, const char* var)
 	exit(0);
 }
 
-
 symbol* look_up_symbol(program_state* prog, const char* var)
 {
 	symbol* v;
@@ -812,8 +830,6 @@ symbol* look_up_symbol(program_state* prog, const char* var)
 	}
 	return NULL;
 }
-
-
 
 var_value* look_up_value(program_state* prog, const char* var, int search)
 {
