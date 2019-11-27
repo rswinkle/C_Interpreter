@@ -334,12 +334,13 @@ start:
 			lex_state->cur_pos--;
 			token_buf[i] = '\0';
 
+			// TODO
 			//should turn these off for preprocessor ... though I think you deserve problems
 			//if you define macros with the same names as keywords
 			//could also optimize this, check length, turn into a mini state machine etc.
 			if (!strcmp(token_buf, "do")) {         tok_lex.tok.type = DO;         break; }
 			if (!strcmp(token_buf, "while")) {      tok_lex.tok.type = WHILE;      break; }
-			if (!strcmp(token_buf, "for")) {        tok_lex.tok.type = FOR;      break; }
+			if (!strcmp(token_buf, "for")) {        tok_lex.tok.type = FOR;        break; }
 			if (!strcmp(token_buf, "if")) {         tok_lex.tok.type = IF;         break; }
 			if (!strcmp(token_buf, "else")) {       tok_lex.tok.type = ELSE;       break; }
 			if (!strcmp(token_buf, "print")) {      tok_lex.tok.type = PRINT;      break; }
@@ -347,15 +348,16 @@ start:
 			if (!strcmp(token_buf, "return")) {     tok_lex.tok.type = RETURN;     break; }
 			if (!strcmp(token_buf, "switch")) {     tok_lex.tok.type = SWITCH;     break; }
 			if (!strcmp(token_buf, "break")) {      tok_lex.tok.type = BREAK;      break; }
+			if (!strcmp(token_buf, "sizeof")) {     tok_lex.tok.type = SIZEOF;     break; }
 
 			if (!strcmp(token_buf, "case")) {       tok_lex.tok.type = CASE;       break; }
 			if (!strcmp(token_buf, "default")) {    tok_lex.tok.type = DEFAULT;    break; }
 			if (!strcmp(token_buf, "continue")) {   tok_lex.tok.type = CONTINUE;   break; }
 
-			if (!strcmp(token_buf, "char")) {       tok_lex.tok.type = CHAR;      break; }
+			if (!strcmp(token_buf, "char")) {       tok_lex.tok.type = CHAR;       break; }
 			if (!strcmp(token_buf, "short")) {      tok_lex.tok.type = SHORT;      break; }
 			if (!strcmp(token_buf, "int")) {        tok_lex.tok.type = INT;        break; }
-			if (!strcmp(token_buf, "long")) {       tok_lex.tok.type = LONG;        break; }
+			if (!strcmp(token_buf, "long")) {       tok_lex.tok.type = LONG;       break; }
 			if (!strcmp(token_buf, "signed")) {     tok_lex.tok.type = SIGNED;     break; }
 			if (!strcmp(token_buf, "unsigned")) {   tok_lex.tok.type = UNSIGNED;   break; }
 			if (!strcmp(token_buf, "double")) {     tok_lex.tok.type = DOUBLE;     break; }
@@ -876,6 +878,7 @@ void print_token(token_value* tok, FILE* file, int print_enum)
 			case DEFAULT:          fprintf(file, "DEFAULT");     break;
 			case CONTINUE:         fprintf(file, "CONTINUE");     break;
 			case RETURN:           fprintf(file, "RETURN");         break;
+			case SIZEOF:           fprintf(file, "SIZEOF");         break;
 			case BREAK:            fprintf(file, "BREAK");     break;
 			case GOTO:             fprintf(file, "GOTO");     break;
 			case ID:               fprintf(file, "ID = %s\n", tok->v.id);     break;
@@ -964,6 +967,7 @@ void print_token(token_value* tok, FILE* file, int print_enum)
 			case DEFAULT:          fprintf(file, "default");     break;
 			case CONTINUE:         fprintf(file, "continue");     break;
 			case RETURN:           fprintf(file, "return");         break;
+			case SIZEOF:           fprintf(file, "sizeof");         break;
 			case BREAK:            fprintf(file, "break");     break;
 			case GOTO:             fprintf(file, "goto");     break;
 			case ID:               fprintf(file, "%s", tok->v.id);     break;

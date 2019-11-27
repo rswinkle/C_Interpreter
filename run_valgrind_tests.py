@@ -27,7 +27,11 @@ def main():
 
 		rc = int(err.find('ERROR SUMMARY: 0') == -1)
 		
-		if rc:
+		# I don't really care if there's a "leak" in a program that had an error
+		# since I exit immediately without freeing everything.  It would be nice to clean up
+		# everything under all conditions but as long as everything is freed properly when
+		# a program runs to completion
+		if rc and not os.path.exists("{}.expected.err".format(f)):
 			print('{: <40} ..... failed'.format(f.rpartition('/')[-1]))
 			print("stdout:")
 			print(out)

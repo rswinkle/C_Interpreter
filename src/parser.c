@@ -150,9 +150,9 @@ token_value* peek_token(parsing_state* p, long offset)
 token_value* get_token(parsing_state* p)
 {
 	token_value* tok = &p->tokens.a[p->pos++].tok;
-//	print_token(tok, stdout, 0); putchar('\n');
+	//print_token(tok, stdout, 0); putchar('\n');
 
-//	return &p->tokens.a[p->pos++].tok;
+	//return &p->tokens.a[p->pos++].tok;
 	return tok;
 }
 
@@ -246,6 +246,11 @@ void parse_program_file(program_state* prog, FILE* file)
 				prog->string_db.a[prog->string_db.size-1] = tok_lex.tok.v.id;
 			}
 		}
+
+		// debugging
+		//print_token(&tok_lex.tok, stdout, 0);
+		//putchar('\n');
+
 		cvec_push_token_lex(&p.tokens, &tok_lex);
 		tok_lex = read_token(file, &lexer, PARSING);
 	}
@@ -357,7 +362,7 @@ void function_declarator(parsing_state* p, program_state* prog, var_type vtype)
 
 	function* func_ptr;
 	cvec_push_void(&prog->functions, NULL);  //initialization is done automatically in init_function
-	assert(prog->functions.size <= 10);  //for now prevent possibility of bug
+	assert(prog->functions.size <= 10);  //for now prevent possibility of bug TODO what was this for?
 
 	var_value var;
 	var.type = FUNCTION_TYPE;
@@ -1500,6 +1505,7 @@ void bitwise_and_expr(parsing_state* p, program_state* prog, expression* e)
 	}
 }
 
+/* equality_expr -> relational_expr { '=='|'!=' relational_expr } */
 void equality_expr(parsing_state* p, program_state* prog, expression* e)
 {
 	relational_expr(p, prog, e);
@@ -1574,7 +1580,7 @@ void add_expr(parsing_state* p, program_state* prog, expression* e)
 	}
 }
 
-/* mult_expr ->  unary_expr { '*'|'/' unary_expr } */
+/* mult_expr ->  unary_expr { '*'|'/'|'%' unary_expr } */
 void mult_expr(parsing_state* p, program_state* prog, expression* e)
 {
 	token_value* tok;
@@ -1595,7 +1601,8 @@ void mult_expr(parsing_state* p, program_state* prog, expression* e)
 	}
 }
 
-/* unary_expr -> postfix_expr | logical_negation_expr */
+/* unary_expr -> unary+ | unary- | logical_neg | bit_neg | postfix_expr |
+ *               ++pre | --pre | TODO sizeof_expr */
 void unary_expr(parsing_state* p, program_state* prog, expression* e)
 {
 	switch (peek_token(p, 0)->type) {
@@ -1609,25 +1616,79 @@ void unary_expr(parsing_state* p, program_state* prog, expression* e)
 		unary_expr(p, prog, e->left);
 		break;
 
-		/*
-	case LOGICAL_NEGATION:
-		logical_negation_expr(p, prog, e);
-		break;
-
-
-	case BIT_NEGATION:
-		bit_negation_expr(p, prog, e);
-		break;
-		*/
-
 	case INCREMENT:
 	case DECREMENT:
 		pre_inc_decrement_expr(p, prog, e);
 		break;
 
+	case SIZEOF:
+		sizeof_expr(p, prog, e);
+		break;
+
 
 	default:
 		postfix_expr(p, prog, e);
+	}
+}
+
+/* sizeof_expr -> sizeof ( type-name ) | sizeof unary-expr */
+void sizeof_expr(parsing_state* p, program_state* prog, expression* e)
+{
+	get_token(p); // get sizeof
+
+	Token t0 = peek_token(p, 0)->type;
+	Token t1 = peek_token(p, 1)->type;
+
+	if (t0 != LPAREN || t1 < CHAR || t1 > VOID) {
+		// TODO this is bad, sizeof is supposed to be compile time
+		// but I'm treating it like a runtime operator...
+		//
+		// I'll figure a better way about the same time I extract the expression
+		// parsing tree into a form that I can reuse for the preprocessor
+		e->tok.type = SIZEOF;
+		e->left = make_expression(prog);
+		unary_expr(p, prog, e->left);
+	} else {
+
+		if (t0 != LPAREN) {
+			parse_error(get_token(p), "LPAREN expected after sizeof\n");
+		}
+		get_token(p); // eat (
+
+		// TODO handle pointers, typedef'd types, structs/unions etc.
+		// and qualifed types like "unsigned short"
+		if (t1 >= CHAR && t1 <= VOID) {
+			get_token(p); // eat type
+
+			// technically sizeof returns size_t which is unsigned ...
+			e->tok.type = INT_LITERAL;
+			switch (t1) {
+			case CHAR: e->tok.v.int_val = 1; break;
+			case SHORT: e->tok.v.int_val = sizeof(short); break;
+			case INT: e->tok.v.int_val = sizeof(int); break;
+			case LONG: e->tok.v.int_val = sizeof(long); break;
+			case FLOAT: e->tok.v.int_val = sizeof(float); break;
+			case DOUBLE: e->tok.v.int_val = sizeof(double); break;
+
+			// nest another switch in these to get qualified types...
+			case SIGNED: e->tok.v.int_val = sizeof(signed); break;
+			case UNSIGNED: e->tok.v.int_val = sizeof(unsigned); break;
+
+			// TODO give warning
+			// non-standard, matches gcc and clang, gives a warning
+			// with -pedantic (-Wall gives no warning)
+			case VOID: e->tok.v.int_val = 1; break;
+			}
+
+			token_value* tok = get_token(p);
+			if (tok->type != RPAREN) {
+				parse_error(tok, "RPAREN expected to close sizeof\n");
+				exit(0);
+			}
+		} else {
+			parse_error(get_token(p), "type name expected in sizeof\n");
+			exit(0);
+		}
 	}
 }
 
@@ -1638,7 +1699,7 @@ void pre_inc_decrement_expr(parsing_state* p, program_state* prog, expression* e
 	e->left = make_expression(prog);
 	unary_expr(p, prog, e->left);
 
-	//This check will have to change later
+	// TODO This check will have to change later
 	expression* tmp = e->left;
 	while (tmp->tok.type != ID) {
 		if (tmp->tok.type == EXP) {
@@ -1650,17 +1711,8 @@ void pre_inc_decrement_expr(parsing_state* p, program_state* prog, expression* e
 	}
 }
 
-void logical_negation_expr(parsing_state* p, program_state* prog, expression* e)
-{
-	get_token(p); //match !
-
-	e->tok.type = LOGICAL_NEGATION;
-	e->left = make_expression(prog);
-
-	unary_expr(p, prog, e->left);
-}
-
-
+/* postfix_expr -> function_call | primary_expr | post_inc | post_dec
+ *           TODO  subscrpt_expr | component_selection_expr | compound_literal */
 void postfix_expr(parsing_state* p, program_state* prog, expression* e)
 {
 	token_value* tok = peek_token(p, 0);
@@ -1949,4 +2001,7 @@ void parse_error(token_value* tok, char *str, ...)
 		fprintf(stderr, " at line %u, position %u\n", lex->line, lex->pos);
 	}
 	va_end(args);
+
+	// TODO I exit on any error so I should probably just put exit here...
+
 }

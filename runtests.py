@@ -50,6 +50,7 @@ def main():
 
 
 
+	# TODO fix these to match above
 	rc1=rc2=rc3=0
 	if args.run_preproc:
 		for f in preprocessor_tests:

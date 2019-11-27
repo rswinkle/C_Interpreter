@@ -20,10 +20,15 @@ typedef enum Token
 	DOT, INDIRECTION,
 
 	/* types and type qualifiers */
-	INT, SHORT, LONG, FLOAT, DOUBLE, CHAR, VOID, SIGNED, UNSIGNED,
+	CHAR, SHORT, INT, LONG, FLOAT, DOUBLE, VOID, SIGNED, UNSIGNED,
 
-	/* other keywords */
-	DO, WHILE, FOR, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE, BREAK, GOTO, RETURN,
+	/* These are not yet used */
+	CONST, BOOL, COMPLEX, IMAGINARY, AUTO, VOLATILE, REGISTER, RESTRICT,
+	INLINE, EXTERN, ENUM, STATIC, STRUCT, UNION, TYPEDEF,
+
+	/* other keywords (PRINT is my own till I can make a printf-like function) */
+	DO, WHILE, FOR, PRINT, IF, ELSE, SWITCH, CASE, DEFAULT, CONTINUE,
+	BREAK, GOTO, RETURN, SIZEOF,
 
 	ID,
 

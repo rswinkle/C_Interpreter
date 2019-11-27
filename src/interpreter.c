@@ -238,6 +238,31 @@ var_value execute_expr(program_state* prog, expression* e)
 		left = execute_expr(prog, e->left);
 		break;
 
+	case SIZEOF:
+		result.type = INT_TYPE; // ULONG_TYPE ? close to size_t?
+		switch (execute_expr(prog, e->left).type) {
+		// TODO give warning
+		// non-standard, matches gcc and clang, gives a warning
+		// with -pedantic (-Wall gives no warning)
+		case VOID_TYPE:
+
+		case UCHAR_TYPE:
+		case CHAR_TYPE: result.v.int_val = 1; break;
+
+		case USHORT_TYPE:
+		case SHORT_TYPE: result.v.int_val = sizeof(short); break;
+
+		case UINT_TYPE:
+		case INT_TYPE: result.v.int_val = sizeof(int); break;
+
+		case ULONG_TYPE:
+		case LONG_TYPE: result.v.int_val = sizeof(long); break;
+
+		case FLOAT_TYPE: result.v.int_val = sizeof(float); break;
+		case DOUBLE_TYPE: result.v.int_val = sizeof(double); break;
+		}
+		return result;
+
 
 	case MULT:
 	case DIV:

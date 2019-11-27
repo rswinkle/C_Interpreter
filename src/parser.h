@@ -254,6 +254,7 @@ void mult_expr(parsing_state* p, program_state* prog, expression* exp);
 
 void unary_expr(parsing_state* p, program_state* prog, expression* e);
 void pre_inc_decrement_expr(parsing_state* p, program_state* prog, expression* e);
+void sizeof_expr(parsing_state* p, program_state* prog, expression* e);
 
 void postfix_expr(parsing_state* p, program_state* prog, expression* e);
 
