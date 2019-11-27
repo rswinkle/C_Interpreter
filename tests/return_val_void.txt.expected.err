@@ -1,0 +1,2 @@
+Parse Error: return statement with an expression in a function with void return type
+Got 32 at line 10, position 9
