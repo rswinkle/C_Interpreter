@@ -44,7 +44,7 @@ def main():
 
 
 
-	if len(sys.argv) > 1:
+	if args.run_preproc:
 		for f in preprocessor_tests:
 			proc = Popen(["valgrind", "--leak-check=full", "-v", "./cinterpreter", "-E", f], stdout=PIPE, stderr=PIPE, universal_newlines=True)
 			out, err = proc.communicate()

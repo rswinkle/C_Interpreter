@@ -1,7 +1,6 @@
 
 
 int a = 1;
-
 #include "../tests/inc_test2.c"
 
 void func2(int a, int b, int c)

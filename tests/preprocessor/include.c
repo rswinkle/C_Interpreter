@@ -1,5 +1,3 @@
-
-
 #include "../tests/inc_test1.c"
 a
 /*

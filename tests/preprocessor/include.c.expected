@@ -1,9 +1,9 @@
-# 2 "include.c"
-# 1 "../tests/inc_test1.c" 1
+# 0 "../tests/preprocessor/include.c"
+# 0 "../tests/inc_test1.c"
 
 
 int a = 1;
-# 1 "../tests/../tests/inc_test2.c" 1
+# 0 "../tests/inc_test2.c"
 
 void func1(void)
 {
@@ -13,7 +13,7 @@ void func1(void)
 	int local = 10 * a;
 	print local;
 }
-# 6 "../tests/inc_test1.c" 2
+# 4 "../tests/inc_test1.c"
 
 void func2(int a, int b, int c)
 {
@@ -48,7 +48,6 @@ void func2(int a, int b, int c)
 
 
 
-
 int fibbonaci(int n)
 {
 	print n;
@@ -59,13 +58,12 @@ int fibbonaci(int n)
 	print a;
 	return fibbonaci(n-2) + fibbonaci(n-1);
 }
-# 4 "include.c" 2
+
+
+
+# 1 "../tests/preprocessor/include.c"
 a
 
-
-
-
- 
 
 
 int main()
@@ -82,3 +80,4 @@ int main()
 
 	return 0;
 }
+

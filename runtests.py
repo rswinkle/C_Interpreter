@@ -58,7 +58,7 @@ def main():
 			out, err = proc.communicate()
 			rc1 = proc.returncode
 
-			rc2 += int(out != open("{}.expected".format(f)).read())
+			rc2 = int(out != open("{}.expected".format(f)).read())
 
 			if os.path.exists("{}.expected.err".format(f)):
 				rc3 = int(err != open("{}.expected.err".format(f)).read())
@@ -67,6 +67,7 @@ def main():
 			
 		if rc1 or rc2 or rc3:
 			print('{: <40} ..... failed'.format(f.rpartition('/')[-1]))
+			print('ret out err = {} {} {}'.format(rc1, rc2, rc3))
 			print('stdout:\n{0}\nstderr:\n{1}'.format(out, err))
 			ret = 1
 
