@@ -136,6 +136,11 @@ void execute(program_state* prog)
 
 	if (prog->func->ret_val.type != VOID_TYPE) {
 		fprintf(stderr, "Warning, falling off the end of non-void function.\n");
+		
+		// prevent valgrind warnings of uninitialized return values (from main especially)
+		// TODO add tests that do this for other functions and see if valgrind complains
+		// if I don't have this
+		memset(&prog->func->ret_val.v, 0, sizeof(prog->func->ret_val.v));
 	}
 }
 
