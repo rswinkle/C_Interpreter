@@ -304,7 +304,6 @@ void top_level_declaration(parsing_state* p, program_state* prog)
 			function_definition(p, prog);
 	} else {
 		parse_error(peek_token(p, 0), "Error parsing top_level_declaration, declaration_specifier expected");
-		exit(0);
 	}
 }
 
@@ -324,7 +323,6 @@ void function_definition(parsing_state* p, program_state* prog)
 		return;
 	} else if (tok->type != LBRACE) {
 		parse_error(tok, "expected ';' or '{' for function declaration or definition, ");
-		exit(0);
 	}
 
 	cvec_str(&prog->func->labels, 0, 10);
@@ -382,7 +380,6 @@ void function_declarator(parsing_state* p, program_state* prog, var_type vtype)
 	tok = get_token(p);
 	if (tok->type != LPAREN) {
 		parse_error(tok, "in function_declarator, LPAREN expected\n");
-		exit(0);
 	}
 
 	parameter_list(p, prog);
@@ -390,7 +387,6 @@ void function_declarator(parsing_state* p, program_state* prog, var_type vtype)
 	tok = get_token(p);
 	if (tok->type != RPAREN) {
 		parse_error(tok, "in function_declarator, RPAREN expected\n");
-		exit(0);
 	}
 }
 
@@ -422,13 +418,11 @@ void parameter_declaration(parsing_state* p, program_state* prog)
 	token_value* tok = get_token(p);
 	if (tok->type != ID) {
 		parse_error(tok, "in parameter_declaration, ID expected\n");
-		exit(0);
 	}
 
 	var_value* v = look_up_value(prog, tok->v.id, ONLY_LOCAL);
 	if (v) {
 		parse_error(tok, "in parameter_declaration, redeclaration of symbol\n");
-		exit(0);
 	}
 
 	prog->func->n_params++;
@@ -439,7 +433,6 @@ void parameter_declaration(parsing_state* p, program_state* prog)
 	active_binding* var = malloc(sizeof(active_binding));
 	if (!var) { //TODO not really parse error ... but it did occur during parsing so?
 		parse_error(tok, "in parameter_declaration, memory allocation failure\n");
-		exit(0);
 	}
 	var->val.type = vtype;
 	symbol s;
@@ -463,7 +456,6 @@ void declaration(parsing_state* p, program_state* prog)
 	token_value* tok = get_token(p);
 	if (tok->type != SEMICOLON) {
 		parse_error(tok, "in declaration, COMMA or SEMICOLON expected.");
-		exit(0);
 	}
 }
 
@@ -487,7 +479,6 @@ void storage_specifier(parsing_state* p, program_state* prog, int match)
 	default:
 		if (tok->type == AUTO && prog->cur_parent == -1) {
 			parse_error(tok, "auto storage specifer only allowed within a block\n");
-			exit(0);
 		}
 	}
 
@@ -603,7 +594,6 @@ var_type declaration_specifier(parsing_state* p, program_state* prog, int match,
 	default:
 		if (match) {
 			parse_error(&tok->tok, "in declaration_specifier, valid type expected\n");
-			exit(0);
 		}
 	}
 
@@ -645,7 +635,6 @@ void initialized_declarator(parsing_state* p, program_state* prog, var_type v_ty
 	//pointer_declarator or direct_declarator
 	if (tok->type != ID) {
 		parse_error(tok, "in initialized_declarator, ID expected.\n");
-		exit(0);
 	}
 
 
@@ -660,13 +649,11 @@ void initialized_declarator(parsing_state* p, program_state* prog, var_type v_ty
 		if (check && check->cur_parent == prog->cur_parent) {
 			//TODO implement overload classes check here for whether it's actually ilegal see page 78
 			parse_error(NULL, "in initialized_declarator, redeclaration of %s\n", tok->v.id);
-			exit(0);
 		}
 
 		active_binding* val = malloc(sizeof(active_binding));
 		if (!val) { //TODO not really parse error
 			parse_error(tok, "in initialized_declarator, memory allocation failure\n");
-			exit(0);
 		}
 		val->val.type = v_type;
 		val->parent = prog->cur_parent;
@@ -714,7 +701,6 @@ void initialized_declarator(parsing_state* p, program_state* prog, var_type v_ty
 		if (look_up_value(prog, tok->v.id, ONLY_GLOBAL)) {
 			//TODO implement overload classes check here for whether it's actually ilegal see page 78
 			parse_error(NULL, "in initialized_declarator, redeclaration of %s\n", tok->v.id);
-			exit(0);
 		}
 
 		var_value val;
@@ -780,7 +766,6 @@ void compound_statement(parsing_state* p, program_state* prog)
 	tok = get_token(p);
 	if (tok->type != RBRACE) {
 		parse_error(tok, "in compound_statement, RBRACE expected.");
-		exit(0);
 	}
 }
 
@@ -879,7 +864,6 @@ void statement_rule(parsing_state* p, program_state* prog)
 		expression_stmt(p, prog);
 /*
 		parse_error(peek_token(p, 0), "in statement unexpected token\n");
-		exit(0);
 		*/
 	}
 }
@@ -914,7 +898,6 @@ void case_or_default_stmt(parsing_state* p, program_state* prog)
 		v = execute_constant_expr(prog, stmt.exp);
 		if (!is_integral_type(&v)) {
 			parse_error(NULL, "case label does not reduce to integer constant\n");
-			exit(0);
 		}
 		//TODO
 		stmt.case_val = v.v.int_val;
@@ -925,7 +908,6 @@ void case_or_default_stmt(parsing_state* p, program_state* prog)
 	tok = get_token(p);
 	if (tok->type != COLON) {
 		parse_error(tok, "in case or default statement expected COLON\n");
-		exit(0);
 	}
 }
 
@@ -935,7 +917,6 @@ void switch_stmt(parsing_state* p, program_state* prog)
 	token_value* tok = get_token(p);
 	if (tok->type != LPAREN) {
 		parse_error(tok, "in switch_stmt, expected LPAREN\n");
-		exit(0);
 	}
 
 	statement a_switch;
@@ -950,7 +931,6 @@ void switch_stmt(parsing_state* p, program_state* prog)
 	tok = get_token(p);
 	if (tok->type != RPAREN) {
 		parse_error(tok, "in switch_stmt, expected RPAREN\n");
-		exit(0);
 	}
 
 	int old_i_switch = prog->cur_iter_switch;
@@ -985,7 +965,6 @@ void switch_stmt(parsing_state* p, program_state* prog)
 		} else if (stmt->type == DEFAULT_STMT) {
 			if (the_switch->jump_to) {
 				parse_error(NULL, "more than one default statement in switch\n");
-				exit(0);
 			}
 			j = i + 1;
 			while (GET_STMT(prog->stmt_list, j)->type == CASE_STMT)
@@ -1018,12 +997,10 @@ void do_stmt(parsing_state* p, program_state* prog)
 	token_value* tok = get_token(p);
 	if (tok->type != WHILE) {
 		parse_error(tok, "in do_stmt expected WHILE\n");
-		exit(0);
 	}
 	tok = get_token(p);
 	if (tok->type != LPAREN) {
 		parse_error(tok, "in do_stmt epected LPAREN\n");
-		exit(0);
 	}
 
 	statement do_stmt;
@@ -1041,7 +1018,6 @@ void do_stmt(parsing_state* p, program_state* prog)
 	tok = get_token(p);
 	if (tok->type != RPAREN) {
 		parse_error(tok, "in do_stmt epected RPAREN\n");
-		exit(0);
 	}
 
 	statement* stmt;
@@ -1064,11 +1040,9 @@ void break_or_continue_stmt(parsing_state* p, program_state* prog)
 	if (tok->type == BREAK) {
 		if (!prog->cur_iter_switch) {
 			parse_error(tok, "break statement with no enclosing iterative or switch block\n");
-			exit(0);
 		}
 	} else if (!prog->cur_iter) {
 		parse_error(tok, "continue statement with no enclosing iterative block\n");
-		exit(0);
 	}
 
 
@@ -1081,7 +1055,6 @@ void break_or_continue_stmt(parsing_state* p, program_state* prog)
 	tok = get_token(p);
 	if (tok->type != SEMICOLON) {
 		parse_error(tok, "in break_or_continue statement, expected SEMICOLON\n");
-		exit(0);
 	}
 }
 
@@ -1092,7 +1065,6 @@ void for_stmt(parsing_state* p, program_state* prog)
 	token_value* tok = get_token(p);
 	if (tok->type != LPAREN) {
 		parse_error(tok, "in for_stmt, LPAREN expected\n");
-		exit(0);
 	}
 
 	statement a_stmt;
@@ -1220,7 +1192,6 @@ void goto_stmt(parsing_state* p, program_state* prog)
 	tok = get_token(p);
 	if (tok->type != ID) {
 		parse_error(tok, "in goto_stmt, expected ID (for label)\n");
-		exit(0);
 	}
 
 	a_goto.lvalue = tok->v.id;
@@ -1228,7 +1199,6 @@ void goto_stmt(parsing_state* p, program_state* prog)
 	tok = get_token(p);
 	if (tok->type != SEMICOLON) {
 		parse_error(tok, "in goto_stmt, expected SEMICOLON\n");
-		exit(0);
 	}
 
 	cvec_push_void(prog->stmt_list, &a_goto); //jump to after else statement
@@ -1257,13 +1227,11 @@ void return_stmt(parsing_state* p, program_state* prog)
 	if (peek_token(p, 0)->type != SEMICOLON) {
 		if (prog->func->ret_val.type == VOID_TYPE) {
 			parse_error(peek_token(p, 0), "return statement with an expression in a function with void return type\n");
-			exit(0);
 		}
 		ret_stmt.exp = make_expression(prog);
 		expr(p, prog, ret_stmt.exp);
 	} else if (prog->func->ret_val.type != VOID_TYPE) {
 		parse_error(peek_token(p, 0), "return statement with no expression in a function with a return type\n");
-		exit(0);
 	}
 
 	cvec_push_void(prog->stmt_list, &ret_stmt);
@@ -1288,7 +1256,6 @@ void expression_stmt(parsing_state* p, program_state* prog)
 	token_value* tok = get_token(p);
 	if (tok->type != SEMICOLON) {
 		parse_error(tok, "in expression_stmt, SEMICOLON expected\n");
-		exit(0);
 	}
 }
 
@@ -1335,7 +1302,6 @@ void assign_expr(parsing_state* p, program_state* prog, expression* e)
 		if (assignment_operator(peek_token(p, 0)->type)) {
 			if (e->tok.type != ID) {  //TODO for now
 				parse_error(&e->tok, "in assign_expr, lvalue required as left operand of assignment.\n");
-				exit(0);
 			}
 		}
 		return;
@@ -1346,7 +1312,6 @@ void assign_expr(parsing_state* p, program_state* prog, expression* e)
 		var_value* check = look_up_value(prog, tok->v.id, BOTH);
 		if (!check) {
 			parse_error(tok, "in assign_expr, undeclared variable\n");
-			exit(0);
 		}
 	}
 
@@ -1356,7 +1321,6 @@ void assign_expr(parsing_state* p, program_state* prog, expression* e)
 		if (assignment_operator(peek_token(p, 0)->type)) {
 			if (e->tok.type != ID) {  //TODO for now
 				parse_error(&e->tok, "in assign_expr, lvalue required as left operand of assignment.\n");
-				exit(0);
 			}
 		}
 		return;
@@ -1409,7 +1373,6 @@ void cond_expr(parsing_state* p, program_state* prog, expression* e)
 		expr(p, prog, e->right->left);
 		if (peek_token(p, 0)->type != COLON) {
 			parse_error(peek_token(p, 0), "in ternary expression expected ':'");
-			exit(0);
 		}
 		get_token(p);
 		e->right->tok.type = COLON;
@@ -1683,11 +1646,9 @@ void sizeof_expr(parsing_state* p, program_state* prog, expression* e)
 			token_value* tok = get_token(p);
 			if (tok->type != RPAREN) {
 				parse_error(tok, "RPAREN expected to close sizeof\n");
-				exit(0);
 			}
 		} else {
 			parse_error(get_token(p), "type name expected in sizeof\n");
-			exit(0);
 		}
 	}
 }
@@ -1706,7 +1667,6 @@ void pre_inc_decrement_expr(parsing_state* p, program_state* prog, expression* e
 			tmp = tmp->left;
 		} else {
 			parse_error(&tmp->tok, "lvalue required as increment or decrement operand\n");
-			exit(0);
 		}
 	}
 }
@@ -1727,7 +1687,6 @@ void postfix_expr(parsing_state* p, program_state* prog, expression* e)
 					e = e->left;
 				} else {
 					parse_error(&e->tok, "lvalue required as increment operand\n");
-					exit(0);
 				}
 			}
 			e->left = copy_expr(prog, e);
@@ -1754,10 +1713,8 @@ void function_call(parsing_state* p, program_state* prog, expression* e)
 	var_value* check = look_up_value(prog, tok->v.id, ONLY_GLOBAL);
 	if (!check) {
 		parse_error(tok, "implicit declaration of function '%s'.\n", tok->v.id);
-		exit(0);
 	} else if (check->type != FUNCTION_TYPE) {
 		parse_error(tok, "called object '%s' is not a function\n", tok->v.id);
-		exit(0);
 	}
 
 
@@ -1773,7 +1730,6 @@ void function_call(parsing_state* p, program_state* prog, expression* e)
 	tok = get_token(p);
 	if (tok->type != RPAREN) {
 		parse_error(tok, "in function_call, ')' expected\n");
-		exit(0);
 	}
 }
 
@@ -1808,18 +1764,15 @@ void primary_expr(parsing_state* p, program_state* prog, expression* e)
 		tok = get_token(p);
 		if (tok->type != RPAREN) {
 			parse_error(tok, "in primary_expr, RPAREN expected.\n");
-			exit(0);
 		}
 		break;
 	case ID:
 		if (!prog->func) {
 			parse_error(tok, "global variable initializer element is not a constant\n");
-			exit(0);
 		} else {
 			var_value* check = look_up_value(prog, tok->v.id, BOTH);
 			if (!check) {
 				parse_error(tok, "undeclared variable\n");
-				exit(0);
 			}
 		}
 		e->tok.type = ID;
@@ -1839,7 +1792,6 @@ void primary_expr(parsing_state* p, program_state* prog, expression* e)
 		break;
 	default:
 		parse_error(tok, "in primary_expr, LPAREN or literal expected\n");
-		exit(0);
 	}
 }
 
@@ -1859,7 +1811,6 @@ void if_stmt(parsing_state* p, program_state* prog)
 	token_value* tok = get_token(p);
 	if (tok->type != LPAREN) {
 		parse_error(tok, "in if_stmt, expected LPAREN\n");
-		exit(0);
 	}
 
 	expr(p, prog, an_if.exp);
@@ -1868,7 +1819,6 @@ void if_stmt(parsing_state* p, program_state* prog)
 	tok = get_token(p);
 	if (tok->type != RPAREN) {
 		parse_error(tok, "in if_stmt, expected RPAREN\n");
-		exit(0);
 	}
 
 	size_t if_loc = prog->stmt_list->size;
@@ -1916,7 +1866,6 @@ void print_stmt(parsing_state* p, program_state* prog)
 	token_value* tok = get_token(p);
 	if (tok->type != SEMICOLON) {
 		parse_error(tok, "in print_stmt, SEMICOLON expected.\n");
-		exit(0);
 	}
 
 	cvec_push_void(prog->stmt_list, &a_print);
@@ -1938,7 +1887,6 @@ void while_stmt(parsing_state* p, program_state* prog)
 	token_value* tok = get_token(p);
 	if (tok->type != LPAREN) {
 		parse_error(tok, "in while_stmt, expected LPAREN\n");
-		exit(0);
 	}
 
 	expr(p, prog, a_while.exp);
@@ -1946,7 +1894,6 @@ void while_stmt(parsing_state* p, program_state* prog)
 	tok = get_token(p);
 	if (tok->type != RPAREN) {
 		parse_error(tok, "in while_stmt, expected RPAREN\n");
-		exit(0);
 	}
 
 	size_t while_loc = prog->stmt_list->size;
@@ -2002,6 +1949,6 @@ void parse_error(token_value* tok, char *str, ...)
 	}
 	va_end(args);
 
-	// TODO I exit on any error so I should probably just put exit here...
+	exit(0);
 
 }
