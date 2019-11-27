@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 
+CVEC_NEW_DEFS2(var_value, RESIZE)
 
 CVEC_NEW_DEFS2(function, RESIZE)
 
@@ -211,7 +212,7 @@ void parse_program_string(program_state* prog, char* string)
 	prog->bindings = NULL;
 	cvec_function(&prog->functions, 0, 10, free_function, init_function);
 	cvec_str(&prog->global_variables, 0, 20);
-	cvec_void(&prog->global_values, 0, 20, sizeof(var_value), free_var_value, NULL);
+	cvec_var_value(&prog->global_values, 0, 20, free_var_value, NULL);
 
 	cvec_void(&prog->expressions, 1, 1, sizeof(expr_block), free_expr_block, NULL);
 	make_expression_block(50, (expr_block*)cvec_back_void(&prog->expressions));
@@ -271,7 +272,7 @@ void parse_program_file(program_state* prog, FILE* file)
 	prog->bindings = NULL;
 	cvec_function(&prog->functions, 0, 10, free_function, init_function);
 	cvec_str(&prog->global_variables, 0, 20);
-	cvec_void(&prog->global_values, 0, 20, sizeof(var_value), free_var_value, NULL);
+	cvec_var_value(&prog->global_values, 0, 20, free_var_value, NULL);
 
 	cvec_void(&prog->expressions, 1, 1, sizeof(expr_block), free_expr_block, NULL);
 	make_expression_block(50, (expr_block*)cvec_back_void(&prog->expressions));
@@ -368,7 +369,7 @@ void function_declarator(parsing_state* p, program_state* prog, var_type vtype)
 	var.v.func_loc = prog->functions.size - 1;
 
 	cvec_push_str(&prog->global_variables, tok->v.id);
-	cvec_push_void(&prog->global_values, &var);
+	cvec_push_var_value(&prog->global_values, &var);
 
 	func_ptr = cvec_back_function(&prog->functions);
 
@@ -709,7 +710,7 @@ void initialized_declarator(parsing_state* p, program_state* prog, var_type v_ty
 		val.type = v_type;
 
 		cvec_push_str(&prog->global_variables, tok->v.id);
-		cvec_push_void(&prog->global_values, &val);
+		cvec_push_var_value(&prog->global_values, &val);
 
 		if (peek_token(p, 1)->type == EQUAL) {
 			expression* e = make_expression(prog);

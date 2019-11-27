@@ -26,7 +26,7 @@ var_value run(program_state* prog, char* start_func)
 
 	cvec_free_function(&prog->functions);
 	cvec_free_str(&prog->global_variables);
-	cvec_free_void(&prog->global_values);
+	cvec_free_var_value(&prog->global_values);
 	cvec_free_void(&prog->expressions);
 	cvec_free_str(&prog->string_db);
 
@@ -880,7 +880,7 @@ var_value* look_up_value(program_state* prog, const char* var, int search)
 	if (search != ONLY_LOCAL || !prog->func) {  //if func == NULL global scope is local
 		for (int i=0; i<prog->global_variables.size; ++i) {
 			if (!strcmp(var, prog->global_variables.a[i]))
-				return GET_VAR_VALUE(&prog->global_values, i);
+				return &prog->global_values.a[i];
 		}
 	}
 

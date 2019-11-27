@@ -68,7 +68,6 @@ typedef struct var_value
 	} v;
 } var_value;
 
-#define GET_VAR_VALUE(VEC, I) CVEC_GET_VOID(VEC, var_value, I)
 
 
 void free_var_value(void* var);
@@ -164,6 +163,10 @@ typedef struct function
 	cvector_i label_locs;
 } function;
 
+
+
+CVEC_NEW_DECLS2(var_value)
+
 CVEC_NEW_DECLS2(function)
 
 
@@ -182,7 +185,7 @@ typedef struct program_state
 	int cur_iter_switch;
 
 	cvector_str global_variables;
-	cvector_void global_values;
+	cvector_var_value global_values;
 
 	cvector_void expressions;
 	cvector_str string_db;
