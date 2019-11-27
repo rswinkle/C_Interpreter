@@ -209,17 +209,26 @@ It also of course supports actually using the macros.
 	mult_op                         -> one of '*' '/' '%'
 
 	unary_expr                      -> postfix_expr
+	                                   sizeof_expr
 	                                   bit_negation_expr
 	                                   logical_negation_expr
+	                                   unary_minus_expr
+	                                   unary_plus_expr
 	                                   preincrement_expr
 	                                   predecrement_expr
 
 	preincrement_expr               -> '++' unary_expr
 	predecrement_expr               -> '--' unary_expr
 
+	unary_plus_expr                 -> '+' unary_expr
+	unary_minus_expr                -> '-' unary_expr
+
 	logical_negation_expr           -> '!' unary_expr
 
 	bit_negation_expr               -> '~' unary_expr
+
+	sizeof_expr                     -> sizeof '(' type-name ')'
+	                                -> sizeof unary-expr
 
 	postfix_expr                    -> function_call
 	                                   primary_expr
