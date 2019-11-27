@@ -11,6 +11,7 @@
 #include <stdio.h>
 
 
+CVEC_NEW_DEFS2(function, RESIZE)
 
 
 expression* make_expression(program_state* prog)
@@ -208,7 +209,7 @@ void parse_program_string(program_state* prog, char* string)
 	prog->pc = NULL;
 	prog->stmt_list = NULL;
 	prog->bindings = NULL;
-	cvec_void(&prog->functions, 0, 10, sizeof(function), free_function, init_function);
+	cvec_function(&prog->functions, 0, 10, free_function, init_function);
 	cvec_str(&prog->global_variables, 0, 20);
 	cvec_void(&prog->global_values, 0, 20, sizeof(var_value), free_var_value, NULL);
 
@@ -268,7 +269,7 @@ void parse_program_file(program_state* prog, FILE* file)
 	prog->pc = NULL;
 	prog->stmt_list = NULL;
 	prog->bindings = NULL;
-	cvec_void(&prog->functions, 0, 10, sizeof(function), free_function, init_function);
+	cvec_function(&prog->functions, 0, 10, free_function, init_function);
 	cvec_str(&prog->global_variables, 0, 20);
 	cvec_void(&prog->global_values, 0, 20, sizeof(var_value), free_var_value, NULL);
 
@@ -359,7 +360,7 @@ void function_declarator(parsing_state* p, program_state* prog, var_type vtype)
 	//TODO make sure it's not already defined and make sure it matches previous declarations
 
 	function* func_ptr;
-	cvec_push_void(&prog->functions, NULL);  //initialization is done automatically in init_function
+	cvec_push_function(&prog->functions, NULL);  //initialization is done automatically in init_function
 	assert(prog->functions.size <= 10);  //for now prevent possibility of bug TODO what was this for?
 
 	var_value var;
@@ -369,7 +370,7 @@ void function_declarator(parsing_state* p, program_state* prog, var_type vtype)
 	cvec_push_str(&prog->global_variables, tok->v.id);
 	cvec_push_void(&prog->global_values, &var);
 
-	func_ptr = cvec_back_void(&prog->functions);
+	func_ptr = cvec_back_function(&prog->functions);
 
 	func_ptr->n_params = 0;
 	func_ptr->ret_val.type = vtype;

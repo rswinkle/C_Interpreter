@@ -15,7 +15,6 @@
 
 
 #define GET_STMT(VEC, I) CVEC_GET_VOID(VEC, statement, I)
-#define GET_FUNCTION(VEC, I) CVEC_GET_VOID(VEC, function, I)
 #define GET_SYMBOL(VEC, I) CVEC_GET_VOID(VEC, symbol, I)
 #define GET_BINDING(VEC, I) CVEC_GET_VOID(VEC, binding, I)
 
@@ -165,12 +164,14 @@ typedef struct function
 	cvector_i label_locs;
 } function;
 
+CVEC_NEW_DECLS2(function)
 
 
+#define RESIZE(x) ((x+1)*2)
 
 typedef struct program_state
 {
-	cvector_void functions;
+	cvector_function functions;
 	cvector_void* stmt_list;
 	size_t* pc;
 	function* func;

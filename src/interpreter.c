@@ -11,7 +11,7 @@ var_value run(program_state* prog, char* start_func)
 		fprintf(stderr, "Error: function '%s' not found.\n", func_name);
 		exit(0);
 	}
-	function* func = GET_FUNCTION(&prog->functions, var->v.func_loc);
+	function* func = &prog->functions.a[var->v.func_loc];
 	prog->func = func;
 	prog->stmt_list = &func->stmt_list;
 	func->pc = 0;
@@ -24,7 +24,7 @@ var_value run(program_state* prog, char* start_func)
 
 	var_value ret = prog->func->ret_val;
 
-	cvec_free_void(&prog->functions);
+	cvec_free_function(&prog->functions);
 	cvec_free_str(&prog->global_variables);
 	cvec_free_void(&prog->global_values);
 	cvec_free_void(&prog->expressions);
@@ -421,7 +421,7 @@ var_value execute_expr(program_state* prog, expression* e)
 		old_func = prog->func;
 
 		//look_up_value should never return NULL here, parsing should catch all errors like that
-		func = GET_FUNCTION(&prog->functions, look_up_value(prog, e->left->tok.v.id, ONLY_GLOBAL)->v.func_loc);
+		func = &prog->functions.a[look_up_value(prog, e->left->tok.v.id, ONLY_GLOBAL)->v.func_loc];
 
 		if (func->n_params) //could also check e->right->tok.type = VOID
 			execute_expr_list(prog, func, e->right);
