@@ -1,6 +1,6 @@
 
 
-#if defined(CVEC_ONLY_INT) || defined(CVEC_ONLY_DOUBLE) || defined(CVEC_ONLY_STR)     || defined(CVEC_ONLY_VOID)
+#if defined(CVEC_ONLY_INT) || defined(CVEC_ONLY_DOUBLE) || defined(CVEC_ONLY_STR) || defined(CVEC_ONLY_VOID)
    #ifndef CVEC_ONLY_INT
    #define CVEC_NO_INT
    #endif

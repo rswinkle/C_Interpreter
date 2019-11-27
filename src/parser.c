@@ -1251,7 +1251,7 @@ void return_stmt(parsing_state* p, program_state* prog)
 
 	if (peek_token(p, 0)->type != SEMICOLON) {
 		if (prog->func->ret_val.type == VOID_TYPE) {
-			parse_error(peek_token(p, 0), "return statement with an expression in a void returning function\n");
+			parse_error(peek_token(p, 0), "return statement with an expression in a function with void return type\n");
 			exit(0);
 		}
 		ret_stmt.exp = make_expression(prog);
