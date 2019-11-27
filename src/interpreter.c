@@ -27,7 +27,7 @@ var_value run(program_state* prog, char* start_func)
 	cvec_free_function(&prog->functions);
 	cvec_free_str(&prog->global_variables);
 	cvec_free_var_value(&prog->global_values);
-	cvec_free_void(&prog->expressions);
+	cvec_free_expr_block(&prog->expressions);
 	cvec_free_str(&prog->string_db);
 
 	return ret;

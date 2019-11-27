@@ -12,17 +12,20 @@
 
 CVEC_NEW_DEFS2(var_value, RESIZE)
 
+CVEC_NEW_DEFS2(expr_block, RESIZE)
+
 CVEC_NEW_DEFS2(function, RESIZE)
 
 
+// See comment in parser.h explaining the reason for expr_block
 expression* make_expression(program_state* prog)
 {
-	expr_block* b = (expr_block*)cvec_back_void(&prog->expressions);
+	expr_block* b = cvec_back_expr_block(&prog->expressions);
 	if (b->n == b->used) {
 		expr_block b_new;
 		make_expression_block(32, &b_new);
-		cvec_push_void(&prog->expressions, &b_new);
-		b = (expr_block*)cvec_back_void(&prog->expressions);
+		cvec_push_expr_block(&prog->expressions, &b_new);
+		b = cvec_back_expr_block(&prog->expressions);
 	}
 	return &b->data[b->used++];
 }
@@ -214,8 +217,8 @@ void parse_program_string(program_state* prog, char* string)
 	cvec_str(&prog->global_variables, 0, 20);
 	cvec_var_value(&prog->global_values, 0, 20, free_var_value, NULL);
 
-	cvec_void(&prog->expressions, 1, 1, sizeof(expr_block), free_expr_block, NULL);
-	make_expression_block(50, (expr_block*)cvec_back_void(&prog->expressions));
+	cvec_expr_block(&prog->expressions, 1, 1, free_expr_block, NULL);
+	make_expression_block(50, cvec_back_expr_block(&prog->expressions));
 
 	translation_unit(&p, prog);
 
@@ -274,8 +277,8 @@ void parse_program_file(program_state* prog, FILE* file)
 	cvec_str(&prog->global_variables, 0, 20);
 	cvec_var_value(&prog->global_values, 0, 20, free_var_value, NULL);
 
-	cvec_void(&prog->expressions, 1, 1, sizeof(expr_block), free_expr_block, NULL);
-	make_expression_block(50, (expr_block*)cvec_back_void(&prog->expressions));
+	cvec_expr_block(&prog->expressions, 1, 1, free_expr_block, NULL);
+	make_expression_block(50, cvec_back_expr_block(&prog->expressions));
 
 	translation_unit(&p, prog);
 

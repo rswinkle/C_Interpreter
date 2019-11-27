@@ -90,6 +90,10 @@ struct expression
 	expression* right;
 };
 
+// expr_block exists because I wanted to deal with expression pointers
+// rather than indices.  If I just had a vector of expressions, I'd be forced
+// to use the latter because everytime the vector is realloc'd the pointers
+// from before would be invalid.
 typedef struct expr_block
 {
 	expression* data;
@@ -164,6 +168,7 @@ typedef struct function
 } function;
 
 
+CVEC_NEW_DECLS2(expr_block)
 
 CVEC_NEW_DECLS2(var_value)
 
@@ -187,7 +192,7 @@ typedef struct program_state
 	cvector_str global_variables;
 	cvector_var_value global_values;
 
-	cvector_void expressions;
+	cvector_expr_block expressions;
 	cvector_str string_db;
 	cvector_void* bindings;
 } program_state;
