@@ -42,7 +42,7 @@ void execute(program_state* prog)
 	statement* stmt;
 
 	while (*prog->pc < prog->stmt_list->size) {
-		stmt = GET_STMT(prog->stmt_list, *prog->pc);
+		stmt = &prog->stmt_list->a[*prog->pc];
 		//print_statement(stmt);
 
 		switch (stmt->type) {
@@ -119,7 +119,7 @@ void execute(program_state* prog)
 
 		case END_COMPOUND_STMT:
 			pop_scope(prog);	//freeing all bindings with cur_parent
-			prog->cur_parent = GET_STMT(prog->stmt_list, stmt->parent)->parent;
+			prog->cur_parent = prog->stmt_list->a[stmt->parent].parent;
 			break;
 
 		case CASE_STMT:
@@ -215,7 +215,7 @@ var_value execute_expr(program_state* prog, expression* e)
 	var_value* var;
 
 	function* old_func, *func;
-	cvector_void* old_stmt_list;
+	cvector_statement* old_stmt_list;
 	size_t* old_pc;
 
 	var_value result, left, right;
@@ -630,7 +630,7 @@ void execute_expr_list(program_state* prog, function* callee, expression* e)
 void execute_goto(program_state* prog, statement* stmt)
 {
 	int ancestor;
-	statement* target = GET_STMT(prog->stmt_list, stmt->jump_to);
+	statement* target = &prog->stmt_list->a[stmt->jump_to];
 	if (stmt->parent != target->parent) {
 		if (is_ancestor(prog, stmt->parent, target->parent)) {
 			apply_scope(prog, stmt->jump_to, target->parent, stmt->parent);
@@ -644,7 +644,7 @@ void execute_goto(program_state* prog, statement* stmt)
 	} else {
 		if (stmt->jump_to > *prog->pc) {
 			binding* b;
-			target = GET_STMT(prog->stmt_list, stmt->parent);
+			target = &prog->stmt_list->a[stmt->parent];
 			for (int i=0; i<target->bindings->size; ++i) {
 				b = GET_BINDING(target->bindings, i);
 				if (b->decl_stmt > *prog->pc) {
@@ -704,7 +704,7 @@ void clear_bindings(program_state* prog)
 	binding* b;
 
 	while (prog->cur_parent >= 0) {
-		stmt = GET_STMT(prog->stmt_list, prog->cur_parent);
+		stmt = &prog->stmt_list->a[prog->cur_parent];
 		for (int i=0; i<stmt->bindings->size; ++i) {
 			b = GET_BINDING(stmt->bindings, i);
 			if (b->decl_stmt > *prog->pc)
@@ -738,7 +738,7 @@ int is_ancestor(program_state* prog, int parent, int child)
 	statement* stmt;
 	int tmp = child;
 	do {
-		stmt = GET_STMT(prog->stmt_list, tmp);
+		stmt = &prog->stmt_list->a[tmp];
 		tmp = stmt->parent;
 	} while (tmp >= 0 && tmp != parent);
 
@@ -749,7 +749,7 @@ int is_ancestor(program_state* prog, int parent, int child)
 //to jump_to statement
 void apply_scope(program_state* prog, int jump_to, int child, int parent)
 {
-	statement* stmt = GET_STMT(prog->stmt_list, child);
+	statement* stmt = &prog->stmt_list->a[child];
 	binding* b;
 
 	if (child != parent)
@@ -777,14 +777,14 @@ void remove_scope(program_state* prog, int jump_to, int child, int parent)
 	binding *b;
 
 	while (child != parent) {
-		stmt = GET_STMT(prog->stmt_list, child);
+		stmt = &prog->stmt_list->a[child];
 		child = stmt->parent;
 		pop_scope(prog);
 	}
 
 	prog->cur_parent = parent;
 
-	stmt = GET_STMT(prog->stmt_list, parent);
+	stmt = &prog->stmt_list->a[parent];
 
 	for (int i=0; i<stmt->bindings->size; ++i) {
 		b = GET_BINDING(stmt->bindings, i);
@@ -802,10 +802,11 @@ int find_lowest_common_ancestor(program_state* prog, int parent1, int parent2)
 	//I can't think of a better way right now so just brute forcing it
 	//parent stmt/block with highest index is lowest common ancestor
 	int max = 0;
-	stmt1 = GET_STMT(prog->stmt_list, parent1);
-	stmt2 = GET_STMT(prog->stmt_list, parent2);
-	for (statement* s1 = stmt1; s1 != (statement*)prog->stmt_list->a; s1 = GET_STMT(prog->stmt_list, s1->parent)) {
-		for (statement* s2 = stmt1; s2 != (statement*)prog->stmt_list->a ; s2 = GET_STMT(prog->stmt_list, s2->parent)) {
+	stmt1 = &prog->stmt_list->a[parent1];
+	stmt2 = &prog->stmt_list->a[parent2];
+	for (statement* s1 = stmt1; s1 != prog->stmt_list->a; s1 = &prog->stmt_list->a[s1->parent]) {
+		// TODO typo?  stmt2? also convert all these pointers to indices?
+		for (statement* s2 = stmt1; s2 != prog->stmt_list->a ; s2 = &prog->stmt_list->a[s2->parent]) {
 			if (s1->parent == s2->parent) {
 				max = (s1->parent > max) ? s1->parent : max;
 			}

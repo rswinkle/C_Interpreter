@@ -10,6 +10,8 @@
 
 #include <stdio.h>
 
+CVEC_NEW_DEFS2(statement, RESIZE)
+
 CVEC_NEW_DEFS2(symbol, RESIZE)
 
 CVEC_NEW_DEFS2(var_value, RESIZE)
@@ -74,14 +76,14 @@ void init_function(void* to, void* from)
 	function* to_func = to;
 
 	to_func->pc = 0;
-	cvec_void(&to_func->stmt_list, 0, 50, sizeof(statement), free_statement, NULL);
+	cvec_statement(&to_func->stmt_list, 0, 50, free_statement, NULL);
 	cvec_symbol(&to_func->symbols, 0, 20, free_symbol, NULL);
 }
 
 void free_function(void* func)
 {
 	function* f = func;
-	cvec_free_void(&f->stmt_list);
+	cvec_free_statement(&f->stmt_list);
 	cvec_free_symbol(&f->symbols);
 }
 
@@ -341,7 +343,7 @@ void function_definition(parsing_state* p, program_state* prog)
 	statement* stmt;
 	for (int j=0; j<prog->func->labels.size; ++j) {
 		for (int i=0; i<prog->stmt_list->size; ++i) {
-			stmt = GET_STMT(prog->stmt_list, i);
+			stmt = &prog->stmt_list->a[i];
 			if (stmt->type == GOTO_STMT &&
 			    !strcmp(stmt->lvalue, prog->func->labels.a[j])) {
 
@@ -690,7 +692,7 @@ void initialized_declarator(parsing_state* p, program_state* prog, var_type v_ty
 		b.decl_stmt = prog->stmt_list->size;
 		cvec_push_void(prog->bindings, &b);
 
-		cvec_push_void(prog->stmt_list, &decl_stmt);
+		cvec_push_statement(prog->stmt_list, &decl_stmt);
 
 		if (peek_token(p, 1)->type == EQUAL) {
 			statement an_expr;
@@ -700,7 +702,7 @@ void initialized_declarator(parsing_state* p, program_state* prog, var_type v_ty
 			an_expr.exp = make_expression(prog);
 			assign_expr(p, prog, an_expr.exp);
 
-			cvec_push_void(prog->stmt_list, &an_expr);
+			cvec_push_statement(prog->stmt_list, &an_expr);
 		} else {
 			get_token(p);   //read ID
 		}
@@ -751,13 +753,13 @@ void compound_statement(parsing_state* p, program_state* prog)
 	prog->bindings = start.bindings;
 
 	end.parent = prog->stmt_list->size;
-	cvec_push_void(prog->stmt_list, &start);
+	cvec_push_statement(prog->stmt_list, &start);
 
 	prog->cur_parent = end.parent;
 
 	declaration_or_statement_list(p, prog);
 
-	cvec_push_void(prog->stmt_list, &end);
+	cvec_push_statement(prog->stmt_list, &end);
 
 	prog->bindings = old_bindings;
 	prog->cur_parent = old_parent;
@@ -863,7 +865,7 @@ void statement_rule(parsing_state* p, program_state* prog)
 		memset(&null_stmt, 0, sizeof(statement));
 		null_stmt.type = NULL_STMT;
 		null_stmt.parent = prog->cur_parent;
-		cvec_push_void(prog->stmt_list, &null_stmt);
+		cvec_push_statement(prog->stmt_list, &null_stmt);
 	}
 		break;
 
@@ -910,7 +912,7 @@ void case_or_default_stmt(parsing_state* p, program_state* prog)
 		stmt.case_val = v.v.int_val;
 	}
 
-	cvec_push_void(prog->stmt_list, &stmt);
+	cvec_push_statement(prog->stmt_list, &stmt);
 
 	tok = get_token(p);
 	if (tok->type != COLON) {
@@ -943,8 +945,8 @@ void switch_stmt(parsing_state* p, program_state* prog)
 	int old_i_switch = prog->cur_iter_switch;
 	prog->cur_iter_switch = prog->stmt_list->size;
 
-	cvec_push_void(prog->stmt_list, &a_switch);
-	statement* the_switch = (statement*)cvec_back_void(prog->stmt_list);
+	cvec_push_statement(prog->stmt_list, &a_switch);
+	statement* the_switch = cvec_back_statement(prog->stmt_list);
 
 	statement_rule(p, prog);
 
@@ -955,7 +957,7 @@ void switch_stmt(parsing_state* p, program_state* prog)
 	a_case c;
 	int j;
 	for (int i=prog->cur_iter_switch; i<prog->stmt_list->size; ++i) {
-		stmt = GET_STMT(prog->stmt_list, i);
+		stmt = &prog->stmt_list->a[i];
 		if (stmt->type == BREAK_STMT && stmt->jump_to == 0) {
 			stmt->type = GOTO_STMT;
 			stmt->jump_to =  prog->stmt_list->size;
@@ -964,7 +966,7 @@ void switch_stmt(parsing_state* p, program_state* prog)
 			/* probably not worth it since the interpreter can just fall through
  			 * case statements anyway but if I decide to erase case statements ..*/
 			j = i + 1;
-			while (GET_STMT(prog->stmt_list, j)->type == CASE_STMT)
+			while (prog->stmt_list->a[j].type == CASE_STMT)
 				j++;
 
 			c.jump_to = j;
@@ -974,7 +976,7 @@ void switch_stmt(parsing_state* p, program_state* prog)
 				parse_error(NULL, "more than one default statement in switch\n");
 			}
 			j = i + 1;
-			while (GET_STMT(prog->stmt_list, j)->type == CASE_STMT)
+			while (prog->stmt_list->a[j].type == CASE_STMT)
 				j++;
 			the_switch->jump_to = j;
 		}
@@ -988,7 +990,7 @@ void switch_stmt(parsing_state* p, program_state* prog)
 
 void do_stmt(parsing_state* p, program_state* prog)
 {
-	get_token(p);
+	get_token(p);  // eat 'do'
 
 	size_t start_loc = prog->stmt_list->size;
 	int old_iter = prog->cur_iter;
@@ -1020,7 +1022,7 @@ void do_stmt(parsing_state* p, program_state* prog)
 
 	expr(p, prog, do_stmt.exp);
 
-	cvec_push_void(prog->stmt_list, &do_stmt);
+	cvec_push_statement(prog->stmt_list, &do_stmt);
 
 	tok = get_token(p);
 	if (tok->type != RPAREN) {
@@ -1029,7 +1031,7 @@ void do_stmt(parsing_state* p, program_state* prog)
 
 	statement* stmt;
 	for (int i=start_loc; i<prog->stmt_list->size; ++i) {
-		stmt = GET_STMT(prog->stmt_list, i);
+		stmt = &prog->stmt_list->a[i];
 		if (stmt->type == BREAK_STMT && stmt->jump_to == 0) {
 			stmt->type = GOTO_STMT;
 			stmt->jump_to =  prog->stmt_list->size;
@@ -1057,7 +1059,7 @@ void break_or_continue_stmt(parsing_state* p, program_state* prog)
 	memset(&cont_or_break, 0, sizeof(statement));
 	cont_or_break.type = (tok->type == BREAK) ? BREAK_STMT : CONTINUE_STMT;
 	cont_or_break.parent = prog->cur_parent;
-	cvec_push_void(prog->stmt_list, &cont_or_break);
+	cvec_push_statement(prog->stmt_list, &cont_or_break);
 
 	tok = get_token(p);
 	if (tok->type != SEMICOLON) {
@@ -1087,7 +1089,7 @@ void for_stmt(parsing_state* p, program_state* prog)
 
 	prog->cur_parent = prog->stmt_list->size;
 	prog->bindings = a_stmt.bindings;
-	cvec_push_void(prog->stmt_list, &a_stmt);
+	cvec_push_statement(prog->stmt_list, &a_stmt);
 
 	//initial clause
 	if (peek_token(p, 0)->type != SEMICOLON) {
@@ -1103,7 +1105,7 @@ void for_stmt(parsing_state* p, program_state* prog)
 			a_stmt.type = EXPR_STMT;
 
 			expr(p, prog, a_stmt.exp);
-			cvec_push_void(prog->stmt_list, &a_stmt);
+			cvec_push_statement(prog->stmt_list, &a_stmt);
 		}
 	}
 
@@ -1118,7 +1120,7 @@ void for_stmt(parsing_state* p, program_state* prog)
 		expr(p, prog, a_stmt.exp);
 	}
 	size_t for_loc = prog->stmt_list->size;
-	cvec_push_void(prog->stmt_list, &a_stmt);
+	cvec_push_statement(prog->stmt_list, &a_stmt);
 
 	get_token(p); //second ;
 
@@ -1154,28 +1156,28 @@ void for_stmt(parsing_state* p, program_state* prog)
 	//put 3rd expression "increment clause" at end
 	size_t third_expr = prog->stmt_list->size;
 	if (a_stmt.exp)
-		cvec_push_void(prog->stmt_list, &a_stmt);
+		cvec_push_statement(prog->stmt_list, &a_stmt);
 
 	statement a_goto;
 	memset(&a_goto, 0, sizeof(statement));
 	a_goto.type = GOTO_STMT;
 	a_goto.parent = prog->cur_parent;
 	a_goto.jump_to = for_loc;
-	cvec_push_void(prog->stmt_list, &a_goto);
+	cvec_push_statement(prog->stmt_list, &a_goto);
 
-	GET_STMT(prog->stmt_list, for_loc)->jump_to = prog->stmt_list->size;
+	prog->stmt_list->a[for_loc].jump_to = prog->stmt_list->size;
 
 	//close enclosing block scope
 	memset(&a_stmt, 0, sizeof(statement));
 	a_stmt.parent = prog->cur_parent;
 	a_stmt.type = END_COMPOUND_STMT;
-	cvec_push_void(prog->stmt_list, &a_stmt);
+	cvec_push_statement(prog->stmt_list, &a_stmt);
 
 	prog->cur_parent = old_parent;
 
 	statement* stmt;
 	for (int i=for_loc+1; i<prog->stmt_list->size-3; ++i) {
-		stmt = GET_STMT(prog->stmt_list, i);
+		stmt = &prog->stmt_list->a[i];
 		if (stmt->type == BREAK_STMT && stmt->jump_to == 0) {
 			stmt->type = GOTO_STMT;
 			stmt->jump_to =  prog->stmt_list->size;
@@ -1208,7 +1210,7 @@ void goto_stmt(parsing_state* p, program_state* prog)
 		parse_error(tok, "in goto_stmt, expected SEMICOLON\n");
 	}
 
-	cvec_push_void(prog->stmt_list, &a_goto); //jump to after else statement
+	cvec_push_statement(prog->stmt_list, &a_goto); //jump to after else statement
 }
 
 void labeled_stmt(parsing_state* p, program_state* prog)
@@ -1241,7 +1243,7 @@ void return_stmt(parsing_state* p, program_state* prog)
 		parse_error(peek_token(p, 0), "return statement with no expression in a function with a return type\n");
 	}
 
-	cvec_push_void(prog->stmt_list, &ret_stmt);
+	cvec_push_statement(prog->stmt_list, &ret_stmt);
 
 	get_token(p); //eat ;
 }
@@ -1257,7 +1259,7 @@ void expression_stmt(parsing_state* p, program_state* prog)
 
 	expr(p, prog, an_expr.exp);
 
-	cvec_push_void(prog->stmt_list, &an_expr);
+	cvec_push_statement(prog->stmt_list, &an_expr);
 
 
 	token_value* tok = get_token(p);
@@ -1829,11 +1831,11 @@ void if_stmt(parsing_state* p, program_state* prog)
 	}
 
 	size_t if_loc = prog->stmt_list->size;
-	cvec_push_void(prog->stmt_list, &an_if);
+	cvec_push_statement(prog->stmt_list, &an_if);
 
 	statement_rule(p, prog);
 
-	GET_STMT(prog->stmt_list, if_loc)->jump_to = prog->stmt_list->size;
+	prog->stmt_list->a[if_loc].jump_to = prog->stmt_list->size;
 
 	tok = peek_token(p, 0);
 	if (tok->type == ELSE) {
@@ -1844,14 +1846,14 @@ void if_stmt(parsing_state* p, program_state* prog)
 		a_goto.type = GOTO_STMT;
 		a_goto.parent = prog->cur_parent;
 		size_t goto_loc = prog->stmt_list->size;
-		cvec_push_void(prog->stmt_list, &a_goto); //jump to after else statement
+		cvec_push_statement(prog->stmt_list, &a_goto); //jump to after else statement
 
-		//reset jump for failed if condition to after the goto
-		GET_STMT(prog->stmt_list, if_loc)->jump_to = prog->stmt_list->size;
+		//reset jump for failed if condition to after the goto, ie the else branch
+		prog->stmt_list->a[if_loc].jump_to = prog->stmt_list->size;
 
 		statement_rule(p, prog);
 
-		GET_STMT(prog->stmt_list, goto_loc)->jump_to = prog->stmt_list->size;
+		prog->stmt_list->a[goto_loc].jump_to = prog->stmt_list->size;
 	}
 }
 
@@ -1875,7 +1877,7 @@ void print_stmt(parsing_state* p, program_state* prog)
 		parse_error(tok, "in print_stmt, SEMICOLON expected.\n");
 	}
 
-	cvec_push_void(prog->stmt_list, &a_print);
+	cvec_push_statement(prog->stmt_list, &a_print);
 }
 
 
@@ -1908,7 +1910,7 @@ void while_stmt(parsing_state* p, program_state* prog)
 	int old_cur_i_switch = prog->cur_iter_switch;
 
 	prog->cur_iter = prog->cur_iter_switch = while_loc;
-	cvec_push_void(prog->stmt_list, &a_while);
+	cvec_push_statement(prog->stmt_list, &a_while);
 
 	statement_rule(p, prog);
 
@@ -1920,13 +1922,13 @@ void while_stmt(parsing_state* p, program_state* prog)
 	a_goto.type = GOTO_STMT;
 	a_goto.parent = prog->cur_parent;
 	a_goto.jump_to = while_loc;
-	cvec_push_void(prog->stmt_list, &a_goto);
+	cvec_push_statement(prog->stmt_list, &a_goto);
 
-	GET_STMT(prog->stmt_list, while_loc)->jump_to = prog->stmt_list->size;
+	prog->stmt_list->a[while_loc].jump_to = prog->stmt_list->size;
 
 	statement* stmt;
 	for (int i=while_loc+1; i<prog->stmt_list->size-1; ++i) {
-		stmt = GET_STMT(prog->stmt_list, i);
+		stmt = &prog->stmt_list->a[i];
 		if (stmt->type == BREAK_STMT && stmt->jump_to == 0) {
 			stmt->type = GOTO_STMT;
 			stmt->jump_to =  prog->stmt_list->size;

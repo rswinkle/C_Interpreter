@@ -14,7 +14,6 @@
 #include "cvector_token_lex.h"
 
 
-#define GET_STMT(VEC, I) CVEC_GET_VOID(VEC, statement, I)
 #define GET_BINDING(VEC, I) CVEC_GET_VOID(VEC, binding, I)
 
 
@@ -143,6 +142,7 @@ typedef struct statement
 	cvector_void* bindings;
 } statement;
 
+CVEC_NEW_DECLS2(statement)
 
 /*********************************/
 
@@ -158,7 +158,7 @@ CVEC_NEW_DECLS2(symbol)
 
 typedef struct function
 {
-	cvector_void stmt_list;
+	cvector_statement stmt_list;
 	size_t pc;
 	var_value ret_val;
 	int n_params;
@@ -181,7 +181,7 @@ CVEC_NEW_DECLS2(function)
 typedef struct program_state
 {
 	cvector_function functions;
-	cvector_void* stmt_list;
+	cvector_statement* stmt_list;
 	size_t* pc;
 	function* func;
 
