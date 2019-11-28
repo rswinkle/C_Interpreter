@@ -15,7 +15,6 @@
 
 
 #define GET_STMT(VEC, I) CVEC_GET_VOID(VEC, statement, I)
-#define GET_SYMBOL(VEC, I) CVEC_GET_VOID(VEC, symbol, I)
 #define GET_BINDING(VEC, I) CVEC_GET_VOID(VEC, binding, I)
 
 
@@ -155,13 +154,15 @@ typedef struct symbol
 	list_head head;
 } symbol;
 
+CVEC_NEW_DECLS2(symbol)
+
 typedef struct function
 {
 	cvector_void stmt_list;
 	size_t pc;
 	var_value ret_val;
 	int n_params;
-	cvector_void symbols;
+	cvector_symbol symbols;
 
 	cvector_str labels;
 	cvector_i label_locs;

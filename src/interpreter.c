@@ -593,7 +593,7 @@ void execute_expr_list(program_state* prog, function* callee, expression* e)
 
 	int i = 0;
 	while (e->tok.type == EXPR_LIST) {
-		s = GET_SYMBOL(&func->symbols, i);
+		s = &func->symbols.a[i];
 
 		val = execute_expr(prog, e->left);
 
@@ -617,7 +617,7 @@ void execute_expr_list(program_state* prog, function* callee, expression* e)
 		}
 	}
 
-	s = GET_SYMBOL(&func->symbols, i);
+	s = &func->symbols.a[i];
 
 	val = execute_expr(prog, e);
 	v->val.type = (list_entry(s->head.prev, active_binding, list))->val.type;
@@ -716,7 +716,7 @@ void clear_bindings(program_state* prog)
 	}
 
 	for (int i=0; i<prog->func->n_params; ++i) {
-		remove_binding_symbol(GET_SYMBOL(&prog->func->symbols, i));
+		remove_binding_symbol(&prog->func->symbols.a[i]);
 	}
 }
 
@@ -725,7 +725,7 @@ void pop_scope(program_state* prog)
 	symbol* s;
 
 	for (int i=0; i<prog->func->symbols.size; ++i) {
-		s = GET_SYMBOL(&prog->func->symbols, i);
+		s = &prog->func->symbols.a[i];
 		if (s->cur_parent == prog->cur_parent) {
 			remove_binding_symbol(s);
 		}
@@ -854,7 +854,7 @@ symbol* look_up_symbol(program_state* prog, const char* var)
 {
 	symbol* v;
 	for (int i=0; i<prog->func->symbols.size; ++i) {
-		v = GET_SYMBOL(&prog->func->symbols, i);
+		v = &prog->func->symbols.a[i];
 		if (!strcmp(var, v->name))
 			return v;
 	}
@@ -866,7 +866,7 @@ var_value* look_up_value(program_state* prog, const char* var, int search)
 	symbol* s;
 	if (prog->func && search != ONLY_GLOBAL) {
 		for (int i=0; i<prog->func->symbols.size; ++i) {
-			s = GET_SYMBOL(&prog->func->symbols, i);
+			s = &prog->func->symbols.a[i];
 			if (!strcmp(var, s->name)) {
 				if (!list_empty(&s->head))
 					//->next is first item, top of binding stack

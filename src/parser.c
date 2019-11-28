@@ -10,6 +10,8 @@
 
 #include <stdio.h>
 
+CVEC_NEW_DEFS2(symbol, RESIZE)
+
 CVEC_NEW_DEFS2(var_value, RESIZE)
 
 CVEC_NEW_DEFS2(expr_block, RESIZE)
@@ -73,14 +75,14 @@ void init_function(void* to, void* from)
 
 	to_func->pc = 0;
 	cvec_void(&to_func->stmt_list, 0, 50, sizeof(statement), free_statement, NULL);
-	cvec_void(&to_func->symbols, 0, 20, sizeof(symbol), free_symbol, NULL);
+	cvec_symbol(&to_func->symbols, 0, 20, free_symbol, NULL);
 }
 
 void free_function(void* func)
 {
 	function* f = func;
 	cvec_free_void(&f->stmt_list);
-	cvec_free_void(&f->symbols);
+	cvec_free_symbol(&f->symbols);
 }
 
 
@@ -444,8 +446,8 @@ void parameter_declaration(parsing_state* p, program_state* prog)
 	s.cur_parent = 0;
 	s.name = tok->v.id;
 
-	cvec_push_void(&prog->func->symbols, &s);
-	symbol* tmp = cvec_back_void(&prog->func->symbols);
+	cvec_push_symbol(&prog->func->symbols, &s);
+	symbol* tmp = cvec_back_symbol(&prog->func->symbols);
 	INIT_LIST_HEAD(&tmp->head);
 	list_add(&var->list, &tmp->head);
 }
@@ -666,9 +668,9 @@ void initialized_declarator(parsing_state* p, program_state* prog, var_type v_ty
 		if (!check) {
 			symbol s;
 			s.name = tok->v.id;
-			cvec_push_void(&prog->func->symbols, &s);
+			cvec_push_symbol(&prog->func->symbols, &s);
 		}
-		symbol* tmp = (check) ? check : cvec_back_void(&prog->func->symbols);
+		symbol* tmp = (check) ? check : cvec_back_symbol(&prog->func->symbols);
 		if (!check)
 			INIT_LIST_HEAD(&tmp->head);
 
