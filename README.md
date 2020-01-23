@@ -279,6 +279,6 @@ all my tests at once.
 	~/C_Interpreter/build $ ../runtests.py
 	Should be nothing here, only failures produce output
 	~/C_Interpreter/build $ ../run_valgrind_tests.py
-	Same here.  Note this make take a minute, valgrind makes things slow
+	Same here.  Note this may take a minute, valgrind makes things slow
 	~/C_Interpreter/build $
 
