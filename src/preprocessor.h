@@ -6,6 +6,7 @@
 //brings in lexer.h
 #include "cvector_token_lex.h"
 
+#define CVEC_STRDUP mystrdup
 #include "cvector.h"
 
 

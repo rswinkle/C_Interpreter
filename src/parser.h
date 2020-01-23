@@ -9,6 +9,7 @@
 
 #include "clist.h"
 
+#define CVEC_STRDUP mystrdup
 #include "cvector.h"
 
 #include "cvector_token_lex.h"

@@ -2,6 +2,8 @@
 
 #include "c_utils.h"
 
+// already defined in parser.h
+//#define CVEC_STRDUP mystrdup
 #define CVECTOR_IMPLEMENTATION
 #include "cvector.h"
 
