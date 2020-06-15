@@ -73,13 +73,18 @@ void free_symbol(void* var)
 }
 
 // Used as a regular constructor, we don't use from
-void init_function(void* to, void* from)
+//
+// TODO now since elem_init returns a value and has overhead
+// maybe it'd be better to have a proper stand alone "constructor"
+// to call before using pushing?
+int init_function(void* to, void* from)
 {
+	int ret;
 	function* to_func = to;
 
 	to_func->pc = 0;
-	cvec_statement(&to_func->stmt_list, 0, 50, free_statement, NULL);
-	cvec_symbol(&to_func->symbols, 0, 20, free_symbol, NULL);
+	ret = cvec_statement(&to_func->stmt_list, 0, 50, free_statement, NULL);
+	return ret && cvec_symbol(&to_func->symbols, 0, 20, free_symbol, NULL);
 }
 
 void free_function(void* func)
