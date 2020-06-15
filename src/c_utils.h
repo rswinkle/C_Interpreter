@@ -70,6 +70,8 @@ int split(c_array* in, byte* delim, size_t delim_len, c_array* out);
 char* ltrim(char* str);
 char* rtrim(char* str);
 char* trim(char* str);
+char* mystrtok(char* str, int delim);
+char* mystrtok_alloc(const char* str, int delim);
 
 
 #define CLEAR_SCREEN "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n" \

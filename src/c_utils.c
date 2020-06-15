@@ -8,9 +8,9 @@
 /** Useful utility function since strdup isn't in standard C.*/
 char* mystrdup(const char* str)
 {
-	/* if (!str)
-	 * 	return NULL;
-	 */
+	if (!str)
+		return NULL;
+	
 	size_t len = strlen(str);
 	char* temp = (char*)calloc(len+1, sizeof(char));
 	if (!temp) {
@@ -251,7 +251,7 @@ char* freadstring(FILE* input, int delim, size_t max_len)
 {
 	char* string = NULL, *tmp_str = NULL;
 	int temp;
-	int i=0;
+	int i = 0;
 	int inf = 0;
 
 	if (feof(input))
@@ -262,7 +262,7 @@ char* freadstring(FILE* input, int delim, size_t max_len)
 		max_len = 4096;
 	}
 
-	if(!(string = (char*)malloc(max_len+1)))
+	if (!(string = (char*)malloc(max_len+1)))
 		return NULL;
 
 	while (1) {
@@ -290,6 +290,7 @@ char* freadstring(FILE* input, int delim, size_t max_len)
 					return NULL;
 				}
 				string = tmp_str;
+				max_len *= 2;
 			} else {
 				break;
 			}
@@ -584,6 +585,54 @@ char* trim(char* str)
 {
 	return ltrim(rtrim(str));
 }
+
+// like strtok but takes a single character delim and doesn't
+// skip empty fields (ie 2 delims next to each other returns "")
+char* mystrtok(char* str, int delim)
+{
+	static char* p;
+	if (str) {
+		p = str;
+	}
+	char* ret = p;
+
+	while (*p && *p != delim) {
+		p++;
+	}
+	if (*p) {
+		*p = 0;
+		p++;
+	} else if (p == ret) {
+		return NULL;
+	}
+
+	return ret;
+}
+
+// like strtok but takes a single character delim and doesn't
+// skip empty fields (ie 2 delims next to each other returns "")
+// and does not modify str but return allocated copies of tokens
+char* mystrtok_alloc(const char* str, int delim)
+{
+	static const char* p;
+	if (str) {
+		p = str;
+	}
+	const char* s = p;
+
+	while (*p && *p != delim) {
+		p++;
+	}
+	char* ret = NULL;
+	if (*p || p != s) {
+		ret = calloc(p-s+1, 1);
+		memcpy(ret, s, p-s);
+		p += !!*p;  // only ++ if we're not at '\0'
+	}
+
+	return ret;
+}
+
 
 /** Searches for needle in haystack returning first result or -1
  *  which, since size_t is unsigned is converted to size_t's max value */
