@@ -6,6 +6,9 @@ C_Interpreter
 
 [http://www.robertwinkler.com/projects/c_interpreter.html](http://www.robertwinkler.com/projects/c_interpreter.html)
 
+[![Run on Repl.it](https://repl.it/badge/github/rswinkle/C_Interpreter)](https://repl.it/github/rswinkle/C_Interpreter)
+
+
 This started as C port of an old college assignment
 in C++.  You can see that in the first commit though I
 might have made some minor changes/improvements during

@@ -64,13 +64,13 @@ ifeq ($(config),release)
 endif
 
 OBJECTS := \
-	$(OBJDIR)/rsw_cstr.o \
-	$(OBJDIR)/lexer.o \
-	$(OBJDIR)/c_utils.o \
 	$(OBJDIR)/main.o \
+	$(OBJDIR)/lexer.o \
 	$(OBJDIR)/parser.o \
+	$(OBJDIR)/c_utils.o \
 	$(OBJDIR)/interpreter.o \
 	$(OBJDIR)/preprocessor.o \
+	$(OBJDIR)/rsw_cstr.o \
 
 RESOURCES := \
 
@@ -131,25 +131,25 @@ $(GCH): $(PCH)
 	$(SILENT) $(CC) $(CFLAGS) -o "$@" -c "$<"
 endif
 
-$(OBJDIR)/rsw_cstr.o: ../src/rsw_cstr.c
+$(OBJDIR)/main.o: ../src/main.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(CFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/lexer.o: ../src/lexer.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(CFLAGS) -o "$@" -c "$<"
-$(OBJDIR)/c_utils.o: ../src/c_utils.c
-	@echo $(notdir $<)
-	$(SILENT) $(CC) $(CFLAGS) -o "$@" -c "$<"
-$(OBJDIR)/main.o: ../src/main.c
-	@echo $(notdir $<)
-	$(SILENT) $(CC) $(CFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/parser.o: ../src/parser.c
+	@echo $(notdir $<)
+	$(SILENT) $(CC) $(CFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/c_utils.o: ../src/c_utils.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(CFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/interpreter.o: ../src/interpreter.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(CFLAGS) -o "$@" -c "$<"
 $(OBJDIR)/preprocessor.o: ../src/preprocessor.c
+	@echo $(notdir $<)
+	$(SILENT) $(CC) $(CFLAGS) -o "$@" -c "$<"
+$(OBJDIR)/rsw_cstr.o: ../src/rsw_cstr.c
 	@echo $(notdir $<)
 	$(SILENT) $(CC) $(CFLAGS) -o "$@" -c "$<"
 

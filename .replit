@@ -1,0 +1,3 @@
+language = "c"
+run = "cd build && make config=release verbose=1 && ./cinterpreter ../tests/functions.txt"
+
