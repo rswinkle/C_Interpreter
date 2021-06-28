@@ -70,7 +70,7 @@ It also of course supports actually using the macros.
 	translation_unit                -> top_level_declaration
 	                                   translation_unit top_level_declaration
 
-	declaration_list                -> declaration
+	top_level_declaration           -> declaration
 	                                   function_definition
 
 	function_definition             -> declaration_specifier function_declarator compound_statement
