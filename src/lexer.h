@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#define MAX_TOKEN_LEN 257
+#define MAX_TOKEN_LEN 256
 #define PARSING (FILE*)1
 
 //tokens pg 20

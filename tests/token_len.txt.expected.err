@@ -1,0 +1,1 @@
+../tests/token_len.txt:9:264: Lexer Error: Token length is too long, max token length is 256

@@ -26,7 +26,7 @@ do { \
 //or it's the macro PARSING (1 currently but could be any invalid non-NULL pointer) which means we're parsing
 token_lex read_token(FILE* file, lexer_state* lex_state, FILE* preprocessed)
 {
-	static char token_buf[MAX_TOKEN_LEN];
+	static char token_buf[MAX_TOKEN_LEN+1];
 	int c, i = 0, tmp;
 
 	token_lex tok_lex = { 0 };
@@ -289,12 +289,12 @@ start:
 				token_buf[i++] = c;
 				HANDLE_BACKSLASH();
 
-				if (i == MAX_TOKEN_LEN-1)
+				if (i > MAX_TOKEN_LEN)
 					goto token_length_error;
 			}
 
 			if (c == '.') {
-				if (i == MAX_TOKEN_LEN-1)
+				if (i > MAX_TOKEN_LEN)
 					goto token_length_error;
 
 				token_buf[i++] = c;
@@ -304,7 +304,7 @@ start:
 					token_buf[i++] = c;
 					HANDLE_BACKSLASH();
 
-					if (i == MAX_TOKEN_LEN-1)
+					if (i > MAX_TOKEN_LEN)
 						goto token_length_error;
 				}
 
@@ -327,7 +327,7 @@ start:
 				token_buf[i++] = c;
 				HANDLE_BACKSLASH();
 
-				if (i == MAX_TOKEN_LEN-1)
+				if (i > MAX_TOKEN_LEN)
 					goto token_length_error;
 			}
 			ungetc(c, file);
@@ -373,7 +373,7 @@ start:
 			while (c != '"') {
 				token_buf[i++] = c;
 				HANDLE_BACKSLASH();
-				if (i == MAX_TOKEN_LEN -1)
+				if (i > MAX_TOKEN_LEN)
 					goto token_length_error;
 			}
 			token_buf[i] = '\0';
@@ -401,10 +401,10 @@ start:
 	return tok_lex;
 
 stray_backslash:
-	lex_error(lex_state, "stray \\ in program (perhaps you have a space between it and a newline)");
+	lex_error(lex_state, "stray \\ in program (perhaps you have a space between it and a newline)\n");
 
 token_length_error:
-	lex_error(lex_state, "Token length is too long, max token length is %d,", MAX_TOKEN_LEN-1);
+	lex_error(lex_state, "Token length is too long, max token length is %d\n", MAX_TOKEN_LEN);
 	
 	// never gets here, gets rid of compiler warning
 	return tok_lex;
@@ -440,7 +440,7 @@ do { \
 
 token_lex read_token_from_str(char* input, lexer_state* lex_state, FILE* preprocessed)
 {
-	static char token_buf[MAX_TOKEN_LEN];
+	static char token_buf[MAX_TOKEN_LEN+1];
 	int i = 0, tmp;
 
 	token_lex tok_lex = { 0 };
@@ -704,12 +704,12 @@ start:
 				token_buf[i++] = *c;
 				HANDLE_BACKSLASH_STR();
 
-				if (i == MAX_TOKEN_LEN-1)
+				if (i > MAX_TOKEN_LEN)
 					goto token_length_error;
 			}
 
 			if (*c == '.') {
-				if (i == MAX_TOKEN_LEN-1)
+				if (i > MAX_TOKEN_LEN)
 					goto token_length_error;
 
 				token_buf[i++] = *c;
@@ -719,7 +719,7 @@ start:
 					token_buf[i++] = *c;
 					HANDLE_BACKSLASH_STR();
 
-					if (i == MAX_TOKEN_LEN-1)
+					if (i > MAX_TOKEN_LEN)
 						goto token_length_error;
 				}
 
@@ -742,7 +742,7 @@ start:
 				token_buf[i++] = *c;
 				HANDLE_BACKSLASH_STR();
 
-				if (i == MAX_TOKEN_LEN-1)
+				if (i > MAX_TOKEN_LEN)
 					goto token_length_error;
 			}
 			--c;
@@ -785,7 +785,7 @@ start:
 			while (*c != '"') {
 				token_buf[i++] = *c;
 				HANDLE_BACKSLASH_STR();
-				if (i == MAX_TOKEN_LEN -1)
+				if (i > MAX_TOKEN_LEN)
 					goto token_length_error;
 			}
 			token_buf[i] = '\0';
@@ -816,10 +816,10 @@ start:
 	return tok_lex;
 
 stray_backslash:
-	lex_error(lex_state, "stray \\ in program (perhaps you have a space between it and a newline)");
+	lex_error(lex_state, "stray \\ in program (perhaps you have a space between it and a newline)\n");
 
 token_length_error:
-	lex_error(lex_state, "Token length is too long, max token length is %d,", MAX_TOKEN_LEN - 1);
+	lex_error(lex_state, "Token length is too long, max token length is %d\n", MAX_TOKEN_LEN);
 
 	// never gets here, gets rid of compiler warning
 	return tok_lex;
