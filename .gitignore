@@ -29,4 +29,5 @@ build/*
 !build/Makefile
 !build/*.make
 *.swp
+tags
 
