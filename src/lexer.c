@@ -318,7 +318,7 @@ start:
 		if (c != '\'') {
 			lex_error(lex_state, "multi-character character constant\n");
 		}
-		tok_lex.tok.type = INT_LITERAL;
+		tok_lex.tok.type = CHAR_LITERAL;
 		tok_lex.tok.v.int_val = tmp;
 		break;
 
@@ -776,7 +776,7 @@ start:
 		if (*c != '\'') {
 			lex_error(lex_state, "multi-character character constant\n");
 		}
-		tok_lex.tok.type = INT_LITERAL;
+		tok_lex.tok.type = CHAR_LITERAL;
 		tok_lex.tok.v.int_val = tmp;
 		break;
 
@@ -928,8 +928,63 @@ void free_token_lex(void* tok_lex)
 }
 
 
+char* insert_esc_seqs(char* s, char* out)
+{
+	assert(out);
+	char* o = out;
+	for (; *s; s++, o++) {
+		switch (*s) {
+		case 0x07: *o++ = '\\'; *o = 'a'; break;
+		case 0x08: *o++ = '\\'; *o = 'b'; break;
+		case 0x1B: *o++ = '\\'; *o = 'e'; break;
+		case 0x0C: *o++ = '\\'; *o = 'f'; break;
+		case 0x0A: *o++ = '\\'; *o = 'n'; break;
+		case 0x0D: *o++ = '\\'; *o = 'r'; break;
+		case 0x09: *o++ = '\\'; *o = 't'; break;
+		case 0x0B: *o++ = '\\'; *o = 'v'; break;
+		case '\"': *o++ = '\\'; *o = '\"'; break;
+		case '\\': *o++ = '\\'; *o = '\\'; break;
+		case '\'': *o++ = '\\'; *o = '\''; break;
+
+		// don't really need this since no one uses trigraphs
+		//case '\?': *o++ = '\\'; *o = '\?'; break;
+		default:
+			*o = *s;
+		}
+	}
+	return out;
+}
+
+char* insert_char_esc_seq(int val, char* out)
+{
+	char* o = out;
+	o[0] = val;
+	o[1] = 0;
+	o[2] = 0;
+	switch (val) {
+	case 0x07: o[0] = '\\'; o[1] = 'a'; break;
+	case 0x08: o[0] = '\\'; o[1] = 'b'; break;
+	case 0x1B: o[0] = '\\'; o[1] = 'e'; break;
+	case 0x0C: o[0] = '\\'; o[1] = 'f'; break;
+	case 0x0A: o[0] = '\\'; o[1] = 'n'; break;
+	case 0x0D: o[0] = '\\'; o[1] = 'r'; break;
+	case 0x09: o[0] = '\\'; o[1] = 't'; break;
+	case 0x0B: o[0] = '\\'; o[1] = 'v'; break;
+	case '\"': o[0] = '\\'; o[1] = '\"'; break;
+	case '\\': o[0] = '\\'; o[1] = '\\'; break;
+	case '\'': o[0] = '\\'; o[1] = '\''; break;
+	}
+	return out;
+}
+
+
+
+
 void print_token(token_value* tok, FILE* file, int print_enum)
 {
+	// max needed is if every character was an escape sequence
+	char buf[2*MAX_TOKEN_LEN+1];
+
 	if (print_enum) {
 		switch (tok->type) {
 			case END:              fprintf(file, "END");     break;
@@ -1098,8 +1153,8 @@ void print_token(token_value* tok, FILE* file, int print_enum)
 			case INT_LITERAL:      fprintf(file, "%d", tok->v.int_val);     break;
 			case FLOAT_LITERAL:    fprintf(file, "%f", tok->v.float_val);     break;
 			case DOUBLE_LITERAL:   fprintf(file, "%f", tok->v.double_val);     break;
-			case CHAR_LITERAL:     fprintf(file, "'%c'", tok->v.int_val);     break;
-			case STR_LITERAL:      fprintf(file, "%s", tok->v.id);     break;
+			case CHAR_LITERAL:     fprintf(file, "'%s'", insert_char_esc_seq(tok->v.int_val, buf));     break;
+			case STR_LITERAL:      fprintf(file, "\"%s\"", insert_esc_seqs(tok->v.id, buf));     break;
 
 			case POUND:            fprintf(file, "#");  break;
 			case EXP:              fprintf(file, "EXP");     break;
@@ -1113,6 +1168,7 @@ void print_token(token_value* tok, FILE* file, int print_enum)
 
 int print_token_to_str(token_value* tok, char* buf, size_t size)
 {
+	char buf2[MAX_TOKEN_LEN*2+1];
 	switch (tok->type) {
 		case END:              return snprintf(buf, size, "END");
 		case EQUALEQUAL:       return snprintf(buf, size, "==");
@@ -1189,8 +1245,8 @@ int print_token_to_str(token_value* tok, char* buf, size_t size)
 		case INT_LITERAL:      return snprintf(buf, size, "%d", tok->v.int_val);
 		case FLOAT_LITERAL:    return snprintf(buf, size, "%f", tok->v.float_val);
 		case DOUBLE_LITERAL:   return snprintf(buf, size, "%f", tok->v.double_val);
-		case CHAR_LITERAL:     return snprintf(buf, size, "'%c'", tok->v.int_val);
-		case STR_LITERAL:      return snprintf(buf, size, "%s", tok->v.id);
+		case CHAR_LITERAL:     return snprintf(buf, size, "'%s'", insert_char_esc_seq(tok->v.int_val, buf2));
+		case STR_LITERAL:      return snprintf(buf, size, "\"%s\"", insert_esc_seqs(tok->v.id, buf2));
 
 		case POUND:            return snprintf(buf, size, "#");
 		case EXP:              return snprintf(buf, size, "EXP");

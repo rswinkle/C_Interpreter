@@ -334,6 +334,11 @@ var_value execute_expr(program_state* prog, expression* e)
 		result = *var;
 		return result;
 
+	case CHAR_LITERAL:
+		result.type = CHAR_TYPE;
+		result.v.char_val = e->tok.v.int_val;
+		return result;
+
 	case INT_LITERAL:
 		result.type = INT_TYPE;
 		result.v.int_val = e->tok.v.int_val;

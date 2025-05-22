@@ -1794,6 +1794,10 @@ void primary_expr(parsing_state* p, program_state* prog, expression* e)
 		e->tok.type = ID;
 		e->tok.v.id = tok->v.id;
 		break;
+	case CHAR_LITERAL:
+		e->tok.type = CHAR_LITERAL;
+		e->tok.v.int_val = tok->v.int_val;
+		break;
 	case INT_LITERAL:
 		e->tok.type = INT_LITERAL;
 		e->tok.v.int_val = tok->v.int_val;
