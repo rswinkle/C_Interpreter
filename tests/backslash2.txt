@@ -1,0 +1,38 @@
+
+
+int main()
+{
+	char mychar = '\
+n\
+';
+	print mychar;
+
+	mychar = '\
+"';
+	print mychar;
+
+	mychar = 'A';
+
+	mychar = '\
+\"';
+	print mychar;
+
+	mychar = '\
+\n\
+';
+	print mychar;
+
+	char mystr = "hello \
+goodbye\nwhat\
+n 'is\" going\
+\non";
+	print mystr;
+
+	char mystr2 = "hel\lo";
+
+	print mystr2;
+
+	return 0;
+}
+
+

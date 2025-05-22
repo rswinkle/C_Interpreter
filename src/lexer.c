@@ -22,12 +22,55 @@ do { \
 } while (0)
 
 
+// TODO handle
+// \nnn octal
+// \xhh hex
+// \uhhhh non-ASCII unicode below 10000 hex (C99)
+// \Uhhhhhhhh non-ASCII unicode h is hex digit
+// TODO combine with HANDLE_BACKSLASH, use bool flag arg
+// and escaped_quote should also be a parameter
+// Also need to fix line numbers and cur_pos
+// then maybe with HANDLE_BACKSLASH_STR()
+#define HANDLE_BACKSLASH_ESCS() \
+do { \
+	escaped_quote = 0; \
+	c = getc(file); \
+	while (c == '\\') { \
+		c = getc(file); \
+		if (c != '\n') { \
+			switch (c) { \
+			case 'a': c = 0x07; break; \
+			case 'b': c = 0x08; break; \
+			case 'e': c = 0x1B; break; \
+			case 'f': c = 0x0C; break; \
+			case 'n': c = 0x0A; break; \
+			case 'r': c = 0x0D; break; \
+			case 't': c = 0x09; break; \
+			case 'v': c = 0x0B; break; \
+			case '\"': escaped_quote = 1; break;\
+			case '\\': \
+			case '\'': \
+			case '\?': \
+				break; \
+			default:   \
+				goto unrecognized_esc_seq; \
+			} \
+			break; \
+		} else { \
+			c = getc(file); \
+		} \
+	} \
+	lex_state->cur_pos++; \
+} while (0)
+
+
 //preprocessed is either NULL or a valid output file for preprocessing output
 //or it's the macro PARSING (1 currently but could be any invalid non-NULL pointer) which means we're parsing
 token_lex read_token(FILE* file, lexer_state* lex_state, FILE* preprocessed)
 {
 	static char token_buf[MAX_TOKEN_LEN+1];
 	int c, i = 0, tmp;
+	int escaped_quote = 0;
 
 	token_lex tok_lex = { 0 };
 
@@ -269,7 +312,7 @@ start:
 		break;
 
 	case '\'':
-		HANDLE_BACKSLASH(); //currently precludes escape characters, TODO
+		HANDLE_BACKSLASH_ESCS();
 		tmp = c; //save character
 		HANDLE_BACKSLASH();
 		if (c != '\'') {
@@ -369,10 +412,10 @@ start:
 			assert(tok_lex.tok.v.id);
 
 		} else if (c == '"') {
-			HANDLE_BACKSLASH();
-			while (c != '"') {
+			HANDLE_BACKSLASH_ESCS();
+			while (c != '"' || escaped_quote) {
 				token_buf[i++] = c;
-				HANDLE_BACKSLASH();
+				HANDLE_BACKSLASH_ESCS();
 				if (i > MAX_TOKEN_LEN)
 					goto token_length_error;
 			}
@@ -392,13 +435,20 @@ start:
 	}
 
 	if (preprocessed && preprocessed != PARSING && tok_lex.tok.type != POUND &&
-	    tok_lex.tok.type != ID && tok_lex.tok.type != END)
+	    tok_lex.tok.type != ID && tok_lex.tok.type != END) {
 		print_token(&tok_lex.tok, preprocessed, 0);
+	}
 
-//	print_token(&tok_lex.tok, stdout, 0);
-//	fflush(stdout);
+	//print_token(&tok_lex.tok, stdout, 0);
+	//printf(" ");
+	//print_token(&tok_lex.tok, stdout, 1);
+	//puts("");
+	//fflush(stdout);
 
 	return tok_lex;
+
+unrecognized_esc_seq:
+	lex_error(lex_state, "Unknown escape sequence in program\n");
 
 stray_backslash:
 	lex_error(lex_state, "stray \\ in program (perhaps you have a space between it and a newline)\n");
@@ -436,12 +486,44 @@ do { \
 	lex_state->cur_pos++; \
 } while (0)
 
+#define HANDLE_BACKSLASH_STR_ESCS() \
+do { \
+	escaped_quote = 0; \
+	++c; \
+	while (*c == '\\') { \
+		++c; \
+		if (*c != '\n') { \
+			switch (*c) { \
+			case 'a': *c = 0x07; break; \
+			case 'b': *c = 0x08; break; \
+			case 'e': *c = 0x1B; break; \
+			case 'f': *c = 0x0C; break; \
+			case 'n': *c = 0x0A; break; \
+			case 'r': *c = 0x0D; break; \
+			case 't': *c = 0x09; break; \
+			case 'v': *c = 0x0B; break; \
+			case '\"': escaped_quote = 1; break;\
+			case '\\': \
+			case '\'': \
+			case '\?': \
+				break; \
+			default:   \
+				goto unrecognized_esc_seq; \
+			} \
+			break; \
+		} else { \
+			++c; \
+		} \
+	} \
+	lex_state->cur_pos++; \
+} while (0)
 
 
 token_lex read_token_from_str(char* input, lexer_state* lex_state, FILE* preprocessed)
 {
 	static char token_buf[MAX_TOKEN_LEN+1];
 	int i = 0, tmp;
+	int escaped_quote;
 
 	token_lex tok_lex = { 0 };
 
@@ -688,7 +770,7 @@ start:
 		break;
 
 	case '\'':
-		HANDLE_BACKSLASH_STR(); //currently precludes escape characters, TODO
+		HANDLE_BACKSLASH_STR_ESCS();
 		tmp = *c; //save character
 		HANDLE_BACKSLASH_STR();
 		if (*c != '\'') {
@@ -781,10 +863,10 @@ start:
 			assert(tok_lex.tok.v.id);
 
 		} else if (*c == '"') {
-			HANDLE_BACKSLASH_STR();
-			while (*c != '"') {
+			HANDLE_BACKSLASH_STR_ESCS();
+			while (*c != '"' || escaped_quote) {
 				token_buf[i++] = *c;
-				HANDLE_BACKSLASH_STR();
+				HANDLE_BACKSLASH_STR_ESCS();
 				if (i > MAX_TOKEN_LEN)
 					goto token_length_error;
 			}
@@ -814,6 +896,9 @@ start:
 	lex_state->cur_char += c - input + 1;
 
 	return tok_lex;
+
+unrecognized_esc_seq:
+	lex_error(lex_state, "Unknown escape sequence in program\n");
 
 stray_backslash:
 	lex_error(lex_state, "stray \\ in program (perhaps you have a space between it and a newline)\n");
